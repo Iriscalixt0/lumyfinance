@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(git push:*)",
+      "mcp__claude_ai_Stripe__fetch_stripe_resources",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__get_logs",
+      "Bash(npx vitest:*)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(node:*)",
+      "mcp__claude_ai_Stripe__get_stripe_account_info"
+    ]
+  }
+}

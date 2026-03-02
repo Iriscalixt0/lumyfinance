@@ -1,0 +1,7 @@
+{
+  "crons": [
+    {"path": "/api/cron/recurring", "schedule": "0 6 * * *"},
+    {"path": "/api/cron/beta", "schedule": "0 6 * * *"},
+    {"path": "/api/cron/health", "schedule": "0 6 * * *"}
+  ]
+}
