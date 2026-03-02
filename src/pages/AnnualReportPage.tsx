@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { FileBarChart, TrendingUp, TrendingDown, Scale, BarChart3, PieChart as PieIcon } from "lucide-react";
 import {
@@ -21,26 +21,19 @@ const MONTH_NAMES = [
 ];
 
 export function AnnualReportPage() {
-  const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
   const [summary, setSummary] = useState<MonthlySummary[]>([]);
   const [loading, setLoading] = useState(true);
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
+      if (!activeWorkspace) { setLoading(false); return; }
 
       const { data: transactions } = await supabase
         .from("transactions")
         .select("amount, type, date")
-        .eq("workspace_id", member.workspace_id)
+        .eq("workspace_id", activeWorkspace.id)
         .gte("date", `${currentYear}-01-01`)
         .lte("date", `${currentYear}-12-31`);
 
@@ -60,7 +53,7 @@ export function AnnualReportPage() {
       setLoading(false);
     }
     load();
-  }, [user, currentYear]);
+  }, [activeWorkspace, currentYear]);
 
   const totalIncome = summary.reduce((s, m) => s + m.income, 0);
   const totalExpense = summary.reduce((s, m) => s + m.expense, 0);

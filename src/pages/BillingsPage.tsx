@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Receipt, Plus, Calendar, AlertCircle, CheckCircle2, Clock, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -24,7 +24,8 @@ const billingSchema = z.object({
 
 export function BillingsPage() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const workspaceId = activeWorkspace?.id ?? null;
   const [billings, setBillings] = useState<Billing[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,34 +34,25 @@ export function BillingsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const emptyForm = { description: "", amount: "", due_date: "", status: "pending" as "pending" | "paid" | "overdue" };
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-      setWorkspaceId(member.workspace_id);
+      if (!workspaceId) { setLoading(false); return; }
 
       const { data } = await supabase
         .from("billings")
         .select("*")
-        .eq("workspace_id", member.workspace_id)
+        .eq("workspace_id", workspaceId)
         .order("due_date", { ascending: true });
 
       setBillings(data ?? []);
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [workspaceId]);
 
   function openCreate() {
     setEditingId(null);

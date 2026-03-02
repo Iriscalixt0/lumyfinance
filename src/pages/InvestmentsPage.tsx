@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, TrendingUp, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
@@ -29,8 +30,9 @@ const TYPE_LABELS: Record<string, string> = {
 export function InvestmentsPage() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const wsId = activeWorkspace?.id ?? null;
   const [investments, setInvestments] = useState<Investment[]>([]);
-  const [wsId, setWsId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
@@ -39,27 +41,19 @@ export function InvestmentsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-      setWsId(member.workspace_id);
+      if (!wsId) { setLoading(false); return; }
 
       const { data } = await supabase
         .from("investments")
         .select("*")
-        .eq("workspace_id", member.workspace_id)
+        .eq("workspace_id", wsId)
         .order("date", { ascending: false });
 
       setInvestments(data ?? []);
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [wsId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

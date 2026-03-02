@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Wallet2, Plus, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -21,7 +21,8 @@ const budgetSchema = z.object({
 
 export function BudgetsPage() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const workspaceId = activeWorkspace?.id ?? null;
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -30,33 +31,24 @@ export function BudgetsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const emptyForm = { category: "", limit_amount: "" };
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-      setWorkspaceId(member.workspace_id);
+      if (!workspaceId) { setLoading(false); return; }
 
       const { data } = await supabase
         .from("budgets")
         .select("*")
-        .eq("workspace_id", member.workspace_id);
+        .eq("workspace_id", workspaceId);
 
       setBudgets(data ?? []);
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [workspaceId]);
 
   function openCreate() {
     setEditingId(null);

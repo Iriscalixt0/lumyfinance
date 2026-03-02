@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, Target, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
@@ -19,8 +20,9 @@ interface Goal {
 export function GoalsPage() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const wsId = activeWorkspace?.id ?? null;
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [wsId, setWsId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
@@ -51,20 +53,12 @@ export function GoalsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-      setWsId(member.workspace_id);
-      await loadGoals(member.workspace_id);
+      if (!wsId) { setLoading(false); return; }
+      await loadGoals(wsId);
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [wsId]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

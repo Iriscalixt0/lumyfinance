@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -26,9 +27,10 @@ interface Category {
 export function TransactionsPage() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const wsId = activeWorkspace?.id ?? null;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [wsId, setWsId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -49,19 +51,11 @@ export function TransactionsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-      setWsId(member.workspace_id);
+      if (!wsId) { setLoading(false); return; }
 
       const [txRes, catRes] = await Promise.all([
-        supabase.from("transactions").select("*").eq("workspace_id", member.workspace_id).order("date", { ascending: false }),
-        supabase.from("categories").select("id, name, icon, type").eq("workspace_id", member.workspace_id),
+        supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false }),
+        supabase.from("categories").select("id, name, icon, type").eq("workspace_id", wsId),
       ]);
 
       setTransactions(txRes.data ?? []);
@@ -69,7 +63,7 @@ export function TransactionsPage() {
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [wsId]);
 
   function openCreate() {
     setEditingId(null);

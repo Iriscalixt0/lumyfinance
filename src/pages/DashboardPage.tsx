@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import {
   ArrowRight,
@@ -22,18 +22,8 @@ import {
 } from "lucide-react";
 
 const MONTH_ICONS = [
-  Snowflake,   // Jan
-  Flame,       // Fev
-  Wind,        // Mar
-  CloudRain,   // Abr
-  Flower2,     // Mai
-  Sun,         // Jun
-  Waves,       // Jul
-  CloudSun,    // Ago
-  Leaf,        // Set
-  TreePine,    // Out
-  Cloudy,      // Nov
-  Sparkles,    // Dez
+  Snowflake, Flame, Wind, CloudRain, Flower2, Sun,
+  Waves, CloudSun, Leaf, TreePine, Cloudy, Sparkles,
 ];
 
 const MONTH_NAMES = [
@@ -57,7 +47,7 @@ interface MonthData {
 }
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
   const [monthlyData, setMonthlyData] = useState<MonthData[]>(
     Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 }))
   );
@@ -69,14 +59,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
+      if (!activeWorkspace) { setLoading(false); return; }
 
       const startOfYear = `${currentYear}-01-01`;
       const endOfYear = `${currentYear}-12-31`;
@@ -84,7 +67,7 @@ export function DashboardPage() {
       const { data: transactions } = await supabase
         .from("transactions")
         .select("amount, type, date")
-        .eq("workspace_id", member.workspace_id)
+        .eq("workspace_id", activeWorkspace.id)
         .gte("date", startOfYear)
         .lte("date", endOfYear);
 
@@ -103,8 +86,11 @@ export function DashboardPage() {
 
       setLoading(false);
     }
+    setLoading(true);
+    setMonthlyData(Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 })));
+    setHasTransactions(false);
     load();
-  }, [user, currentYear]);
+  }, [activeWorkspace, currentYear]);
 
   if (loading) {
     return (
@@ -116,13 +102,13 @@ export function DashboardPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      {/* Title */}
       <div>
         <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Dashboard do ano</h1>
-        <p className="text-muted-foreground text-base mt-1">Gestão inteligente — {currentYear}</p>
+        <p className="text-muted-foreground text-base mt-1">
+          {activeWorkspace?.name || "Gestão inteligente"} — {currentYear}
+        </p>
       </div>
 
-      {/* Welcome banner */}
       {showBanner && !hasTransactions && (
         <div className="relative bg-primary/5 border border-primary/20 rounded-2xl p-5 sm:p-6">
           <button
@@ -153,7 +139,6 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* Month cards grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {monthlyData.map((m) => {
           const Icon = MONTH_ICONS[m.month];
@@ -176,7 +161,6 @@ export function DashboardPage() {
         })}
       </div>
 
-      {/* Quick nav tabs */}
       <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
         {QUICK_LINKS.map((link) => (
           <Link
