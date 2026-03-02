@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
 
 interface Transaction {
   id: string;
@@ -23,6 +24,7 @@ interface Category {
 }
 
 export function TransactionsPage() {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -141,12 +143,14 @@ export function TransactionsPage() {
     }
 
     // Reload
+    const isEdit = !!editingId;
     const { data } = await supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false });
     setTransactions(data ?? []);
     setModalOpen(false);
     setEditingId(null);
     setForm(emptyForm);
     setSaving(false);
+    toast(isEdit ? "Transação atualizada!" : "Transação criada!");
   };
 
   async function handleDelete() {
@@ -157,6 +161,7 @@ export function TransactionsPage() {
     setSaving(false);
     setDeleteModalOpen(false);
     setDeletingId(null);
+    toast("Transação excluída!");
   }
 
   const getCategoryName = (id: string | null) => {

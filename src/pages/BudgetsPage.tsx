@@ -5,6 +5,7 @@ import { formatBRL } from "@/lib/utils/currency";
 import { Wallet2, Plus, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
+import { useToast } from "@/components/ui/Toast";
 
 interface Budget {
   id: string;
@@ -19,6 +20,7 @@ const budgetSchema = z.object({
 });
 
 export function BudgetsPage() {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,6 +124,7 @@ export function BudgetsPage() {
     setForm(emptyForm);
     setEditingId(null);
     setModalOpen(false);
+    toast(editingId ? "Orçamento atualizado!" : "Orçamento criado!");
   }
 
   async function handleDelete() {
@@ -132,6 +135,7 @@ export function BudgetsPage() {
     setSaving(false);
     setDeleteModalOpen(false);
     setDeletingId(null);
+    toast("Orçamento excluído!");
   }
 
   if (loading) {
