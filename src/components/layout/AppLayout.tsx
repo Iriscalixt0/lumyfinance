@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -28,6 +29,11 @@ import {
   ChevronDown,
   Check,
   Plus,
+  Info,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Trash2,
 } from "lucide-react";
 
 const PRINCIPAL_ITEMS = [
@@ -51,22 +57,28 @@ const SISTEMA_ITEMS = [
 export function AppLayout() {
   const { user, signOut } = useAuth();
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, dismiss } = useNotifications();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wsSelectorOpen, setWsSelectorOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const wsSelectorRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (wsSelectorRef.current && !wsSelectorRef.current.contains(e.target as Node)) {
         setWsSelectorOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
     }
-    if (wsSelectorOpen) document.addEventListener("mousedown", handleClick);
+    if (wsSelectorOpen || notifOpen) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [wsSelectorOpen]);
+  }, [wsSelectorOpen, notifOpen]);
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -224,12 +236,76 @@ export function AppLayout() {
 
           <div className="flex items-center gap-2">
             {/* Notifications */}
-            <button className="relative min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
-              <Bell className="h-[18px] w-[18px]" />
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                2
-              </span>
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotifOpen((v) => !v)}
+                className="relative min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <Bell className="h-[18px] w-[18px]" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute top-full right-0 mt-1 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-card-hover z-50 animate-fade overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                    <h3 className="text-sm font-bold text-foreground">Notificações</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllAsRead}
+                        className="text-xs text-primary font-medium hover:underline"
+                      >
+                        Marcar todas como lidas
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="py-8 text-center">
+                        <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-40" />
+                        <p className="text-sm text-muted-foreground">Nenhuma notificação</p>
+                      </div>
+                    ) : (
+                      notifications.map((n) => {
+                        const IconMap = { info: Info, warning: AlertTriangle, success: CheckCircle2, error: XCircle };
+                        const colorMap = { info: "text-blue-500", warning: "text-amber-500", success: "text-emerald-500", error: "text-rose-500" };
+                        const NIcon = IconMap[n.type] || Info;
+                        return (
+                          <div
+                            key={n.id}
+                            onClick={() => { if (!n.read) markAsRead(n.id); }}
+                            className={`px-4 py-3 border-b border-border last:border-0 cursor-pointer hover:bg-secondary/50 transition-colors flex gap-3 ${
+                              !n.read ? "bg-primary/5" : ""
+                            }`}
+                          >
+                            <NIcon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${colorMap[n.type] || "text-muted-foreground"}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${!n.read ? "font-semibold text-foreground" : "text-foreground"}`}>
+                                {n.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                {new Date(n.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                              </p>
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); dismiss(n.id); }}
+                              className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+                              aria-label="Remover"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Locale */}
             <LocaleSwitcher />
