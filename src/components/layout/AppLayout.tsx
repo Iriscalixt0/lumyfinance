@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -25,6 +26,8 @@ import {
   X,
   Bell,
   ChevronDown,
+  Check,
+  Plus,
 } from "lucide-react";
 
 const PRINCIPAL_ITEMS = [
@@ -47,9 +50,23 @@ const SISTEMA_ITEMS = [
 
 export function AppLayout() {
   const { user, signOut } = useAuth();
+  const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [wsSelectorOpen, setWsSelectorOpen] = useState(false);
+  const wsSelectorRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (wsSelectorRef.current && !wsSelectorRef.current.contains(e.target as Node)) {
+        setWsSelectorOpen(false);
+      }
+    }
+    if (wsSelectorOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [wsSelectorOpen]);
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -166,11 +183,43 @@ export function AppLayout() {
             </button>
 
             {/* Workspace selector */}
-            <button className="hidden sm:flex items-center gap-2 text-sm font-semibold text-foreground hover:bg-secondary px-3 py-1.5 rounded-lg transition-colors">
-              <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-              Minhas Finanças
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
+            <div className="relative hidden sm:block" ref={wsSelectorRef}>
+              <button
+                onClick={() => setWsSelectorOpen((v) => !v)}
+                className="flex items-center gap-2 text-sm font-semibold text-foreground hover:bg-secondary px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                <span className="max-w-[160px] truncate">{activeWorkspace?.name || "Workspace"}</span>
+                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${wsSelectorOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {wsSelectorOpen && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-xl shadow-card-hover py-1 z-50 animate-fade">
+                  <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Seus workspaces
+                  </p>
+                  {workspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      onClick={() => { switchWorkspace(ws); setWsSelectorOpen(false); }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-secondary transition-colors text-left"
+                    >
+                      <span className="font-medium text-foreground truncate">{ws.name}</span>
+                      {ws.id === activeWorkspace?.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                    </button>
+                  ))}
+                  <div className="border-t border-border mt-1 pt-1">
+                    <Link
+                      to="/workspace"
+                      onClick={() => setWsSelectorOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Gerenciar workspaces
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

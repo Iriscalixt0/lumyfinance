@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import App from "./App";
 import "./index.css";
@@ -14,9 +15,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <I18nProvider>
         <ThemeProvider>
           <AuthProvider>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <WorkspaceProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+            </WorkspaceProvider>
           </AuthProvider>
         </ThemeProvider>
       </I18nProvider>
