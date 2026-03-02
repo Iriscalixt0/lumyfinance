@@ -1,43 +1,29 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { CreditCard, Check, Sparkles } from "lucide-react";
 
-interface WorkspaceInfo {
-  id: string;
-  name: string;
-  stripe_subscription_id: string | null;
-}
-
 export function PlanPage() {
-  const { user } = useAuth();
-  const [workspace, setWorkspace] = useState<WorkspaceInfo | null>(null);
+  const { activeWorkspace } = useWorkspace();
+  const [stripeSubId, setStripeSubId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const hasPlan = !!workspace?.stripe_subscription_id;
+  const hasPlan = !!stripeSubId;
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-
+      if (!activeWorkspace) { setLoading(false); return; }
       const { data } = await supabase
         .from("workspaces")
-        .select("id, name, stripe_subscription_id")
-        .eq("id", member.workspace_id)
+        .select("stripe_subscription_id")
+        .eq("id", activeWorkspace.id)
         .single();
-
-      setWorkspace(data);
+      setStripeSubId(data?.stripe_subscription_id ?? null);
       setLoading(false);
     }
+    setLoading(true);
     load();
-  }, [user]);
+  }, [activeWorkspace]);
 
   if (loading) {
     return (
@@ -76,7 +62,7 @@ export function PlanPage() {
                 {hasPlan ? "Plano Pro" : "Sem plano ativo"}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Workspace: {workspace?.name || "—"}
+                Workspace: {activeWorkspace?.name || "—"}
               </p>
             </div>
           </div>
