@@ -2,77 +2,113 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { FileBarChart, TrendingUp, TrendingDown, Scale, BarChart3, PieChart as PieIcon } from "lucide-react";
+import {
+  TrendingUp, TrendingDown, Landmark, Scale, ChevronDown,
+  BarChart3, PieChart as PieIcon, Target, CalendarRange,
+} from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  AreaChart, Area,
   PieChart, Pie, Cell,
 } from "recharts";
 
-interface MonthlySummary {
-  month: string;
-  income: number;
-  expense: number;
-}
+const MONTH_NAMES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const FULL_MONTHS = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
-const MONTH_NAMES = [
-  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-  "Jul", "Ago", "Set", "Out", "Nov", "Dez",
-];
+const CATEGORY_COLORS = ["#f43f5e","#f59e0b","#3b82f6","#10b981","#8b5cf6","#ec4899","#06b6d4","#84cc16"];
 
 export function AnnualReportPage() {
   const { activeWorkspace } = useWorkspace();
-  const [summary, setSummary] = useState<MonthlySummary[]>([]);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [showYearPicker, setShowYearPicker] = useState(false);
   const [loading, setLoading] = useState(true);
-  const currentYear = new Date().getFullYear();
+
+  const [monthlyData, setMonthlyData] = useState<{ month: string; income: number; expense: number }[]>([]);
+  const [investmentData, setInvestmentData] = useState<{ month: string; total: number }[]>([]);
+  const [categoryData, setCategoryData] = useState<{ name: string; value: number }[]>([]);
+  const [goalsData, setGoalsData] = useState<{ name: string; current: number; target: number }[]>([]);
+  const [totalInvestments, setTotalInvestments] = useState(0);
 
   useEffect(() => {
     async function load() {
       if (!activeWorkspace) { setLoading(false); return; }
+      setLoading(true);
 
-      const { data: transactions } = await supabase
+      // Transactions
+      const { data: txs } = await supabase
         .from("transactions")
-        .select("amount, type, date")
+        .select("amount, type, date, category")
         .eq("workspace_id", activeWorkspace.id)
-        .gte("date", `${currentYear}-01-01`)
-        .lte("date", `${currentYear}-12-31`);
+        .gte("date", `${year}-01-01`)
+        .lte("date", `${year}-12-31`);
 
-      const monthly = Array.from({ length: 12 }, (_, i) => ({
-        month: MONTH_NAMES[i],
-        income: 0,
-        expense: 0,
-      }));
+      const monthly = Array.from({ length: 12 }, (_, i) => ({ month: MONTH_NAMES[i], income: 0, expense: 0 }));
+      const catMap: Record<string, number> = {};
 
-      (transactions ?? []).forEach((tx) => {
+      (txs ?? []).forEach((tx) => {
         const idx = new Date(tx.date).getMonth();
         if (tx.type === "income") monthly[idx].income += tx.amount;
-        else monthly[idx].expense += tx.amount;
+        else {
+          monthly[idx].expense += tx.amount;
+          const cat = tx.category || "Outros";
+          catMap[cat] = (catMap[cat] || 0) + tx.amount;
+        }
       });
 
-      setSummary(monthly);
+      setMonthlyData(monthly);
+      setCategoryData(
+        Object.entries(catMap)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 8)
+      );
+
+      // Investments
+      const { data: invs } = await supabase
+        .from("investments")
+        .select("current_value, purchase_date")
+        .eq("workspace_id", activeWorkspace.id);
+
+      const invMonthly = Array.from({ length: 12 }, (_, i) => ({ month: MONTH_NAMES[i], total: 0 }));
+      let invTotal = 0;
+      (invs ?? []).forEach((inv) => {
+        invTotal += inv.current_value ?? 0;
+        const d = new Date(inv.purchase_date);
+        if (d.getFullYear() === year) {
+          invMonthly[d.getMonth()].total += inv.current_value ?? 0;
+        }
+      });
+      setInvestmentData(invMonthly);
+      setTotalInvestments(invTotal);
+
+      // Goals
+      const { data: goals } = await supabase
+        .from("goals")
+        .select("name, current_amount, target_amount")
+        .eq("workspace_id", activeWorkspace.id)
+        .limit(5);
+
+      setGoalsData((goals ?? []).map((g) => ({ name: g.name, current: g.current_amount, target: g.target_amount })));
+
       setLoading(false);
     }
     load();
-  }, [activeWorkspace, currentYear]);
+  }, [activeWorkspace, year]);
 
-  const totalIncome = summary.reduce((s, m) => s + m.income, 0);
-  const totalExpense = summary.reduce((s, m) => s + m.expense, 0);
+  const totalIncome = monthlyData.reduce((s, m) => s + m.income, 0);
+  const totalExpense = monthlyData.reduce((s, m) => s + m.expense, 0);
   const balance = totalIncome - totalExpense;
 
-  const CHART_COLORS = { income: "#10b981", expense: "#f43f5e", balance: "hsl(160, 45%, 35%)" };
+  // Projection: next 6 months average
+  const avgNet = monthlyData.length ? (totalIncome - totalExpense) / Math.max(monthlyData.filter(m => m.income > 0 || m.expense > 0).length, 1) : 0;
+  const now = new Date();
+  const projections = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() + i + 1);
+    return { month: `${FULL_MONTHS[d.getMonth()]} ${d.getFullYear()}`, value: balance + avgNet * (i + 1) };
+  });
 
-  const pieData = [
-    { name: "Receitas", value: totalIncome },
-    { name: "Despesas", value: totalExpense },
-  ];
-  const PIE_COLORS = [CHART_COLORS.income, CHART_COLORS.expense];
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
-  const balanceData = summary.map((m) => ({
-    ...m,
-    balance: m.income - m.expense,
-  }));
-
-  const customTooltipFormatter = (value: number) => formatBRL(value);
+  const tooltipFmt = (v: number) => formatBRL(v);
 
   if (loading) {
     return (
@@ -84,156 +120,175 @@ export function AnnualReportPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Relatório Anual</h1>
-        <p className="text-muted-foreground mt-1">Resumo financeiro de {currentYear}</p>
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Relatório anual</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Ano {year}</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+            Acompanhe suas receitas, despesas e investimentos. Identifique tendências de gastos e visualize a projeção para os próximos meses.
+          </p>
+        </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowYearPicker(!showYearPicker)}
+            className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition"
+          >
+            {year} <ChevronDown className="h-4 w-4" />
+          </button>
+          {showYearPicker && (
+            <div className="absolute right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 py-1">
+              {years.map((y) => (
+                <button
+                  key={y}
+                  onClick={() => { setYear(y); setShowYearPicker(false); }}
+                  className={`block w-full text-left px-4 py-2 text-sm hover:bg-muted transition ${y === year ? "font-bold text-primary" : "text-foreground"}`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-emerald-500" />
-            </div>
-            <p className="text-sm text-muted-foreground">Total Receitas</p>
-          </div>
-          <p className="text-2xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <SummaryCard icon={TrendingUp} label="Receitas" value={formatBRL(totalIncome)} color="text-emerald-500" border="border-emerald-500" />
+        <SummaryCard icon={TrendingDown} label="Despesas" value={formatBRL(totalExpense)} color="text-rose-500" border="border-rose-500" />
+        <SummaryCard icon={Landmark} label="Investimentos" value={formatBRL(totalInvestments)} color="text-blue-500" border="border-blue-500" />
+        <SummaryCard icon={Scale} label="Saldo" value={formatBRL(balance)} color={balance >= 0 ? "text-emerald-500" : "text-rose-500"} border="border-border" />
+      </div>
+
+      {/* Evolução de Investimentos */}
+      <div className="bg-card border border-border rounded-2xl p-5">
+        <h3 className="font-semibold text-foreground text-sm mb-4">Evolução de Investimentos no ano</h3>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={investmentData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={tooltipFmt} />
+            <Tooltip formatter={tooltipFmt} />
+            <Bar dataKey="total" name="Investimentos" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Fluxo de caixa + Metas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h3 className="font-semibold text-foreground text-sm mb-4">Fluxo de caixa mensal</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={monthlyData} barGap={2}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={tooltipFmt} />
+              <Tooltip formatter={tooltipFmt} />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="income" name="Receitas" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="expense" name="Despesas" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-rose-500/10 flex items-center justify-center">
-              <TrendingDown className="h-5 w-5 text-rose-500" />
+
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h3 className="font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" /> Metas
+          </h3>
+          {goalsData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[220px] text-muted-foreground text-sm">
+              <Target className="h-8 w-8 mb-2 opacity-40" />
+              Nenhuma meta cadastrada
             </div>
-            <p className="text-sm text-muted-foreground">Total Despesas</p>
-          </div>
-          <p className="text-2xl font-bold text-rose-500">{formatBRL(totalExpense)}</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Scale className="h-5 w-5 text-primary" />
+          ) : (
+            <div className="space-y-4">
+              {goalsData.map((g, i) => {
+                const pct = g.target > 0 ? Math.min((g.current / g.target) * 100, 100) : 0;
+                return (
+                  <div key={i}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-foreground font-medium">{g.name}</span>
+                      <span className="text-muted-foreground">{pct.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-sm text-muted-foreground">Saldo</p>
-          </div>
-          <p className={`text-2xl font-bold ${balance >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-            {formatBRL(Math.abs(balance))}
-          </p>
+          )}
         </div>
       </div>
 
-      {/* Charts */}
-      {summary.some((m) => m.income > 0 || m.expense > 0) && (
-        <>
-          {/* Bar chart - Receitas vs Despesas */}
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              Receitas vs Despesas por mês
-            </h3>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={summary} barGap={4}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" tickFormatter={(v) => formatBRL(v)} />
-                <Tooltip formatter={customTooltipFormatter} />
-                <Legend />
-                <Bar dataKey="income" name="Receitas" fill={CHART_COLORS.income} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" name="Despesas" fill={CHART_COLORS.expense} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Area chart - Saldo acumulado */}
-            <div className="bg-card border border-border rounded-2xl p-5">
-              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Scale className="h-5 w-5 text-primary" />
-                Evolução do saldo mensal
-              </h3>
-              <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={balanceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
-                  <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" tickFormatter={(v) => formatBRL(v)} />
-                  <Tooltip formatter={customTooltipFormatter} />
-                  <Area type="monotone" dataKey="balance" name="Saldo" stroke={CHART_COLORS.balance} fill={CHART_COLORS.balance} fillOpacity={0.15} strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Pie chart - Proporção */}
-            <div className="bg-card border border-border rounded-2xl p-5">
-              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
-                <PieIcon className="h-5 w-5 text-primary" />
-                Proporção receitas / despesas
-              </h3>
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={4}
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {pieData.map((_, idx) => (
-                      <Cell key={idx} fill={PIE_COLORS[idx]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={customTooltipFormatter} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Monthly breakdown */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <FileBarChart className="h-5 w-5 text-primary" />
-            Detalhamento mensal
-          </h3>
-        </div>
-
-        {summary.some((m) => m.income > 0 || m.expense > 0) ? (
-          <div className="divide-y divide-border">
-            {summary.map((m, i) => {
-              const net = m.income - m.expense;
-              const maxVal = Math.max(totalIncome, totalExpense) || 1;
-              return (
-                <div key={i} className="px-5 py-4 flex items-center gap-4">
-                  <span className="w-10 text-sm font-semibold text-foreground">{m.month}</span>
-                  <div className="flex-1 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 bg-emerald-500 rounded-full" style={{ width: `${(m.income / maxVal) * 100}%` }} />
-                      <span className="text-xs text-emerald-500 font-medium whitespace-nowrap">{formatBRL(m.income)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 bg-rose-500 rounded-full" style={{ width: `${(m.expense / maxVal) * 100}%` }} />
-                      <span className="text-xs text-rose-500 font-medium whitespace-nowrap">{formatBRL(m.expense)}</span>
-                    </div>
-                  </div>
-                  <span className={`text-sm font-bold w-24 text-right ${net >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                    {net >= 0 ? "+" : ""}{formatBRL(net)}
-                  </span>
-                </div>
-              );
-            })}
+      {/* Gastos por categoria */}
+      <div className="bg-card border border-border rounded-2xl p-5">
+        <h3 className="font-semibold text-foreground text-sm mb-4">Gastos por categoria</h3>
+        {categoryData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
+            <PieIcon className="h-8 w-8 mb-2 opacity-40" />
+            Sem dados de despesas
           </div>
         ) : (
-          <div className="p-12 text-center">
-            <FileBarChart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">Sem dados para exibir</h3>
-            <p className="text-muted-foreground">Registre transações para ver seu relatório anual.</p>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <ResponsiveContainer width={200} height={200}>
+              <PieChart>
+                <Pie
+                  data={categoryData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={85}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {categoryData.map((_, idx) => (
+                    <Cell key={idx} fill={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={tooltipFmt} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {categoryData.map((c, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
+                  <span className="text-foreground">{c.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Projeção */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+            <CalendarRange className="h-4 w-4 text-primary" />
+            Projeção de saldo (próximos 6 meses)
+          </h3>
+        </div>
+        <div className="divide-y divide-border">
+          {projections.map((p, i) => (
+            <div key={i} className="px-5 py-3 flex items-center justify-between">
+              <span className="text-sm text-foreground">{p.month}</span>
+              <span className={`text-sm font-semibold ${p.value >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                {formatBRL(p.value)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({ icon: Icon, label, value, color, border }: { icon: any; label: string; value: string; color: string; border: string }) {
+  return (
+    <div className={`bg-card border-t-2 ${border} border border-border rounded-xl p-4`}>
+      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+      <p className={`text-lg font-bold ${color}`}>{value}</p>
     </div>
   );
 }
