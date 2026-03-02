@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications, getNotifCategory } from "@/hooks/useNotifications";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -270,30 +270,32 @@ export function AppLayout() {
                       </div>
                     ) : (
                       notifications.map((n) => {
-                        const IconMap = { info: Info, warning: AlertTriangle, success: CheckCircle2, error: XCircle };
-                        const colorMap = { info: "text-blue-500", warning: "text-amber-500", success: "text-emerald-500", error: "text-rose-500" };
-                        const NIcon = IconMap[n.type] || Info;
+                        const IconMap: Record<string, typeof Info> = { info: Info, warning: AlertTriangle, success: CheckCircle2, error: XCircle };
+                        const colorMap: Record<string, string> = { info: "text-blue-500", warning: "text-amber-500", success: "text-emerald-500", error: "text-rose-500" };
+                        const cat = getNotifCategory(n.type);
+                        const NIcon = IconMap[cat] || Info;
+                        const isUnread = !n.read_at;
                         return (
                           <div
                             key={n.id}
-                            onClick={() => { if (!n.read) markAsRead(n.id); }}
-                            className={`px-4 py-3 border-b border-border last:border-0 cursor-pointer hover:bg-secondary/50 transition-colors flex gap-3 ${
-                              !n.read ? "bg-primary/5" : ""
+                            onClick={() => { if (isUnread) markAsRead(n.id); }}
+                            className={`px-4 py-3 border-b border-border last:border-0 cursor-pointer hover:bg-secondary/50 transition-colors flex gap-3 group/notif ${
+                              isUnread ? "bg-primary/5" : ""
                             }`}
                           >
-                            <NIcon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${colorMap[n.type] || "text-muted-foreground"}`} />
+                            <NIcon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${colorMap[cat] || "text-muted-foreground"}`} />
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm ${!n.read ? "font-semibold text-foreground" : "text-foreground"}`}>
+                              <p className={`text-sm ${isUnread ? "font-semibold text-foreground" : "text-foreground"}`}>
                                 {n.title}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                               <p className="text-[10px] text-muted-foreground mt-1">
                                 {new Date(n.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                               </p>
                             </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); dismiss(n.id); }}
-                              className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+                              className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 opacity-0 group-hover/notif:opacity-100"
                               aria-label="Remover"
                             >
                               <Trash2 className="h-3 w-3" />

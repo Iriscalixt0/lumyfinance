@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Repeat, Plus, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -26,7 +26,8 @@ const recurringSchema = z.object({
 
 export function RecurringPage() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const workspaceId = activeWorkspace?.id ?? null;
   const [items, setItems] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,7 +36,6 @@ export function RecurringPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const emptyForm = {
     description: "",
@@ -48,27 +48,19 @@ export function RecurringPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .single();
-
-      if (!member) { setLoading(false); return; }
-      setWorkspaceId(member.workspace_id);
+      if (!workspaceId) { setLoading(false); return; }
 
       const { data } = await supabase
         .from("recurring_transactions")
         .select("*")
-        .eq("workspace_id", member.workspace_id)
+        .eq("workspace_id", workspaceId)
         .order("next_date", { ascending: true });
 
       setItems(data ?? []);
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [workspaceId]);
 
   function openCreate() {
     setEditingId(null);
