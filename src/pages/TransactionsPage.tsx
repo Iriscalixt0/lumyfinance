@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
+import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/utils/csv";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
@@ -181,9 +182,27 @@ export function TransactionsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Transações</h1>
           <p className="text-muted-foreground text-sm mt-1">Receitas e despesas</p>
         </div>
-        <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Nova
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const rows = transactions.map((tx) => [
+                tx.description,
+                tx.type === "income" ? "Receita" : "Despesa",
+                (tx.amount / 100).toFixed(2).replace(".", ","),
+                new Date(tx.date).toLocaleDateString("pt-BR"),
+                getCategoryName(tx.category_id),
+                tx.notes ?? "",
+              ]);
+              downloadCSV("transacoes.csv", ["Descrição", "Tipo", "Valor", "Data", "Categoria", "Notas"], rows);
+            }}
+            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" /> CSV
+          </button>
+          <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Nova
+          </button>
+        </div>
       </div>
 
       {/* List */}

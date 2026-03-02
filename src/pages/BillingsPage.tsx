@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Receipt, Plus, Calendar, AlertCircle, CheckCircle2, Clock, Pencil, Trash2 } from "lucide-react";
+import { Receipt, Plus, Calendar, AlertCircle, CheckCircle2, Clock, Pencil, Trash2, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/utils/csv";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
@@ -162,9 +163,26 @@ export function BillingsPage() {
           <h1 className="text-3xl font-bold text-foreground">Cobranças</h1>
           <p className="text-muted-foreground mt-1">Gerencie suas contas a pagar e receber</p>
         </div>
-        <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Nova cobrança
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const statusLabels: Record<string, string> = { pending: "Pendente", paid: "Pago", overdue: "Atrasado" };
+              const rows = billings.map((b) => [
+                b.description,
+                String(b.amount).replace(".", ","),
+                new Date(b.due_date).toLocaleDateString("pt-BR"),
+                statusLabels[b.status] ?? b.status,
+              ]);
+              downloadCSV("cobrancas.csv", ["Descrição", "Valor", "Vencimento", "Status"], rows);
+            }}
+            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors inline-flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" /> CSV
+          </button>
+          <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Nova cobrança
+          </button>
+        </div>
       </div>
 
       {billings.length === 0 ? (
