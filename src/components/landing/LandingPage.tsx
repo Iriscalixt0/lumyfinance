@@ -1,7 +1,4 @@
-"use client";
-
-import { Link } from "@/i18n/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { Link } from "react-router-dom";
 import { PRODUCT_CONFIG } from "@/lib/product-config";
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
@@ -21,34 +18,20 @@ import {
   HelpCircle,
   Moon,
   Sun,
-  Download,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { PlanCard } from "@/components/plan/plan-card";
-import { useInstallPrompt } from "@/components/install-prompt-provider";
+import { useTranslations } from "@/lib/i18n";
 
-export function LandingPage({ betaToken }: { betaToken?: string }) {
+export function LandingPage() {
   const t = useTranslations("landing");
-  const locale = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const { theme, toggleTheme } = useTheme();
-  const { triggerInstall } = useInstallPrompt();
 
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
-  }, []);
-
-  async function handleDownloadApp() {
-    setMobileOpen(false);
-    await triggerInstall();
-  }
-  const betaRedirect = betaToken ? `/${locale}/beta/${betaToken}` : null;
-  const loginHref = betaRedirect ? `/login?redirect=${encodeURIComponent(betaRedirect)}` : "/login";
-  const registerHref = betaRedirect ? `/register?redirect=${encodeURIComponent(betaRedirect)}` : "/register";
+  const loginHref = "/login";
+  const registerHref = "/register";
 
   const NAV_LINKS = [
     { label: t("nav.features"), href: "funcionalidades" },
@@ -95,27 +78,17 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
       {/* NAV */}
       <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-5 py-4">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
             <Logo size="sm" />
             <span className="text-gradient-hero">Lumyf</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             {NAV_LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={`#${l.href}`}
-                className="whitespace-nowrap transition-colors hover:text-foreground"
-              >
+              <a key={l.href} href={`#${l.href}`} className="whitespace-nowrap transition-colors hover:text-foreground">
                 {l.label}
               </a>
             ))}
-            <Link
-              href="/blog"
-              className="whitespace-nowrap transition-colors hover:text-foreground"
-            >
-              Blog
-            </Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
@@ -125,18 +98,14 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
               onClick={toggleTheme}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               aria-label={theme === "dark" ? t("theme.activateLight") : t("theme.activateDark")}
-              title={theme === "dark" ? t("theme.light") : t("theme.dark")}
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <Link
-              href={loginHref}
-              className="whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to={loginHref} className="whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               {t("nav.login")}
             </Link>
             <Link
-              href={registerHref}
+              to={registerHref}
               className="whitespace-nowrap bg-hero-gradient text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
             >
               {t("nav.createAccount")}
@@ -165,49 +134,31 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
                 {l.label}
               </a>
             ))}
-            <Link
-              href="/blog"
-              className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              Blog
-            </Link>
             <div className="pt-2 space-y-2 border-t border-border">
               <div className="flex justify-center py-2">
                 <LocaleSwitcher />
               </div>
-            <Link
-              href={loginHref}
-              className="block w-full rounded-lg border border-border px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:bg-secondary transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              {t("nav.login")}
-            </Link>
-            <Link
-              href={registerHref}
-              className="block w-full bg-hero-gradient text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg text-center"
-              onClick={() => setMobileOpen(false)}
-            >
-              {t("nav.createAccount")}
-            </Link>
-            <button
-              type="button"
-              onClick={handleDownloadApp}
-              className="flex items-center justify-center gap-2 w-full rounded-lg border border-primary/30 bg-primary/5 px-5 py-2.5 text-center text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
-            >
-              <Download className="h-4 w-4 shrink-0" />
-              {t("nav.downloadApp")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                toggleTheme();
-                setMobileOpen(false);
-              }}
-              className="block w-full rounded-lg border border-border px-5 py-2.5 text-center text-sm font-semibold text-foreground"
-            >
-              {theme === "dark" ? t("theme.light") : t("theme.dark")}
-            </button>
+              <Link
+                to={loginHref}
+                className="block w-full rounded-lg border border-border px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:bg-secondary transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                {t("nav.login")}
+              </Link>
+              <Link
+                to={registerHref}
+                className="block w-full bg-hero-gradient text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg text-center"
+                onClick={() => setMobileOpen(false)}
+              >
+                {t("nav.createAccount")}
+              </Link>
+              <button
+                type="button"
+                onClick={() => { toggleTheme(); setMobileOpen(false); }}
+                className="block w-full rounded-lg border border-border px-5 py-2.5 text-center text-sm font-semibold text-foreground"
+              >
+                {theme === "dark" ? t("theme.light") : t("theme.dark")}
+              </button>
             </div>
           </div>
         )}
@@ -218,8 +169,7 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
         <div
           className="absolute inset-0 -z-10 opacity-[0.03]"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, hsl(160 45% 30%) 1px, transparent 0)",
+            backgroundImage: "radial-gradient(circle at 1px 1px, hsl(160 45% 30%) 1px, transparent 0)",
             backgroundSize: "32px 32px",
           }}
         />
@@ -229,43 +179,17 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
             {t("hero.badge")}
           </span>
           <h1 className="text-3xl sm:text-5xl md:text-6xl leading-tight tracking-tight mb-2 sm:mb-3">
-            {(() => {
-              const highlightStr = t("hero.titleHighlight", { trialDays: PRODUCT_CONFIG.trialDays });
-              if (t("hero.titleFormat") === "full") {
-                return t("hero.title");
-              }
-              const titleResolved = t("hero.title", { highlight: highlightStr });
-
-              if (titleResolved.includes(highlightStr)) {
-                const [before, ...rest] = titleResolved.split(highlightStr);
-                return (
-                  <>
-                    {before}
-                    <span className="text-gradient-hero">{highlightStr}</span>
-                    {rest.join(highlightStr)}
-                  </>
-                );
-              }
-
-              return (
-                <>
-                  {titleResolved} —{" "}
-                  <span className="text-gradient-hero">{highlightStr}</span>
-                </>
-              );
-            })()}
+            {t("hero.title")}
           </h1>
-          {t("hero.titleFormat") === "full" && (
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gradient-hero mb-4 sm:mb-6">
-              {t("hero.titleHighlight", { trialDays: PRODUCT_CONFIG.trialDays })}
-            </h2>
-          )}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gradient-hero mb-4 sm:mb-6">
+            {t("hero.titleHighlight", { trialDays: PRODUCT_CONFIG.trialDays })}
+          </h2>
           <div className="max-w-xl mx-auto mt-2 sm:mt-3 mb-8 sm:mb-10">
             <h3 className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">{t("hero.subtitle")}</h3>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
-              href={registerHref}
+              to={registerHref}
               className="bg-hero-gradient text-primary-foreground font-semibold px-7 sm:px-8 py-3.5 rounded-xl text-sm sm:text-base hover:opacity-90 transition-opacity flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               {t("hero.cta", { trialDays: PRODUCT_CONFIG.trialDays })} <ArrowRight className="h-4 w-4" />
@@ -288,47 +212,19 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
             </div>
           ))}
         </div>
-
-        {/* Web app download */}
-        <div className="mx-auto mt-8 sm:mt-10 max-w-xl text-center">
-          <p className="text-sm sm:text-base text-gradient-hero font-medium">
-            {t.rich("hero.subtitleApp", {
-              link: (chunks) => (
-                <button
-                  type="button"
-                  onClick={handleDownloadApp}
-                  className="text-foreground font-semibold underline underline-offset-2 hover:no-underline cursor-pointer inline"
-                >
-                  {chunks}
-                </button>
-              ),
-            })}
-          </p>
-        </div>
       </section>
 
       {/* FEATURES */}
       <section id="funcionalidades" className="py-12 sm:py-20 px-4 sm:px-6 bg-secondary/50">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-10 sm:mb-14">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3">
-              {t("features.title")}
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">
-              {t("features.subtitle")}
-            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3">{t("features.title")}</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">{t("features.subtitle")}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="group bg-card rounded-2xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300"
-              >
-                <div
-                  className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-secondary text-primary"
-                  role="img"
-                  aria-label={f.title}
-                >
+              <div key={f.title} className="group bg-card rounded-2xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-secondary text-primary" role="img" aria-label={f.title}>
                   <f.icon className="h-5 w-5" aria-hidden />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold mb-2 font-sans">{f.title}</h3>
@@ -342,12 +238,8 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
       {/* HOW IT WORKS */}
       <section id="sobre" className="py-12 sm:py-20 px-4 sm:px-6">
         <div className="mx-auto max-w-4xl text-center mb-10 sm:mb-14">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3">
-            {t("steps.title")}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {t("steps.subtitle")}
-          </p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3">{t("steps.title")}</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">{t("steps.subtitle")}</p>
         </div>
         <div className="mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {STEPS.map((s) => (
@@ -361,11 +253,7 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
       </section>
 
       {/* PRICING */}
-      <PlanCard
-        ctaVariant={betaToken ? "betaTest" : "register"}
-        ctaHref={registerHref}
-        sectionId="precos"
-      />
+      <PlanCard ctaVariant="register" ctaHref={registerHref} sectionId="precos" />
 
       {/* FAQ */}
       <section id="faq" className="py-12 sm:py-20 px-4 sm:px-6">
@@ -373,40 +261,23 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
           <div className="text-center mb-10 sm:mb-14">
             <div className="inline-flex items-center gap-2 mb-3">
               <HelpCircle className="h-6 w-6 sm:h-8 sm:w-8 text-accent" aria-hidden />
-              <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight">
-                {t("faq.title")}
-              </h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight">{t("faq.title")}</h2>
             </div>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              {t("faq.subtitle")}
-            </p>
+            <p className="text-sm sm:text-base text-muted-foreground">{t("faq.subtitle")}</p>
           </div>
           <div className="space-y-2 sm:space-y-3">
             {FAQ_ITEMS.map((item, i) => (
-              <div
-                key={i}
-                className="rounded-xl bg-card border border-border overflow-hidden shadow-sm"
-              >
+              <div key={i} className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
                 <button
                   type="button"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   className="w-full flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 text-left text-sm sm:text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
                 >
                   {item.q}
-                  <ChevronDown
-                    className={`h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                      openFaq === i ? "rotate-180" : ""
-                    }`}
-                  />
+                  <ChevronDown className={`h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${openFaq === i ? "rotate-180" : ""}`} />
                 </button>
-                <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    openFaq === i ? "max-h-72" : "max-h-0"
-                  }`}
-                >
-                  <p className="px-4 sm:px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed">
-                    {item.a}
-                  </p>
+                <div className={`overflow-hidden transition-all duration-200 ${openFaq === i ? "max-h-72" : "max-h-0"}`}>
+                  <p className="px-4 sm:px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed">{item.a}</p>
                 </div>
               </div>
             ))}
@@ -418,14 +289,10 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
       <section className="py-12 sm:py-20 px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <Logo size="lg" className="mx-auto mb-5 sm:mb-6" />
-          <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3 sm:mb-4">
-            {t("cta.title")}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-md mx-auto">
-            {t("cta.subtitle")}
-          </p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3 sm:mb-4">{t("cta.title")}</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-md mx-auto">{t("cta.subtitle")}</p>
           <Link
-            href={registerHref}
+            to={registerHref}
             className="bg-hero-gradient text-primary-foreground font-semibold px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl text-sm sm:text-base hover:opacity-90 transition-opacity inline-flex items-center gap-2"
           >
             {t("cta.button")} <ArrowRight className="h-4 w-4" />
@@ -436,28 +303,18 @@ export function LandingPage({ betaToken }: { betaToken?: string }) {
       {/* FOOTER */}
       <footer className="border-t border-border py-8 sm:py-10 px-4 sm:px-6">
         <div className="mx-auto max-w-6xl flex flex-col items-center gap-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-foreground">
+          <Link to="/" className="flex items-center gap-2 font-bold text-foreground">
             <Logo size="sm" />
             Lumyf
           </Link>
           <p className="text-xs sm:text-sm text-center">{t("footer.copyright", { year: new Date().getFullYear() })}</p>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-6">
-            <Link href="/terms" className="hover:text-foreground transition-colors text-xs sm:text-sm">
-              {t("footer.terms")}
-            </Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors text-xs sm:text-sm">
-              {t("footer.privacy")}
-            </Link>
-            <Link href="/refund" className="hover:text-foreground transition-colors text-xs sm:text-sm">
-              {t("footer.refund")}
-            </Link>
-            <Link href="/acessibilidade" className="hover:text-foreground transition-colors text-xs sm:text-sm">
-              {t("footer.accessibility")}
-            </Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors text-xs sm:text-sm">{t("footer.terms")}</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors text-xs sm:text-sm">{t("footer.privacy")}</Link>
+            <Link to="/refund" className="hover:text-foreground transition-colors text-xs sm:text-sm">{t("footer.refund")}</Link>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-

@@ -1,30 +1,21 @@
-"use client";
-
-import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
 import { Globe, ChevronDown } from "lucide-react";
-import { routing, uiLocales } from "@/i18n/routing";
+import { useI18n, LOCALES, type Locale } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
 
 export function LocaleSwitcher() {
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { locale, setLocale } = useI18n();
   const t = useTranslations("common.locales");
-
-  function handleChange(newLocale: string) {
-    router.replace(pathname, { locale: newLocale as (typeof routing.locales)[number] });
-  }
 
   return (
     <div className="relative group shrink-0">
       <select
         value={locale}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => setLocale(e.target.value as Locale)}
         className="appearance-none min-h-[44px] min-w-[44px] sm:min-w-[130px] sm:w-auto pl-0 sm:pl-10 pr-0 sm:pr-8 py-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground text-xs sm:text-sm font-bold cursor-pointer border-0 focus:ring-2 focus:ring-primary focus:outline-none transition-colors overflow-hidden text-transparent sm:text-inherit sm:overflow-visible"
         aria-label={t("label")}
         title={t(locale)}
       >
-        {uiLocales.map((loc) => (
+        {LOCALES.map((loc) => (
           <option key={loc} value={loc}>
             {t(loc)}
           </option>

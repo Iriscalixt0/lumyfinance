@@ -1,23 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "allowJs": true,
+    "esModuleInterop": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["src/main.tsx", "src/App.tsx", "src/vite-env.d.ts", "src/lib/i18n.tsx", "src/lib/product-config.ts", "src/lib/utils/**/*", "src/types/**/*", "src/hooks/**/*", "src/pages/**/*", "src/components/theme-provider.tsx", "src/components/logo.tsx", "src/components/locale-switcher.tsx", "src/components/landing/LandingPage.tsx", "src/components/plan/plan-card.tsx", "vite.config.ts"],
   "exclude": ["node_modules"]
 }
