@@ -5,6 +5,7 @@ import { formatBRL } from "@/lib/utils/currency";
 import { Repeat, Plus, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
+import { useToast } from "@/components/ui/Toast";
 
 interface RecurringTransaction {
   id: string;
@@ -24,6 +25,7 @@ const recurringSchema = z.object({
 });
 
 export function RecurringPage() {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [items, setItems] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,6 +145,7 @@ export function RecurringPage() {
     setForm(emptyForm);
     setEditingId(null);
     setModalOpen(false);
+    toast(editingId ? "Recorrência atualizada!" : "Recorrência criada!");
   }
 
   async function handleDelete() {
@@ -153,6 +156,7 @@ export function RecurringPage() {
     setSaving(false);
     setDeleteModalOpen(false);
     setDeletingId(null);
+    toast("Recorrência excluída!");
   }
 
   const freqLabels: Record<string, string> = {

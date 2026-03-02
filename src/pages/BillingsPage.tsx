@@ -5,6 +5,7 @@ import { formatBRL } from "@/lib/utils/currency";
 import { Receipt, Plus, Calendar, AlertCircle, CheckCircle2, Clock, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
+import { useToast } from "@/components/ui/Toast";
 
 interface Billing {
   id: string;
@@ -22,6 +23,7 @@ const billingSchema = z.object({
 });
 
 export function BillingsPage() {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [billings, setBillings] = useState<Billing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,6 +135,7 @@ export function BillingsPage() {
     setForm(emptyForm);
     setEditingId(null);
     setModalOpen(false);
+    toast(editingId ? "Cobrança atualizada!" : "Cobrança criada!");
   }
 
   async function handleDelete() {
@@ -143,6 +146,7 @@ export function BillingsPage() {
     setSaving(false);
     setDeleteModalOpen(false);
     setDeletingId(null);
+    toast("Cobrança excluída!");
   }
 
   const statusConfig = {
