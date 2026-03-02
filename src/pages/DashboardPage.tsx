@@ -118,8 +118,8 @@ export function DashboardPage() {
     <div className="animate-fade space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard do ano</h1>
-        <p className="text-muted-foreground text-sm mt-1">Gestão inteligente — {currentYear}</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Dashboard do ano</h1>
+        <p className="text-muted-foreground text-base mt-1">Gestão inteligente — {currentYear}</p>
       </div>
 
       {/* Welcome banner */}
@@ -132,10 +132,10 @@ export function DashboardPage() {
           >
             <X className="h-4 w-4" />
           </button>
-          <h3 className="font-semibold text-foreground mb-1">
+          <h3 className="text-lg font-semibold text-foreground mb-1">
             Pronto! Agora você pode registrar sua primeira transação
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4">
             Comece adicionando uma receita ou despesa para acompanhar seu fluxo de caixa.
           </p>
           <div className="flex flex-wrap gap-3">
@@ -162,11 +162,11 @@ export function DashboardPage() {
           return (
             <div
               key={m.month}
-              className="bg-card border border-border rounded-xl p-4 flex flex-col items-center text-center hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer"
+              className="bg-card border border-border rounded-xl p-5 flex flex-col items-center text-center hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer"
             >
-              <Icon className="h-7 w-7 text-primary mb-2" />
-              <p className="text-xs font-semibold text-foreground mb-1">{MONTH_NAMES[m.month]}</p>
-              <p className={`text-sm font-bold ${
+              <Icon className="h-9 w-9 text-primary mb-3" />
+              <p className="text-sm font-semibold text-foreground mb-1">{MONTH_NAMES[m.month]}</p>
+              <p className={`text-base font-bold ${
                 isNegative ? "text-rose-500" : isPositive ? "text-emerald-500" : "text-primary"
               }`}>
                 {m.total !== 0 && (isNegative ? "-" : "")}{formatBRL(Math.abs(m.total))}
