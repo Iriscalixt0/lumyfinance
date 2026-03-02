@@ -1,0 +1,244 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatBRL } from "@/lib/utils/currency";
+import { Plus, ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
+
+interface Transaction {
+  id: string;
+  description: string;
+  amount: number;
+  type: "income" | "expense" | "transfer";
+  date: string;
+  category_id: string | null;
+  notes: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  type: string;
+}
+
+export function TransactionsPage() {
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [wsId, setWsId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+
+  // Form state
+  const [form, setForm] = useState({
+    description: "",
+    amount: "",
+    type: "expense" as "income" | "expense",
+    date: new Date().toISOString().split("T")[0],
+    category_id: "",
+    notes: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    async function load() {
+      const { data: member } = await supabase
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", user!.id)
+        .limit(1)
+        .single();
+
+      if (!member) { setLoading(false); return; }
+      setWsId(member.workspace_id);
+
+      const [txRes, catRes] = await Promise.all([
+        supabase.from("transactions").select("*").eq("workspace_id", member.workspace_id).order("date", { ascending: false }),
+        supabase.from("categories").select("id, name, icon, type").eq("workspace_id", member.workspace_id),
+      ]);
+
+      setTransactions(txRes.data ?? []);
+      setCategories(catRes.data ?? []);
+      setLoading(false);
+    }
+    load();
+  }, [user]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wsId) return;
+    setFormError("");
+    setSaving(true);
+
+    const amountCents = Math.round(parseFloat(form.amount.replace(",", ".")) * 100);
+    if (isNaN(amountCents) || amountCents <= 0) {
+      setFormError("Valor inválido.");
+      setSaving(false);
+      return;
+    }
+
+    const { error } = await supabase.from("transactions").insert({
+      workspace_id: wsId,
+      description: form.description,
+      amount: amountCents,
+      type: form.type,
+      date: form.date,
+      category_id: form.category_id || null,
+      notes: form.notes || null,
+      created_by: user!.id,
+    });
+
+    if (error) {
+      setFormError(error.message);
+      setSaving(false);
+      return;
+    }
+
+    // Reload
+    const { data } = await supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false });
+    setTransactions(data ?? []);
+    setShowForm(false);
+    setForm({ description: "", amount: "", type: "expense", date: new Date().toISOString().split("T")[0], category_id: "", notes: "" });
+    setSaving(false);
+  };
+
+  const getCategoryName = (id: string | null) => {
+    if (!id) return "";
+    const cat = categories.find((c) => c.id === id);
+    return cat ? `${cat.icon} ${cat.name}` : "";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fade space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Transações</h1>
+          <p className="text-muted-foreground text-sm mt-1">Receitas e despesas</p>
+        </div>
+        <button
+          onClick={() => setShowForm(true)}
+          className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" /> Nova
+        </button>
+      </div>
+
+      {/* Form modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setShowForm(false)} />
+          <div className="relative bg-card rounded-2xl border border-border shadow-xl w-full max-w-md p-6">
+            <button onClick={() => setShowForm(false)} className="absolute right-4 top-4 text-muted-foreground hover:text-foreground">
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-lg font-bold text-foreground mb-4">Nova transação</h3>
+
+            {formError && <div className="mb-3 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">{formError}</div>}
+
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="flex gap-2">
+                {(["expense", "income"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setForm({ ...form, type: t })}
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                      form.type === t
+                        ? t === "income" ? "bg-emerald-500/10 border-emerald-500 text-emerald-600" : "bg-rose-500/10 border-rose-500 text-rose-600"
+                        : "border-border text-muted-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {t === "income" ? "Receita" : "Despesa"}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                required
+                placeholder="Descrição"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+              />
+
+              <input
+                required
+                placeholder="Valor (ex: 150,00)"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+              />
+
+              <input
+                type="date"
+                required
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+              />
+
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="">Sem categoria</option>
+                {categories.filter(c => c.type === form.type).map((c) => (
+                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </select>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {saving ? "Salvando..." : "Salvar"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* List */}
+      <div className="bg-card rounded-2xl border border-border shadow-card">
+        {transactions.length === 0 ? (
+          <div className="px-5 py-16 text-center text-muted-foreground text-sm">
+            Nenhuma transação ainda. Clique em "Nova" para adicionar.
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {transactions.map((tx) => (
+              <div key={tx.id} className="px-5 py-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === "income" ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
+                    {tx.type === "income" ? <ArrowDownLeft className="h-4 w-4 text-emerald-500" /> : <ArrowUpRight className="h-4 w-4 text-rose-500" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{tx.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(tx.date).toLocaleDateString("pt-BR")}
+                      {getCategoryName(tx.category_id) && ` · ${getCategoryName(tx.category_id)}`}
+                    </p>
+                  </div>
+                </div>
+                <p className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-500" : "text-rose-500"}`}>
+                  {tx.type === "income" ? "+" : "-"}{formatBRL(tx.amount)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
