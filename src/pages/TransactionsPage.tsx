@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2, Download } from "lucide-react";
+import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2, Download, Filter, X, Calendar } from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -40,6 +40,13 @@ export function TransactionsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+
+  // Filters
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [filterCategoryId, setFilterCategoryId] = useState<string>("");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const emptyForm = {
     description: "",
@@ -167,6 +174,23 @@ export function TransactionsPage() {
     return cat ? `${cat.icon} ${cat.name}` : "";
   };
 
+  const hasActiveFilters = filterType !== "all" || filterCategoryId || filterDateFrom || filterDateTo;
+
+  const filteredTransactions = transactions.filter((tx) => {
+    if (filterType !== "all" && tx.type !== filterType) return false;
+    if (filterCategoryId && tx.category_id !== filterCategoryId) return false;
+    if (filterDateFrom && tx.date < filterDateFrom) return false;
+    if (filterDateTo && tx.date > filterDateTo) return false;
+    return true;
+  });
+
+  function clearFilters() {
+    setFilterType("all");
+    setFilterCategoryId("");
+    setFilterDateFrom("");
+    setFilterDateTo("");
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -184,8 +208,24 @@ export function TransactionsPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`border font-medium px-3 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 ${
+              hasActiveFilters
+                ? "bg-primary/10 border-primary text-primary"
+                : "border-border text-foreground hover:bg-secondary"
+            }`}
+          >
+            <Filter className="h-4 w-4" />
+            Filtros
+            {hasActiveFilters && (
+              <span className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
+                {[filterType !== "all", filterCategoryId, filterDateFrom, filterDateTo].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => {
-              const rows = transactions.map((tx) => [
+              const rows = filteredTransactions.map((tx) => [
                 tx.description,
                 tx.type === "income" ? "Receita" : "Despesa",
                 (tx.amount / 100).toFixed(2).replace(".", ","),
@@ -205,15 +245,79 @@ export function TransactionsPage() {
         </div>
       </div>
 
+      {/* Filter bar */}
+      {showFilters && (
+        <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap items-end gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as "all" | "income" | "expense")}
+              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="all">Todos</option>
+              <option value="income">Receita</option>
+              <option value="expense">Despesa</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
+            <select
+              value={filterCategoryId}
+              onChange={(e) => setFilterCategoryId(e.target.value)}
+              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Todas</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">De</label>
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={(e) => setFilterDateFrom(e.target.value)}
+              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Até</label>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={(e) => setFilterDateTo(e.target.value)}
+              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition"
+            >
+              <X className="h-3.5 w-3.5" /> Limpar filtros
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Results count when filtered */}
+      {hasActiveFilters && (
+        <p className="text-xs text-muted-foreground">
+          {filteredTransactions.length} de {transactions.length} transações
+        </p>
+      )}
+
       {/* List */}
       <div className="bg-card rounded-2xl border border-border shadow-card">
-        {transactions.length === 0 ? (
+        {filteredTransactions.length === 0 ? (
           <div className="px-5 py-16 text-center text-muted-foreground text-sm">
-            Nenhuma transação ainda. Clique em "Nova" para adicionar.
+            {hasActiveFilters ? "Nenhuma transação encontrada com esses filtros." : 'Nenhuma transação ainda. Clique em "Nova" para adicionar.'}
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {transactions.map((tx) => (
+            {filteredTransactions.map((tx) => (
               <div key={tx.id} className="px-5 py-3.5 flex items-center justify-between group">
                 <div className="flex items-center gap-3">
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === "income" ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
