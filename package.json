@@ -29,6 +29,8 @@
     "@vitejs/plugin-react-swc": "^4.2.3",
     "@vitest/coverage-v8": "^4.0.18",
     "cmdk": "^1.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.0",
     "lucide-react": "^0.469.0",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",
