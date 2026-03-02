@@ -4,7 +4,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import {
   TrendingUp, TrendingDown, Landmark, Scale, ChevronDown,
-  BarChart3, PieChart as PieIcon, Target, CalendarRange, Download,
+  BarChart3, PieChart as PieIcon, Target, CalendarRange, Download, Filter, X,
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -26,9 +26,12 @@ export function AnnualReportPage() {
   const [exporting, setExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const [monthlyData, setMonthlyData] = useState<{ month: string; income: number; expense: number }[]>([]);
+  const [rawTxs, setRawTxs] = useState<{ amount: number; type: string; date: string; category: string | null }[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+
   const [investmentData, setInvestmentData] = useState<{ month: string; total: number }[]>([]);
-  const [categoryData, setCategoryData] = useState<{ name: string; value: number }[]>([]);
   const [goalsData, setGoalsData] = useState<{ name: string; current: number; target: number }[]>([]);
   const [totalInvestments, setTotalInvestments] = useState(0);
 
@@ -45,26 +48,13 @@ export function AnnualReportPage() {
         .gte("date", `${year}-01-01`)
         .lte("date", `${year}-12-31`);
 
-      const monthly = Array.from({ length: 12 }, (_, i) => ({ month: MONTH_NAMES[i], income: 0, expense: 0 }));
-      const catMap: Record<string, number> = {};
+      const allTxs = txs ?? [];
+      setRawTxs(allTxs);
 
-      (txs ?? []).forEach((tx) => {
-        const idx = new Date(tx.date).getMonth();
-        if (tx.type === "income") monthly[idx].income += tx.amount;
-        else {
-          monthly[idx].expense += tx.amount;
-          const cat = tx.category || "Outros";
-          catMap[cat] = (catMap[cat] || 0) + tx.amount;
-        }
-      });
-
-      setMonthlyData(monthly);
-      setCategoryData(
-        Object.entries(catMap)
-          .map(([name, value]) => ({ name, value }))
-          .sort((a, b) => b.value - a.value)
-          .slice(0, 8)
-      );
+      // Extract unique categories
+      const cats = Array.from(new Set(allTxs.map((tx) => tx.category || "Outros"))).sort();
+      setAllCategories(cats);
+      setSelectedCategories([]);  // reset filter on year change
 
       // Investments
       const { data: invs } = await supabase
@@ -98,12 +88,41 @@ export function AnnualReportPage() {
     load();
   }, [activeWorkspace, year]);
 
-  const totalIncome = monthlyData.reduce((s, m) => s + m.income, 0);
-  const totalExpense = monthlyData.reduce((s, m) => s + m.expense, 0);
+  // Compute filtered data from rawTxs
+  const filteredTxs = selectedCategories.length > 0
+    ? rawTxs.filter((tx) => selectedCategories.includes(tx.category || "Outros"))
+    : rawTxs;
+
+  const computedMonthly = (() => {
+    const monthly = Array.from({ length: 12 }, (_, i) => ({ month: MONTH_NAMES[i], income: 0, expense: 0 }));
+    filteredTxs.forEach((tx) => {
+      const idx = new Date(tx.date).getMonth();
+      if (tx.type === "income") monthly[idx].income += tx.amount;
+      else monthly[idx].expense += tx.amount;
+    });
+    return monthly;
+  })();
+
+  const computedCategoryData = (() => {
+    const catMap: Record<string, number> = {};
+    filteredTxs.forEach((tx) => {
+      if (tx.type !== "income") {
+        const cat = tx.category || "Outros";
+        catMap[cat] = (catMap[cat] || 0) + tx.amount;
+      }
+    });
+    return Object.entries(catMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  })();
+
+  const totalIncome = computedMonthly.reduce((s, m) => s + m.income, 0);
+  const totalExpense = computedMonthly.reduce((s, m) => s + m.expense, 0);
   const balance = totalIncome - totalExpense;
 
   // Projection: next 6 months average
-  const avgNet = monthlyData.length ? (totalIncome - totalExpense) / Math.max(monthlyData.filter(m => m.income > 0 || m.expense > 0).length, 1) : 0;
+  const avgNet = computedMonthly.length ? (totalIncome - totalExpense) / Math.max(computedMonthly.filter(m => m.income > 0 || m.expense > 0).length, 1) : 0;
   const now = new Date();
   const projections = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() + i + 1);
@@ -205,6 +224,55 @@ export function AnnualReportPage() {
         </div>
       </div>
 
+      {/* Category filter */}
+      {allCategories.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+              selectedCategories.length > 0
+                ? "bg-primary/10 border-primary text-primary"
+                : "border-border text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <Filter className="h-3.5 w-3.5" />
+            {selectedCategories.length > 0 ? `${selectedCategories.length} categorias` : "Filtrar categoria"}
+          </button>
+          {selectedCategories.length > 0 && (
+            <button
+              onClick={() => setSelectedCategories([])}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition"
+            >
+              <X className="h-3 w-3" /> Limpar
+            </button>
+          )}
+          {showCategoryFilter && (
+            <div className="flex flex-wrap gap-1.5">
+              {allCategories.map((cat) => {
+                const active = selectedCategories.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() =>
+                      setSelectedCategories((prev) =>
+                        active ? prev.filter((c) => c !== cat) : [...prev, cat]
+                      )
+                    }
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SummaryCard icon={TrendingUp} label="Receitas" value={formatBRL(totalIncome)} color="text-emerald-500" border="border-emerald-500" />
@@ -232,7 +300,7 @@ export function AnnualReportPage() {
         <div className="bg-card border border-border rounded-2xl p-5">
           <h3 className="font-semibold text-foreground text-sm mb-4">Fluxo de caixa mensal</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={monthlyData} barGap={2}>
+            <BarChart data={computedMonthly} barGap={2}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={tooltipFmt} />
@@ -277,7 +345,7 @@ export function AnnualReportPage() {
       {/* Gastos por categoria */}
       <div className="bg-card border border-border rounded-2xl p-5">
         <h3 className="font-semibold text-foreground text-sm mb-4">Gastos por categoria</h3>
-        {categoryData.length === 0 ? (
+        {computedCategoryData.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
             <PieIcon className="h-8 w-8 mb-2 opacity-40" />
             Sem dados de despesas
@@ -287,7 +355,7 @@ export function AnnualReportPage() {
             <ResponsiveContainer width={200} height={200}>
               <PieChart>
                 <Pie
-                  data={categoryData}
+                  data={computedCategoryData}
                   cx="50%"
                   cy="50%"
                   innerRadius={50}
@@ -295,7 +363,7 @@ export function AnnualReportPage() {
                   paddingAngle={3}
                   dataKey="value"
                 >
-                  {categoryData.map((_, idx) => (
+                  {computedCategoryData.map((_, idx) => (
                     <Cell key={idx} fill={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]} />
                   ))}
                 </Pie>
@@ -303,7 +371,7 @@ export function AnnualReportPage() {
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-wrap gap-x-4 gap-y-2">
-              {categoryData.map((c, i) => (
+              {computedCategoryData.map((c, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
                   <span className="text-foreground">{c.name}</span>
