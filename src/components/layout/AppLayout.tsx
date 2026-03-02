@@ -57,13 +57,13 @@ export function AppLayout() {
     <Link
       to={item.href}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
         isActive(item.href)
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:text-foreground hover:bg-secondary"
       }`}
     >
-      <item.icon className="h-[18px] w-[18px]" />
+      <item.icon className="h-5 w-5" />
       {item.label}
     </Link>
   );
@@ -105,22 +105,22 @@ export function AppLayout() {
 
       {/* Bottom actions */}
       <div className="px-3 py-3 border-t border-border space-y-0.5">
-        <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full">
-          <Download className="h-[18px] w-[18px]" />
+        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full">
+          <Download className="h-5 w-5" />
           Baixar o app
         </button>
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full"
         >
-          {theme === "dark" ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
         </button>
         <button
           onClick={signOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-colors w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full"
         >
-          <LogOut className="h-[18px] w-[18px]" />
+          <LogOut className="h-5 w-5" />
           Sair da conta
         </button>
       </div>
@@ -130,7 +130,7 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-56 lg:w-60 flex-col border-r border-border bg-card fixed inset-y-0 left-0 z-30">
+      <aside className="hidden md:flex md:w-60 lg:w-64 flex-col border-r border-border bg-card fixed inset-y-0 left-0 z-30">
         <SidebarContent />
       </aside>
 
@@ -152,7 +152,7 @@ export function AppLayout() {
       )}
 
       {/* Main content */}
-      <div className="flex-1 md:ml-56 lg:ml-60">
+      <div className="flex-1 md:ml-60 lg:ml-64">
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-card/80 backdrop-blur-lg border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
