@@ -6,6 +6,7 @@ import { Wallet2, Plus, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
+import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 
 interface Budget {
   id: string;
@@ -117,6 +118,7 @@ export function BudgetsPage() {
     setEditingId(null);
     setModalOpen(false);
     toast(editingId ? "Orçamento atualizado!" : "Orçamento criado!");
+    if (workspaceId) triggerAlertCheck(workspaceId);
   }
 
   async function handleDelete() {

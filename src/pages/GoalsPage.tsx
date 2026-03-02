@@ -5,6 +5,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, Target, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 
 interface Goal {
   id: string;
@@ -81,6 +82,7 @@ export function GoalsPage() {
     setForm({ title: "", target_amount: "", deadline: "", icon: "🎯" });
     setSaving(false);
     toast("Meta criada!");
+    triggerAlertCheck(wsId);
   };
 
   if (loading) {
