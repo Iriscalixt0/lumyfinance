@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Repeat, Plus, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { z } from "zod";
 
 interface RecurringTransaction {
   id: string;
@@ -13,10 +15,30 @@ interface RecurringTransaction {
   next_date: string;
 }
 
+const recurringSchema = z.object({
+  description: z.string().trim().min(1, "Descrição obrigatória").max(200),
+  amount: z.number().positive("Valor deve ser positivo"),
+  type: z.enum(["income", "expense"]),
+  frequency: z.enum(["daily", "weekly", "monthly", "yearly"]),
+  next_date: z.string().min(1, "Data obrigatória"),
+});
+
 export function RecurringPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    description: "",
+    amount: "",
+    type: "expense" as "income" | "expense",
+    frequency: "monthly" as "daily" | "weekly" | "monthly" | "yearly",
+    next_date: "",
+  });
 
   useEffect(() => {
     async function load() {
@@ -28,6 +50,7 @@ export function RecurringPage() {
         .single();
 
       if (!member) { setLoading(false); return; }
+      setWorkspaceId(member.workspace_id);
 
       const { data } = await supabase
         .from("recurring_transactions")
@@ -40,6 +63,47 @@ export function RecurringPage() {
     }
     load();
   }, [user]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrors({});
+
+    const parsed = recurringSchema.safeParse({
+      description: form.description,
+      amount: parseFloat(form.amount),
+      type: form.type,
+      frequency: form.frequency,
+      next_date: form.next_date,
+    });
+
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    if (!workspaceId) return;
+    setSaving(true);
+
+    const { data, error } = await supabase
+      .from("recurring_transactions")
+      .insert({ ...parsed.data, workspace_id: workspaceId })
+      .select()
+      .single();
+
+    setSaving(false);
+    if (error) {
+      setErrors({ description: "Erro ao salvar. Tente novamente." });
+      return;
+    }
+
+    setItems((prev) => [...prev, data]);
+    setForm({ description: "", amount: "", type: "expense", frequency: "monthly", next_date: "" });
+    setModalOpen(false);
+  }
 
   const freqLabels: Record<string, string> = {
     daily: "Diário",
@@ -63,7 +127,10 @@ export function RecurringPage() {
           <h1 className="text-3xl font-bold text-foreground">Recorrentes</h1>
           <p className="text-muted-foreground mt-1">Gerencie receitas e despesas que se repetem</p>
         </div>
-        <button className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           Nova recorrência
         </button>
@@ -103,6 +170,94 @@ export function RecurringPage() {
           })}
         </div>
       )}
+
+      {/* Modal de criação */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nova recorrência">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Descrição</label>
+            <input
+              type="text"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Ex: Aluguel, Netflix, Salário"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              maxLength={200}
+            />
+            {errors.description && <p className="text-sm text-destructive mt-1">{errors.description}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Valor (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                placeholder="0,00"
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.amount && <p className="text-sm text-destructive mt-1">{errors.amount}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Tipo</label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })}
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="expense">Despesa</option>
+                <option value="income">Receita</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Frequência</label>
+              <select
+                value={form.frequency}
+                onChange={(e) => setForm({ ...form, frequency: e.target.value as "daily" | "weekly" | "monthly" | "yearly" })}
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="daily">Diário</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+                <option value="yearly">Anual</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Próxima data</label>
+              <input
+                type="date"
+                value={form.next_date}
+                onChange={(e) => setForm({ ...form, next_date: e.target.value })}
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.next_date && <p className="text-sm text-destructive mt-1">{errors.next_date}</p>}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Criar recorrência"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
