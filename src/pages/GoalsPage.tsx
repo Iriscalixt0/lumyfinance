@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, Target, X } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface Goal {
   id: string;
@@ -16,6 +17,7 @@ interface Goal {
 }
 
 export function GoalsPage() {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [wsId, setWsId] = useState<string | null>(null);
@@ -84,6 +86,7 @@ export function GoalsPage() {
     setShowForm(false);
     setForm({ title: "", target_amount: "", deadline: "", icon: "🎯" });
     setSaving(false);
+    toast("Meta criada!");
   };
 
   if (loading) {
