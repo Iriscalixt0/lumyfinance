@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Plus, TrendingUp, X } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface Investment {
   id: string;
@@ -26,6 +27,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function InvestmentsPage() {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [wsId, setWsId] = useState<string | null>(null);
@@ -80,6 +82,7 @@ export function InvestmentsPage() {
     setShowForm(false);
     setForm({ name: "", type: "cdb", amount: "", date: new Date().toISOString().split("T")[0] });
     setSaving(false);
+    toast("Investimento adicionado!");
   };
 
   const totalInvested = investments.reduce((s, i) => s + i.amount, 0);
