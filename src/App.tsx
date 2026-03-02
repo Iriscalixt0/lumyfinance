@@ -5,7 +5,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      {/* Future routes will be added here */}
+      {/* Routes */}
       <Route path="*" element={<LandingPage />} />
     </Routes>
   );
