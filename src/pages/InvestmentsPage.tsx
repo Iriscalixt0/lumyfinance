@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Plus, TrendingUp, X } from "lucide-react";
+import { Plus, TrendingUp, X, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/utils/csv";
 import { useToast } from "@/components/ui/Toast";
 
 interface Investment {
@@ -97,12 +98,29 @@ export function InvestmentsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Investimentos</h1>
           <p className="text-muted-foreground text-sm mt-1">Acompanhe sua carteira</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" /> Novo
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const rows = investments.map((inv) => [
+                inv.name,
+                TYPE_LABELS[inv.type] ?? inv.type,
+                (inv.amount / 100).toFixed(2).replace(".", ","),
+                inv.current_value != null ? (inv.current_value / 100).toFixed(2).replace(".", ",") : "",
+                new Date(inv.date).toLocaleDateString("pt-BR"),
+              ]);
+              downloadCSV("investimentos.csv", ["Nome", "Tipo", "Valor Investido", "Valor Atual", "Data"], rows);
+            }}
+            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" /> CSV
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" /> Novo
+          </button>
+        </div>
       </div>
 
       {/* Summary */}
