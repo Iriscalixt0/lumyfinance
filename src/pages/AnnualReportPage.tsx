@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { FileBarChart, TrendingUp, TrendingDown, Scale } from "lucide-react";
+import { FileBarChart, TrendingUp, TrendingDown, Scale, BarChart3, PieChart as PieIcon } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  AreaChart, Area,
+  PieChart, Pie, Cell,
+} from "recharts";
 
 interface MonthlySummary {
   month: string;
@@ -61,6 +66,21 @@ export function AnnualReportPage() {
   const totalExpense = summary.reduce((s, m) => s + m.expense, 0);
   const balance = totalIncome - totalExpense;
 
+  const CHART_COLORS = { income: "#10b981", expense: "#f43f5e", balance: "hsl(160, 45%, 35%)" };
+
+  const pieData = [
+    { name: "Receitas", value: totalIncome },
+    { name: "Despesas", value: totalExpense },
+  ];
+  const PIE_COLORS = [CHART_COLORS.income, CHART_COLORS.expense];
+
+  const balanceData = summary.map((m) => ({
+    ...m,
+    balance: m.income - m.expense,
+  }));
+
+  const customTooltipFormatter = (value: number) => formatBRL(value);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -108,6 +128,76 @@ export function AnnualReportPage() {
           </p>
         </div>
       </div>
+
+      {/* Charts */}
+      {summary.some((m) => m.income > 0 || m.expense > 0) && (
+        <>
+          {/* Bar chart - Receitas vs Despesas */}
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Receitas vs Despesas por mês
+            </h3>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={summary} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
+                <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" tickFormatter={(v) => formatBRL(v)} />
+                <Tooltip formatter={customTooltipFormatter} />
+                <Legend />
+                <Bar dataKey="income" name="Receitas" fill={CHART_COLORS.income} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" name="Despesas" fill={CHART_COLORS.expense} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Area chart - Saldo acumulado */}
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+                <Scale className="h-5 w-5 text-primary" />
+                Evolução do saldo mensal
+              </h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={balanceData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" />
+                  <YAxis tick={{ fontSize: 12 }} stroke="hsl(220, 9%, 46%)" tickFormatter={(v) => formatBRL(v)} />
+                  <Tooltip formatter={customTooltipFormatter} />
+                  <Area type="monotone" dataKey="balance" name="Saldo" stroke={CHART_COLORS.balance} fill={CHART_COLORS.balance} fillOpacity={0.15} strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Pie chart - Proporção */}
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+                <PieIcon className="h-5 w-5 text-primary" />
+                Proporção receitas / despesas
+              </h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {pieData.map((_, idx) => (
+                      <Cell key={idx} fill={PIE_COLORS[idx]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={customTooltipFormatter} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Monthly breakdown */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
