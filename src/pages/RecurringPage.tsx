@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Repeat, Plus, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2 } from "lucide-react";
+import { Repeat, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
@@ -12,8 +12,17 @@ interface RecurringTransaction {
   description: string;
   amount: number;
   type: "income" | "expense";
+  category: string | null;
   frequency: string;
   next_date: string;
+  end_date: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  type: string;
 }
 
 const recurringSchema = z.object({
@@ -22,15 +31,24 @@ const recurringSchema = z.object({
   type: z.enum(["income", "expense"]),
   frequency: z.enum(["daily", "weekly", "monthly", "yearly"]),
   next_date: z.string().min(1, "Data obrigatória"),
+  end_date: z.string().nullable(),
+  category: z.string().nullable(),
 });
+
+const freqLabels: Record<string, string> = {
+  daily: "Diário",
+  weekly: "Semanal",
+  monthly: "Mensal",
+  yearly: "Anual",
+};
 
 export function RecurringPage() {
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
   const [items, setItems] = useState<RecurringTransaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -41,8 +59,10 @@ export function RecurringPage() {
     description: "",
     amount: "",
     type: "expense" as "income" | "expense",
+    category: "",
     frequency: "monthly" as "daily" | "weekly" | "monthly" | "yearly",
-    next_date: "",
+    next_date: new Date().toISOString().split("T")[0],
+    end_date: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -50,24 +70,24 @@ export function RecurringPage() {
     async function load() {
       if (!workspaceId) { setLoading(false); return; }
 
-      const { data } = await supabase
-        .from("recurring_transactions")
-        .select("*")
-        .eq("workspace_id", workspaceId)
-        .order("next_date", { ascending: true });
+      const [recRes, catRes] = await Promise.all([
+        supabase
+          .from("recurring_transactions")
+          .select("*")
+          .eq("workspace_id", workspaceId)
+          .order("next_date", { ascending: true }),
+        supabase
+          .from("categories")
+          .select("id, name, icon, type")
+          .eq("workspace_id", workspaceId),
+      ]);
 
-      setItems(data ?? []);
+      setItems(recRes.data ?? []);
+      setCategories(catRes.data ?? []);
       setLoading(false);
     }
     load();
   }, [workspaceId]);
-
-  function openCreate() {
-    setEditingId(null);
-    setForm(emptyForm);
-    setErrors({});
-    setModalOpen(true);
-  }
 
   function openEdit(item: RecurringTransaction) {
     setEditingId(item.id);
@@ -75,11 +95,12 @@ export function RecurringPage() {
       description: item.description,
       amount: String(item.amount),
       type: item.type,
+      category: item.category || "",
       frequency: item.frequency as typeof emptyForm.frequency,
       next_date: item.next_date,
+      end_date: item.end_date || "",
     });
     setErrors({});
-    setModalOpen(true);
   }
 
   function openDelete(id: string) {
@@ -93,10 +114,12 @@ export function RecurringPage() {
 
     const parsed = recurringSchema.safeParse({
       description: form.description,
-      amount: parseFloat(form.amount),
+      amount: parseFloat(form.amount.replace(",", ".")),
       type: form.type,
       frequency: form.frequency,
       next_date: form.next_date,
+      end_date: form.end_date || null,
+      category: form.category || null,
     });
 
     if (!parsed.success) {
@@ -122,6 +145,8 @@ export function RecurringPage() {
       setSaving(false);
       if (error) { setErrors({ description: "Erro ao salvar." }); return; }
       setItems((prev) => prev.map((i) => (i.id === editingId ? data : i)));
+      setEditingId(null);
+      toast("Recorrência atualizada!");
     } else {
       const { data, error } = await supabase
         .from("recurring_transactions")
@@ -132,12 +157,11 @@ export function RecurringPage() {
       setSaving(false);
       if (error) { setErrors({ description: "Erro ao salvar." }); return; }
       setItems((prev) => [...prev, data]);
+      toast("Recorrência criada!");
     }
 
     setForm(emptyForm);
-    setEditingId(null);
-    setModalOpen(false);
-    toast(editingId ? "Recorrência atualizada!" : "Recorrência criada!");
+    setErrors({});
   }
 
   async function handleDelete() {
@@ -151,12 +175,7 @@ export function RecurringPage() {
     toast("Recorrência excluída!");
   }
 
-  const freqLabels: Record<string, string> = {
-    daily: "Diário",
-    weekly: "Semanal",
-    monthly: "Mensal",
-    yearly: "Anual",
-  };
+  const activeCount = items.length;
 
   if (loading) {
     return (
@@ -168,107 +187,174 @@ export function RecurringPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Recorrentes</h1>
-          <p className="text-muted-foreground mt-1">Gerencie receitas e despesas que se repetem</p>
-        </div>
-        <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Nova recorrência
-        </button>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Transações recorrentes</h1>
+        <p className="text-sm text-muted-foreground mt-1">Despesas e receitas que se repetem automaticamente.</p>
       </div>
 
-      {items.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-12 text-center">
-          <Repeat className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma recorrência cadastrada</h3>
-          <p className="text-muted-foreground">Adicione transações recorrentes como salário, aluguel ou assinaturas.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {items.map((item) => {
-            const isIncome = item.type === "income";
-            return (
-              <div key={item.id} className="bg-card border border-border rounded-xl p-5 flex items-center justify-between hover:shadow-card-hover transition-shadow group">
-                <div className="flex items-center gap-4">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${isIncome ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
-                    {isIncome
-                      ? <ArrowUpCircle className="h-5 w-5 text-emerald-500" />
-                      : <ArrowDownCircle className="h-5 w-5 text-rose-500" />
-                    }
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">{item.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {freqLabels[item.frequency] || item.frequency} · Próximo: {new Date(item.next_date).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className={`text-lg font-bold ${isIncome ? "text-emerald-500" : "text-rose-500"}`}>
-                    {isIncome ? "+" : "-"}{formatBRL(item.amount)}
-                  </p>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => openDelete(item.id)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label="Excluir">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Modal de criação/edição */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? "Editar recorrência" : "Nova recorrência"}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Descrição</label>
-            <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Ex: Aluguel, Netflix, Salário" className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={200} />
-            {errors.description && <p className="text-sm text-destructive mt-1">{errors.description}</p>}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+      {/* Two-column layout: Form + List */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Form inline */}
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <h3 className="font-semibold text-foreground mb-5">
+            {editingId ? "Editar recorrente" : "Nova recorrente"}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Valor (R$)</label>
-              <input type="number" step="0.01" min="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0,00" className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
-              {errors.amount && <p className="text-sm text-destructive mt-1">{errors.amount}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Tipo</label>
-              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
                 <option value="expense">Despesa</option>
                 <option value="income">Receita</option>
               </select>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Frequência</label>
-              <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value as typeof emptyForm.frequency })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Opcional</option>
+                {categories.filter((c) => c.type === form.type).map((c) => (
+                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Descrição</label>
+              <input
+                type="text"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Ex: Aluguel"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                maxLength={200}
+              />
+              {errors.description && <p className="text-xs text-destructive mt-1">{errors.description}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
+              <input
+                type="text"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                placeholder="0,00"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.amount && <p className="text-xs text-destructive mt-1">{errors.amount}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Frequência</label>
+              <select
+                value={form.frequency}
+                onChange={(e) => setForm({ ...form, frequency: e.target.value as typeof emptyForm.frequency })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
                 <option value="daily">Diário</option>
                 <option value="weekly">Semanal</option>
                 <option value="monthly">Mensal</option>
                 <option value="yearly">Anual</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Próxima data</label>
-              <input type="date" value={form.next_date} onChange={(e) => setForm({ ...form, next_date: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
-              {errors.next_date && <p className="text-sm text-destructive mt-1">{errors.next_date}</p>}
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data início</label>
+              <input
+                type="date"
+                value={form.next_date}
+                onChange={(e) => setForm({ ...form, next_date: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.next_date && <p className="text-xs text-destructive mt-1">{errors.next_date}</p>}
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data fim (Opcional)</label>
+              <input
+                type="date"
+                value={form.end_date}
+                onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={() => { setEditingId(null); setForm(emptyForm); setErrors({}); }}
+                  className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
+              >
+                {saving ? "Salvando..." : editingId ? "Salvar" : "Adicionar"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Right: List */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Minhas recorrentes</h3>
+            <span className="text-xs text-muted-foreground">{activeCount} ativas</span>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
-            <button type="submit" disabled={saving} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-              {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Criar recorrência"}
-            </button>
-          </div>
-        </form>
-      </Modal>
+
+          {items.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <Repeat className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">
+                Nenhuma transação recorrente. Adicione aluguel, salário, etc.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {items.map((item) => {
+                const isIncome = item.type === "income";
+                return (
+                  <div key={item.id} className="px-6 py-4 flex items-center justify-between group hover:bg-muted/30 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{item.description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {freqLabels[item.frequency] || item.frequency} · {new Date(item.next_date).toLocaleDateString("pt-BR")}
+                        {item.end_date && ` → ${new Date(item.end_date).toLocaleDateString("pt-BR")}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className={`text-sm font-bold ${isIncome ? "text-emerald-500" : "text-rose-500"}`}>
+                        {isIncome ? "+" : "-"}{formatBRL(item.amount)}
+                      </p>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEdit(item)} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => openDelete(item.id)} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label="Excluir">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Modal de confirmação de exclusão */}
       <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir recorrência">
