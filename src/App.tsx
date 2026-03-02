@@ -10,6 +10,10 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { TransactionsPage } from "@/pages/TransactionsPage";
 import { GoalsPage } from "@/pages/GoalsPage";
 import { InvestmentsPage } from "@/pages/InvestmentsPage";
+import { BillingsPage } from "@/pages/BillingsPage";
+import { BudgetsPage } from "@/pages/BudgetsPage";
+import { RecurringPage } from "@/pages/RecurringPage";
+import { AnnualReportPage } from "@/pages/AnnualReportPage";
 
 function App() {
   return (
@@ -32,6 +36,10 @@ function App() {
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/goals" element={<GoalsPage />} />
         <Route path="/investments" element={<InvestmentsPage />} />
+        <Route path="/billings" element={<BillingsPage />} />
+        <Route path="/budgets" element={<BudgetsPage />} />
+        <Route path="/recurring" element={<RecurringPage />} />
+        <Route path="/annual-report" element={<AnnualReportPage />} />
       </Route>
 
       <Route path="*" element={<LandingPage />} />
