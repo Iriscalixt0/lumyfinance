@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Receipt, Plus, Calendar, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { z } from "zod";
 
 interface Billing {
   id: string;
@@ -12,10 +14,28 @@ interface Billing {
   status: "pending" | "paid" | "overdue";
 }
 
+const billingSchema = z.object({
+  description: z.string().trim().min(1, "Descrição obrigatória").max(200),
+  amount: z.number().positive("Valor deve ser positivo"),
+  due_date: z.string().min(1, "Data obrigatória"),
+  status: z.enum(["pending", "paid", "overdue"]),
+});
+
 export function BillingsPage() {
   const { user } = useAuth();
   const [billings, setBillings] = useState<Billing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    description: "",
+    amount: "",
+    due_date: "",
+    status: "pending" as "pending" | "paid" | "overdue",
+  });
 
   useEffect(() => {
     async function load() {
@@ -27,6 +47,7 @@ export function BillingsPage() {
         .single();
 
       if (!member) { setLoading(false); return; }
+      setWorkspaceId(member.workspace_id);
 
       const { data } = await supabase
         .from("billings")
@@ -39,6 +60,46 @@ export function BillingsPage() {
     }
     load();
   }, [user]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrors({});
+
+    const parsed = billingSchema.safeParse({
+      description: form.description,
+      amount: parseFloat(form.amount),
+      due_date: form.due_date,
+      status: form.status,
+    });
+
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    if (!workspaceId) return;
+    setSaving(true);
+
+    const { data, error } = await supabase
+      .from("billings")
+      .insert({ ...parsed.data, workspace_id: workspaceId })
+      .select()
+      .single();
+
+    setSaving(false);
+    if (error) {
+      setErrors({ description: "Erro ao salvar. Tente novamente." });
+      return;
+    }
+
+    setBillings((prev) => [...prev, data]);
+    setForm({ description: "", amount: "", due_date: "", status: "pending" });
+    setModalOpen(false);
+  }
 
   const statusConfig = {
     pending: { label: "Pendente", icon: Clock, className: "text-amber-500 bg-amber-500/10" },
@@ -61,7 +122,10 @@ export function BillingsPage() {
           <h1 className="text-3xl font-bold text-foreground">Cobranças</h1>
           <p className="text-muted-foreground mt-1">Gerencie suas contas a pagar e receber</p>
         </div>
-        <button className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           Nova cobrança
         </button>
@@ -98,6 +162,80 @@ export function BillingsPage() {
           })}
         </div>
       )}
+
+      {/* Modal de criação */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nova cobrança">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Descrição</label>
+            <input
+              type="text"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Ex: Conta de luz"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              maxLength={200}
+            />
+            {errors.description && <p className="text-sm text-destructive mt-1">{errors.description}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Valor (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                placeholder="0,00"
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.amount && <p className="text-sm text-destructive mt-1">{errors.amount}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Vencimento</label>
+              <input
+                type="date"
+                value={form.due_date}
+                onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.due_date && <p className="text-sm text-destructive mt-1">{errors.due_date}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value as "pending" | "paid" | "overdue" })}
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="pending">Pendente</option>
+              <option value="paid">Pago</option>
+              <option value="overdue">Atrasado</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Criar cobrança"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

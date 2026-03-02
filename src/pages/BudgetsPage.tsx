@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import { Wallet2, Plus } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { z } from "zod";
 
 interface Budget {
   id: string;
@@ -11,10 +13,21 @@ interface Budget {
   spent_amount: number;
 }
 
+const budgetSchema = z.object({
+  category: z.string().trim().min(1, "Categoria obrigatória").max(100),
+  limit_amount: z.number().positive("Limite deve ser positivo"),
+});
+
 export function BudgetsPage() {
   const { user } = useAuth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+
+  const [form, setForm] = useState({ category: "", limit_amount: "" });
 
   useEffect(() => {
     async function load() {
@@ -26,6 +39,7 @@ export function BudgetsPage() {
         .single();
 
       if (!member) { setLoading(false); return; }
+      setWorkspaceId(member.workspace_id);
 
       const { data } = await supabase
         .from("budgets")
@@ -37,6 +51,44 @@ export function BudgetsPage() {
     }
     load();
   }, [user]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrors({});
+
+    const parsed = budgetSchema.safeParse({
+      category: form.category,
+      limit_amount: parseFloat(form.limit_amount),
+    });
+
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    if (!workspaceId) return;
+    setSaving(true);
+
+    const { data, error } = await supabase
+      .from("budgets")
+      .insert({ ...parsed.data, spent_amount: 0, workspace_id: workspaceId })
+      .select()
+      .single();
+
+    setSaving(false);
+    if (error) {
+      setErrors({ category: "Erro ao salvar. Tente novamente." });
+      return;
+    }
+
+    setBudgets((prev) => [...prev, data]);
+    setForm({ category: "", limit_amount: "" });
+    setModalOpen(false);
+  }
 
   if (loading) {
     return (
@@ -53,7 +105,10 @@ export function BudgetsPage() {
           <h1 className="text-3xl font-bold text-foreground">Orçamentos</h1>
           <p className="text-muted-foreground mt-1">Defina limites de gasto por categoria</p>
         </div>
-        <button className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           Novo orçamento
         </button>
@@ -93,6 +148,55 @@ export function BudgetsPage() {
           })}
         </div>
       )}
+
+      {/* Modal de criação */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo orçamento">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Categoria</label>
+            <input
+              type="text"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              placeholder="Ex: Alimentação, Transporte, Lazer"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              maxLength={100}
+            />
+            {errors.category && <p className="text-sm text-destructive mt-1">{errors.category}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Limite mensal (R$)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={form.limit_amount}
+              onChange={(e) => setForm({ ...form, limit_amount: e.target.value })}
+              placeholder="0,00"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            {errors.limit_amount && <p className="text-sm text-destructive mt-1">{errors.limit_amount}</p>}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Criar orçamento"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
