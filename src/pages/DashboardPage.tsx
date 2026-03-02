@@ -1,75 +1,110 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatBRL } from "@/lib/utils/currency";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  TrendingUp,
-  Target,
-  Wallet,
+  ArrowRight,
+  HelpCircle,
+  X,
+  Snowflake,
+  Flame,
+  Wind,
+  CloudRain,
+  Flower2,
+  Sun,
+  Waves,
+  CloudSun,
+  Leaf,
+  TreePine,
+  Cloudy,
+  Sparkles,
 } from "lucide-react";
 
-interface DashboardData {
-  totalIncome: number;
-  totalExpense: number;
-  totalInvestments: number;
-  goalsCount: number;
-  recentTransactions: Array<{
-    id: string;
-    description: string;
-    amount: number;
-    type: string;
-    date: string;
-  }>;
+const MONTH_ICONS = [
+  Snowflake,   // Jan
+  Flame,       // Fev
+  Wind,        // Mar
+  CloudRain,   // Abr
+  Flower2,     // Mai
+  Sun,         // Jun
+  Waves,       // Jul
+  CloudSun,    // Ago
+  Leaf,        // Set
+  TreePine,    // Out
+  Cloudy,      // Nov
+  Sparkles,    // Dez
+];
+
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+const QUICK_LINKS = [
+  { label: "Ver relatório anual", href: "/annual-report", primary: true },
+  { label: "Transações", href: "/transactions" },
+  { label: "Orçamentos", href: "/budgets" },
+  { label: "Cobranças", href: "/billings" },
+  { label: "Investimentos", href: "/investments" },
+  { label: "Metas", href: "/goals" },
+  { label: "Recorrentes", href: "/recurring" },
+];
+
+interface MonthData {
+  month: number;
+  total: number;
 }
 
 export function DashboardPage() {
   const { user } = useAuth();
-  const [data, setData] = useState<DashboardData>({
-    totalIncome: 0,
-    totalExpense: 0,
-    totalInvestments: 0,
-    goalsCount: 0,
-    recentTransactions: [],
-  });
+  const [monthlyData, setMonthlyData] = useState<MonthData[]>(
+    Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 }))
+  );
   const [loading, setLoading] = useState(true);
+  const [showBanner, setShowBanner] = useState(true);
+  const [hasTransactions, setHasTransactions] = useState(false);
+
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     async function load() {
-      // Get user's workspace
-      const { data: members } = await supabase
+      const { data: member } = await supabase
         .from("workspace_members")
         .select("workspace_id")
         .eq("user_id", user!.id)
         .limit(1)
         .single();
 
-      if (!members) { setLoading(false); return; }
-      const wsId = members.workspace_id;
+      if (!member) { setLoading(false); return; }
 
-      const [txRes, invRes, goalRes] = await Promise.all([
-        supabase.from("transactions").select("id, description, amount, type, date").eq("workspace_id", wsId).order("date", { ascending: false }).limit(10),
-        supabase.from("investments").select("amount").eq("workspace_id", wsId),
-        supabase.from("goals").select("id").eq("workspace_id", wsId).eq("status", "active"),
-      ]);
+      const startOfYear = `${currentYear}-01-01`;
+      const endOfYear = `${currentYear}-12-31`;
 
-      const transactions = txRes.data ?? [];
-      const totalIncome = transactions.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-      const totalExpense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-      const totalInvestments = (invRes.data ?? []).reduce((s, i) => s + i.amount, 0);
+      const { data: transactions } = await supabase
+        .from("transactions")
+        .select("amount, type, date")
+        .eq("workspace_id", member.workspace_id)
+        .gte("date", startOfYear)
+        .lte("date", endOfYear);
 
-      setData({
-        totalIncome,
-        totalExpense,
-        totalInvestments,
-        goalsCount: goalRes.data?.length ?? 0,
-        recentTransactions: transactions.slice(0, 5),
-      });
+      if (transactions && transactions.length > 0) {
+        setHasTransactions(true);
+        const monthly = Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 }));
+
+        transactions.forEach((tx) => {
+          const monthIdx = new Date(tx.date).getMonth();
+          const value = tx.type === "income" ? tx.amount : -tx.amount;
+          monthly[monthIdx].total += value;
+        });
+
+        setMonthlyData(monthly);
+      }
+
       setLoading(false);
     }
     load();
-  }, [user]);
+  }, [user, currentYear]);
 
   if (loading) {
     return (
@@ -79,72 +114,83 @@ export function DashboardPage() {
     );
   }
 
-  const balance = data.totalIncome - data.totalExpense;
-
-  const cards = [
-    { label: "Saldo", value: formatBRL(balance), icon: Wallet, color: balance >= 0 ? "text-emerald-500" : "text-rose-500" },
-    { label: "Receitas", value: formatBRL(data.totalIncome), icon: ArrowDownLeft, color: "text-emerald-500" },
-    { label: "Despesas", value: formatBRL(data.totalExpense), icon: ArrowUpRight, color: "text-rose-500" },
-    { label: "Investimentos", value: formatBRL(data.totalInvestments), icon: TrendingUp, color: "text-blue-500" },
-  ];
-
   return (
     <div className="animate-fade space-y-6">
+      {/* Title */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Visão geral das suas finanças</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard do ano</h1>
+        <p className="text-muted-foreground text-sm mt-1">Gestão inteligente — {currentYear}</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {cards.map((card) => (
-          <div key={card.label} className="bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-card">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
-                <card.icon className={`h-4 w-4 ${card.color}`} />
-              </div>
+      {/* Welcome banner */}
+      {showBanner && !hasTransactions && (
+        <div className="relative bg-primary/5 border border-primary/20 rounded-2xl p-5 sm:p-6">
+          <button
+            onClick={() => setShowBanner(false)}
+            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            aria-label="Fechar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <h3 className="font-semibold text-foreground mb-1">
+            Pronto! Agora você pode registrar sua primeira transação
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Comece adicionando uma receita ou despesa para acompanhar seu fluxo de caixa.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/transactions"
+              className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg text-sm hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+            >
+              Ir para Transações <ArrowRight className="h-4 w-4" />
+            </Link>
+            <button className="border border-border bg-card text-foreground font-medium px-5 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors inline-flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              Ver tour guiado
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Month cards grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {monthlyData.map((m) => {
+          const Icon = MONTH_ICONS[m.month];
+          const isNegative = m.total < 0;
+          const isPositive = m.total > 0;
+          return (
+            <div
+              key={m.month}
+              className="bg-card border border-border rounded-xl p-4 flex flex-col items-center text-center hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer"
+            >
+              <Icon className="h-7 w-7 text-primary mb-2" />
+              <p className="text-xs font-semibold text-foreground mb-1">{MONTH_NAMES[m.month]}</p>
+              <p className={`text-sm font-bold ${
+                isNegative ? "text-rose-500" : isPositive ? "text-emerald-500" : "text-primary"
+              }`}>
+                {m.total !== 0 && (isNegative ? "-" : "")}{formatBRL(Math.abs(m.total))}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{card.label}</p>
-            <p className={`text-lg sm:text-xl font-bold mt-1 ${card.color}`}>{card.value}</p>
-          </div>
+          );
+        })}
+      </div>
+
+      {/* Quick nav tabs */}
+      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+        {QUICK_LINKS.map((link) => (
+          <Link
+            key={link.href}
+            to={link.href}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              link.primary
+                ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            }`}
+          >
+            {link.label}
+          </Link>
         ))}
-      </div>
-
-      {/* Goals count */}
-      <div className="bg-card rounded-2xl border border-border p-5 shadow-card flex items-center gap-4">
-        <div className="h-10 w-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
-          <Target className="h-5 w-5 text-pink-500" />
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">Metas ativas</p>
-          <p className="text-xl font-bold text-foreground">{data.goalsCount}</p>
-        </div>
-      </div>
-
-      {/* Recent Transactions */}
-      <div className="bg-card rounded-2xl border border-border shadow-card">
-        <div className="px-5 py-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">Transações recentes</h2>
-        </div>
-        {data.recentTransactions.length === 0 ? (
-          <div className="px-5 py-10 text-center text-muted-foreground text-sm">
-            Nenhuma transação encontrada. Comece adicionando suas receitas e despesas.
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {data.recentTransactions.map((tx) => (
-              <div key={tx.id} className="px-5 py-3 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{tx.description}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(tx.date).toLocaleDateString("pt-BR")}</p>
-                </div>
-                <p className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-500" : "text-rose-500"}`}>
-                  {tx.type === "income" ? "+" : "-"}{formatBRL(tx.amount)}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
