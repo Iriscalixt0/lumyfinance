@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
 import {
   TrendingUp, TrendingDown, Landmark, Scale, ChevronDown,
-  BarChart3, PieChart as PieIcon, Target, CalendarRange,
+  BarChart3, PieChart as PieIcon, Target, CalendarRange, Download,
 } from "lucide-react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   PieChart, Pie, Cell,
@@ -21,6 +23,8 @@ export function AnnualReportPage() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [showYearPicker, setShowYearPicker] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const [monthlyData, setMonthlyData] = useState<{ month: string; income: number; expense: number }[]>([]);
   const [investmentData, setInvestmentData] = useState<{ month: string; total: number }[]>([]);
@@ -118,8 +122,47 @@ export function AnnualReportPage() {
     );
   }
 
+  async function handleExportPDF() {
+    if (!reportRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let y = 10;
+      let remainingHeight = imgHeight;
+
+      // First page
+      pdf.addImage(imgData, "PNG", 10, y, imgWidth, imgHeight);
+      remainingHeight -= (pageHeight - 20);
+
+      // Additional pages if content overflows
+      while (remainingHeight > 0) {
+        pdf.addPage();
+        y = y - (pageHeight - 20);
+        pdf.addImage(imgData, "PNG", 10, y, imgWidth, imgHeight);
+        remainingHeight -= (pageHeight - 20);
+      }
+
+      pdf.save(`relatorio-anual-${year}.pdf`);
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
-    <div className="animate-fade space-y-6">
+    <div className="animate-fade space-y-6" ref={reportRef}>
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -129,26 +172,36 @@ export function AnnualReportPage() {
             Acompanhe suas receitas, despesas e investimentos. Identifique tendências de gastos e visualize a projeção para os próximos meses.
           </p>
         </div>
-        <div className="relative">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowYearPicker(!showYearPicker)}
-            className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition"
+            onClick={handleExportPDF}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition disabled:opacity-50"
           >
-            {year} <ChevronDown className="h-4 w-4" />
+            <Download className="h-4 w-4" />
+            {exporting ? "Gerando..." : "PDF"}
           </button>
-          {showYearPicker && (
-            <div className="absolute right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 py-1">
-              {years.map((y) => (
-                <button
-                  key={y}
-                  onClick={() => { setYear(y); setShowYearPicker(false); }}
-                  className={`block w-full text-left px-4 py-2 text-sm hover:bg-muted transition ${y === year ? "font-bold text-primary" : "text-foreground"}`}
-                >
-                  {y}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="relative">
+            <button
+              onClick={() => setShowYearPicker(!showYearPicker)}
+              className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition"
+            >
+              {year} <ChevronDown className="h-4 w-4" />
+            </button>
+            {showYearPicker && (
+              <div className="absolute right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 py-1">
+                {years.map((y) => (
+                  <button
+                    key={y}
+                    onClick={() => { setYear(y); setShowYearPicker(false); }}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-muted transition ${y === year ? "font-bold text-primary" : "text-foreground"}`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
