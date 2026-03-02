@@ -6,6 +6,7 @@ import { formatBRL } from "@/lib/utils/currency";
 import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 
 interface Transaction {
   id: string;
@@ -145,6 +146,7 @@ export function TransactionsPage() {
     setForm(emptyForm);
     setSaving(false);
     toast(isEdit ? "Transação atualizada!" : "Transação criada!");
+    triggerAlertCheck(wsId);
   };
 
   async function handleDelete() {
