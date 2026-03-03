@@ -3,10 +3,12 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Plus, Target, Calendar } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 
 interface Goal {
   id: string;
@@ -26,6 +28,7 @@ export function GoalsPage() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -137,6 +140,8 @@ export function GoalsPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Metas e Objetivos</h1>
@@ -310,7 +315,7 @@ export function GoalsPage() {
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
-            <button type="submit" disabled={saving} className="bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+            <button type="submit" disabled={saving || !permissions.canEdit} className="bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
               {saving ? "Salvando..." : "Criar meta"}
             </button>
           </div>

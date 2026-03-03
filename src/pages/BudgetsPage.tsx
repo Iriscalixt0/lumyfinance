@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Wallet2, Pencil, Trash2, ChevronDown } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 
 interface Budget {
   id: string;
@@ -37,6 +39,7 @@ export function BudgetsPage() {
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +162,8 @@ export function BudgetsPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -277,7 +282,7 @@ export function BudgetsPage() {
               )}
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !permissions.canEdit}
                 className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
               >
                 {saving ? "Salvando..." : editingId ? "Salvar" : "Adicionar orçamento"}

@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { usePermissions } from "@/hooks/usePermissions";
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, convertCurrency, formatAmount, type CurrencyCode } from "@/lib/utils/exchange";
 import {
   Plus,
@@ -27,6 +28,7 @@ import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
 import { ImportTransactionsModal } from "@/components/transactions/ImportTransactionsModal";
 import { ReceiptScanner } from "@/components/transactions/ReceiptScanner";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 import { MiniCalculator } from "@/components/ui/MiniCalculator";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -73,6 +75,7 @@ export function TransactionsPage() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
   const { recordActivity } = useGamification(wsId);
   const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -279,6 +282,8 @@ export function TransactionsPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -616,7 +621,7 @@ export function TransactionsPage() {
               )}
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !permissions.canEdit}
                 className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
               >
                 {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Salvar"}

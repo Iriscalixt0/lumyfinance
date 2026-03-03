@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 import {
   fetchCryptoPrices,
   formatCryptoAmount,
@@ -40,6 +42,7 @@ export function CryptoPage() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
 
   const [holdings, setHoldings] = useState<CryptoHolding[]>([]);
   const [prices, setPrices] = useState<Record<string, CryptoPrice>>({});
@@ -194,6 +197,8 @@ export function CryptoPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -377,7 +382,7 @@ export function CryptoPage() {
               )}
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !permissions.canEdit}
                 className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
               >
                 {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Adicionar posição"}

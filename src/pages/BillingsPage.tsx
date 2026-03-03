@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 import {
   Receipt,
   Plus,
@@ -53,6 +55,7 @@ export function BillingsPage() {
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
   const [billings, setBillings] = useState<Billing[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -234,6 +237,8 @@ export function BillingsPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -438,7 +443,7 @@ export function BillingsPage() {
               )}
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !permissions.canEdit}
                 className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
               >
                 {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Adicionar cobrança"}

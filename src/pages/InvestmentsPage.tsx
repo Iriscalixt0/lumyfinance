@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import {
   Plus,
@@ -53,6 +55,7 @@ export function InvestmentsPage() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -158,6 +161,8 @@ export function InvestmentsPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -289,7 +294,7 @@ export function InvestmentsPage() {
             </div>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || !permissions.canEdit}
               className="w-full bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
             >
               {saving ? "Salvando..." : "Confirmar Aporte"}
