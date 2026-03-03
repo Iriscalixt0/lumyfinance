@@ -8,8 +8,6 @@ import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
 import {
   ArrowRight,
-  HelpCircle,
-  X,
   Snowflake,
   Flame,
   Wind,
@@ -67,7 +65,6 @@ export function DashboardPage() {
   );
   const [budgets, setBudgets] = useState<BudgetSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showBanner, setShowBanner] = useState(true);
   const [hasTransactions, setHasTransactions] = useState(false);
 
   const currentYear = new Date().getFullYear();
@@ -116,14 +113,88 @@ export function DashboardPage() {
     load();
   }, [activeWorkspace, currentYear]);
 
+  /* ---------- Skeleton Loader ---------- */
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="animate-fade space-y-6">
+        <div>
+          <div className="h-9 w-64 bg-muted rounded-lg animate-pulse" />
+          <div className="h-5 w-48 bg-muted rounded-md animate-pulse mt-2" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col items-center gap-2">
+              <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+              <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+              <div className="h-5 w-20 bg-muted rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="h-32 bg-card border border-border rounded-2xl animate-pulse" />
+          <div className="h-32 bg-card border border-border rounded-2xl animate-pulse" />
+        </div>
       </div>
     );
   }
 
+  /* ---------- Empty / Welcome State ---------- */
+  if (!hasTransactions) {
+    return (
+      <div className="animate-fade space-y-6">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Dashboard do ano</h1>
+          <p className="text-muted-foreground text-base mt-1">
+            {activeWorkspace?.name || "Gestão inteligente"} — {currentYear}
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center justify-center text-center py-12 sm:py-20 px-4">
+          <div className="h-24 w-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-6">
+            <Wallet2 className="h-12 w-12 text-primary" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+            Bem-vindo ao Lumyf! 🎉
+          </h2>
+          <p className="text-muted-foreground max-w-md mb-8 text-base">
+            Seu dashboard vai ganhar vida assim que você registrar sua primeira transação. Vamos começar?
+          </p>
+          <Link
+            to="/transactions"
+            className="bg-hero-gradient text-primary-foreground font-bold text-lg px-8 py-4 rounded-2xl hover:opacity-90 transition-opacity inline-flex items-center gap-3 shadow-lg"
+          >
+            Cadastrar primeira transação <ArrowRight className="h-5 w-5" />
+          </Link>
+        </div>
+
+        {/* Gamification still shown */}
+        {!gamLoading && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <StreakCard streak={streak} totalTx={totalTx} />
+            <AchievementsPanel unlockedKeys={unlockedKeys} />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          {QUICK_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                link.primary
+                  ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------- Normal Dashboard ---------- */
   return (
     <div className="animate-fade space-y-6">
       <div>
@@ -132,36 +203,6 @@ export function DashboardPage() {
           {activeWorkspace?.name || "Gestão inteligente"} — {currentYear}
         </p>
       </div>
-
-      {showBanner && !hasTransactions && (
-        <div className="relative bg-primary/5 border border-primary/20 rounded-2xl p-5 sm:p-6">
-          <button
-            onClick={() => setShowBanner(false)}
-            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-            aria-label="Fechar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-          <h3 className="text-lg font-semibold text-foreground mb-1">
-            Pronto! Agora você pode registrar sua primeira transação
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            Comece adicionando uma receita ou despesa para acompanhar seu fluxo de caixa.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="/transactions"
-              className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg text-sm hover:opacity-90 transition-opacity inline-flex items-center gap-2"
-            >
-              Ir para Transações <ArrowRight className="h-4 w-4" />
-            </Link>
-            <button className="border border-border bg-card text-foreground font-medium px-5 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors inline-flex items-center gap-2">
-              <HelpCircle className="h-4 w-4" />
-              Ver tour guiado
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {monthlyData.map((m) => {
