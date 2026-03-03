@@ -19,9 +19,11 @@ import {
   Wallet2,
   Mic,
   FileText,
+  Upload,
 } from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
+import { ImportTransactionsModal } from "@/components/transactions/ImportTransactionsModal";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
@@ -61,6 +63,7 @@ export function TransactionsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
 
   // Month/year selectors
   const now = new Date();
@@ -297,6 +300,12 @@ export function TransactionsPage() {
           className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
         >
           <FileText className="h-4 w-4" /> PDF
+        </button>
+        <button
+          onClick={() => setImportOpen(true)}
+          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+        >
+          <Upload className="h-4 w-4" /> Importar
         </button>
       </div>
 
@@ -539,6 +548,17 @@ export function TransactionsPage() {
           </button>
         </div>
       </Modal>
+
+      <ImportTransactionsModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        workspaceId={wsId!}
+        userId={user!.id}
+        onImported={async () => {
+          const { data } = await supabase.from("transactions").select("*").eq("workspace_id", wsId!).order("date", { ascending: false });
+          setTransactions(data ?? []);
+        }}
+      />
     </div>
   );
 }
