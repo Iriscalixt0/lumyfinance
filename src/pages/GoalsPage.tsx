@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Plus, Target, X } from "lucide-react";
+import { Plus, Target, Calendar } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 
@@ -25,10 +26,18 @@ export function GoalsPage() {
   const wsId = activeWorkspace?.id ?? null;
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-
-  const [form, setForm] = useState({ title: "", target_amount: "", deadline: "", icon: "🎯" });
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [createForm, setCreateForm] = useState({ title: "", target_amount: "", deadline: "", icon: "🎯" });
+
+  // Contribute form
+  const [contribForm, setContribForm] = useState({
+    date: new Date().toISOString().split("T")[0],
+    goal_id: "",
+    amount: "",
+  });
+  const [contribSaving, setContribSaving] = useState(false);
 
   async function loadGoals(workspaceId: string) {
     const { data: goalsData } = await supabase
@@ -61,29 +70,60 @@ export function GoalsPage() {
     load();
   }, [wsId]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!wsId) return;
     setSaving(true);
 
-    const targetCents = Math.round(parseFloat(form.target_amount.replace(",", ".")) * 100);
+    const targetCents = Math.round(parseFloat(createForm.target_amount.replace(",", ".")) * 100);
 
     await supabase.from("goals").insert({
       workspace_id: wsId,
-      title: form.title,
+      title: createForm.title,
       target_amount: targetCents,
-      deadline: form.deadline || null,
-      icon: form.icon,
+      deadline: createForm.deadline || null,
+      icon: createForm.icon,
       created_by: user!.id,
     });
 
     await loadGoals(wsId);
-    setShowForm(false);
-    setForm({ title: "", target_amount: "", deadline: "", icon: "🎯" });
+    setShowCreateModal(false);
+    setCreateForm({ title: "", target_amount: "", deadline: "", icon: "🎯" });
     setSaving(false);
     toast("Meta criada!");
     triggerAlertCheck(wsId);
   };
+
+  const handleContribute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wsId || !contribForm.goal_id) return;
+    setContribSaving(true);
+
+    const amountCents = Math.round(parseFloat(contribForm.amount.replace(",", ".")) * 100);
+    if (isNaN(amountCents) || amountCents <= 0) {
+      setContribSaving(false);
+      return;
+    }
+
+    await supabase.from("goal_contributions").insert({
+      goal_id: contribForm.goal_id,
+      amount: amountCents,
+      date: contribForm.date,
+      created_by: user!.id,
+    });
+
+    await loadGoals(wsId);
+    setContribForm({ date: new Date().toISOString().split("T")[0], goal_id: "", amount: "" });
+    setContribSaving(false);
+    toast("Contribuição registrada!");
+    triggerAlertCheck(wsId);
+  };
+
+  // Summary
+  const totalAccumulated = goals.reduce((s, g) => s + g.contributions_total, 0);
+  const totalTarget = goals.reduce((s, g) => s + g.target_amount, 0);
+  const avgProgress = totalTarget > 0 ? (totalAccumulated / totalTarget) * 100 : 0;
+  const activeCount = goals.length;
 
   if (loading) {
     return (
@@ -95,102 +135,185 @@ export function GoalsPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Metas</h1>
-          <p className="text-muted-foreground text-sm mt-1">Acompanhe seus objetivos financeiros</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" /> Nova meta
-        </button>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Metas e Objetivos</h1>
+        <p className="text-sm text-muted-foreground mt-1">Planeje e acompanhe a evolução das suas poupanças.</p>
       </div>
 
-      {/* Form modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative bg-card rounded-2xl border border-border shadow-xl w-full max-w-md p-6">
-            <button onClick={() => setShowForm(false)} className="absolute right-4 top-4 text-muted-foreground hover:text-foreground">
-              <X className="h-5 w-5" />
-            </button>
-            <h3 className="text-lg font-bold text-foreground mb-4">Nova meta</h3>
-            <form onSubmit={handleSave} className="space-y-4">
-              <input
-                required
-                placeholder="Nome da meta"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-              />
-              <input
-                required
-                placeholder="Valor alvo (ex: 5000,00)"
-                value={form.target_amount}
-                onChange={(e) => setForm({ ...form, target_amount: e.target.value })}
-                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-              />
-              <input
-                type="date"
-                value={form.deadline}
-                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-              />
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                {saving ? "Salvando..." : "Criar meta"}
-              </button>
-            </form>
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-card border border-border rounded-xl p-5">
+          <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-1">Total acumulado</p>
+          <p className="text-2xl font-bold text-foreground">{formatBRL(totalAccumulated)}</p>
+          <div className="h-1 bg-muted rounded-full mt-3 overflow-hidden">
+            <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(avgProgress, 100)}%` }} />
           </div>
         </div>
-      )}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">Objetivo total</p>
+          <p className="text-2xl font-bold text-foreground">{formatBRL(totalTarget)}</p>
+          <p className="text-xs text-muted-foreground mt-3">Somatório de todos os objetivos</p>
+        </div>
+        <div className="bg-primary text-primary-foreground rounded-xl p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-80">Progresso médio</p>
+          <p className="text-2xl font-bold">{avgProgress.toFixed(1)}% alcançado</p>
+          <p className="text-xs mt-3 opacity-80">Continue focado nos seus sonhos!</p>
+        </div>
+      </div>
 
-      {/* Goals grid */}
-      {goals.length === 0 ? (
-        <div className="bg-card rounded-2xl border border-border p-16 text-center text-muted-foreground text-sm">
-          <Target className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          Nenhuma meta criada ainda.
-        </div>
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {goals.map((goal) => {
-            const progress = goal.target_amount > 0 ? Math.min((goal.contributions_total / goal.target_amount) * 100, 100) : 0;
-            return (
-              <div key={goal.id} className="bg-card rounded-2xl border border-border p-5 shadow-card">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">{goal.icon}</span>
-                  <div>
-                    <h3 className="font-semibold text-foreground text-sm">{goal.title}</h3>
-                    {goal.deadline && (
-                      <p className="text-xs text-muted-foreground">
-                        Prazo: {new Date(goal.deadline).toLocaleDateString("pt-BR")}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="mb-2">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>{formatBRL(goal.contributions_total)}</span>
-                    <span>{formatBRL(goal.target_amount)}</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-hero-gradient rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground text-right">{progress.toFixed(0)}%</p>
+      {/* Create button */}
+      <button
+        onClick={() => setShowCreateModal(true)}
+        className="bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2 text-sm"
+      >
+        <Plus className="h-4 w-4" /> Criar metas
+      </button>
+
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Contribute form */}
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <h3 className="font-semibold text-foreground mb-5">Poupar para meta</h3>
+          <form onSubmit={handleContribute} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="date"
+                  value={contribForm.date}
+                  onChange={(e) => setContribForm({ ...contribForm, date: e.target.value })}
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
               </div>
-            );
-          })}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Meta</label>
+              <select
+                value={contribForm.goal_id}
+                onChange={(e) => setContribForm({ ...contribForm, goal_id: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Selecione a meta</option>
+                {goals.map((g) => (
+                  <option key={g.id} value={g.id}>{g.icon} {g.title}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
+              <input
+                type="text"
+                value={contribForm.amount}
+                onChange={(e) => setContribForm({ ...contribForm, amount: e.target.value })}
+                placeholder="0,00"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={contribSaving || !contribForm.goal_id}
+              className="w-full bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
+            >
+              {contribSaving ? "Salvando..." : "Poupar p/ meta"}
+            </button>
+          </form>
         </div>
-      )}
+
+        {/* Right: Goals list */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Minhas metas</h3>
+            <span className="text-xs text-muted-foreground">{activeCount} ativas</span>
+          </div>
+
+          {goals.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">
+                Ainda não tem metas definidas.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {goals.map((goal) => {
+                const progress = goal.target_amount > 0 ? Math.min((goal.contributions_total / goal.target_amount) * 100, 100) : 0;
+                return (
+                  <div key={goal.id} className="px-6 py-4 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{goal.icon}</span>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{goal.title}</p>
+                          {goal.deadline && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Prazo: {new Date(goal.deadline).toLocaleDateString("pt-BR")}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-primary">{progress.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden mb-1.5">
+                      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{formatBRL(goal.contributions_total)}</span>
+                      <span>{formatBRL(goal.target_amount)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Create modal */}
+      <Modal open={showCreateModal} onClose={() => setShowCreateModal(false)} title="Criar meta">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Nome da meta</label>
+            <input
+              required
+              placeholder="Ex: Viagem, Carro, Reserva"
+              value={createForm.title}
+              onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              maxLength={100}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Valor alvo (R$)</label>
+            <input
+              required
+              placeholder="5000,00"
+              value={createForm.target_amount}
+              onChange={(e) => setCreateForm({ ...createForm, target_amount: e.target.value })}
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Prazo (opcional)</label>
+            <input
+              type="date"
+              value={createForm.deadline}
+              onChange={(e) => setCreateForm({ ...createForm, deadline: e.target.value })}
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
+            <button type="submit" disabled={saving} className="bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+              {saving ? "Salvando..." : "Criar meta"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
