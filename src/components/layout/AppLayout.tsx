@@ -37,6 +37,7 @@ import {
   Calculator,
   LineChart,
   Bot,
+  Bitcoin,
 } from "lucide-react";
 
 const PRINCIPAL_ITEMS = [
@@ -47,6 +48,7 @@ const PRINCIPAL_ITEMS = [
   { label: "Metas", href: "/goals", icon: Target },
   { label: "Orçamentos", href: "/budgets", icon: Wallet2 },
   { label: "Recorrentes", href: "/recurring", icon: Repeat },
+  { label: "Criptoativos", href: "/crypto", icon: Bitcoin },
   { label: "Relatório anual", href: "/annual-report", icon: FileBarChart },
   { label: "Calculadoras", href: "/calculators", icon: Calculator },
   { label: "Projeção de saldo", href: "/projection", icon: LineChart },
