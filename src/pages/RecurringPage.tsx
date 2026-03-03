@@ -8,6 +8,8 @@ import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
+import { useGamification, type AchievementDef } from "@/hooks/useGamification";
+import { AchievementToast } from "@/components/gamification/AchievementToast";
 
 interface RecurringTransaction {
   id: string;
@@ -51,6 +53,8 @@ export function RecurringPage() {
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
+  const { checkAchievements } = useGamification(workspaceId);
+  const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [items, setItems] = useState<RecurringTransaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,6 +171,8 @@ export function RecurringPage() {
 
     setForm(emptyForm);
     setErrors({});
+    const newAchs = await checkAchievements();
+    if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   }
 
   async function handleDelete() {
@@ -373,6 +379,8 @@ export function RecurringPage() {
           </button>
         </div>
       </Modal>
+
+      <AchievementToast achievement={newAchievement} onDone={() => setNewAchievement(null)} />
     </div>
   );
 }

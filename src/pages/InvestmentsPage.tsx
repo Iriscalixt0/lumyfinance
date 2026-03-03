@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
+import { useGamification, type AchievementDef } from "@/hooks/useGamification";
+import { AchievementToast } from "@/components/gamification/AchievementToast";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import {
   Plus,
@@ -56,6 +58,8 @@ export function InvestmentsPage() {
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
+  const { checkAchievements } = useGamification(wsId);
+  const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -138,6 +142,8 @@ export function InvestmentsPage() {
     setForm(emptyForm);
     setSaving(false);
     toast("Aporte registrado!");
+    const newAchs = await checkAchievements();
+    if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   };
 
   async function handleDelete() {
@@ -395,6 +401,8 @@ export function InvestmentsPage() {
           </button>
         </div>
       </Modal>
+
+      <AchievementToast achievement={newAchievement} onDone={() => setNewAchievement(null)} />
     </div>
   );
 }

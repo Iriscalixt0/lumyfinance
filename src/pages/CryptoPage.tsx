@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
+import { useGamification, type AchievementDef } from "@/hooks/useGamification";
+import { AchievementToast } from "@/components/gamification/AchievementToast";
 import {
   fetchCryptoPrices,
   formatCryptoAmount,
@@ -43,6 +45,8 @@ export function CryptoPage() {
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
+  const { checkAchievements } = useGamification(wsId);
+  const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
 
   const [holdings, setHoldings] = useState<CryptoHolding[]>([]);
   const [prices, setPrices] = useState<Record<string, CryptoPrice>>({});
@@ -174,6 +178,8 @@ export function CryptoPage() {
     setForm(emptyForm);
     setSaving(false);
     toast(editingId ? "Criptoativo atualizado!" : "Criptoativo adicionado!");
+    const newAchs = await checkAchievements();
+    if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   };
 
   async function handleDelete() {
@@ -495,6 +501,8 @@ export function CryptoPage() {
           </button>
         </div>
       </Modal>
+
+      <AchievementToast achievement={newAchievement} onDone={() => setNewAchievement(null)} />
     </div>
   );
 }
