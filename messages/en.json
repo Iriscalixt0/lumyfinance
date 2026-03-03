@@ -36,6 +36,8 @@
     "login": {
       "title": "Sign in to your account",
       "subtitle": "Access your family workspace and pick up where you left off.",
+      "welcomeBack": "Welcome back",
+      "welcomeSubtitle": "Manage your finances with intelligence and simplicity.",
       "email": "Email",
       "password": "Password",
       "submit": "Sign in",
@@ -45,7 +47,10 @@
       "signUpHere": "Sign up here",
       "createAccount": "Create account",
       "forgotPassword": "Forgot my password",
-      "backHome": "← Back to home"
+      "backHome": "← Back to home",
+      "continueGoogle": "Continue with Google",
+      "continueApple": "Continue with Apple",
+      "orEmail": "or sign in with email"
     },
     "register": {
       "title": "Create account",
@@ -313,7 +318,13 @@
     "goals": "Goals",
     "freeBalance": "Free balance",
     "selectWorkspace": "Select a workspace in settings.",
-    "quickLinks": "Quick links"
+    "quickLinks": "Quick links",
+    "welcomeTitle": "Welcome to Lumyf! 🎉",
+    "welcomeSubtitle": "Your dashboard will come alive once you add your first transaction. Let's get started!",
+    "firstTransaction": "Add first transaction",
+    "investments": "Investments",
+    "recurring": "Recurring",
+    "billings": "Receivables"
   },
   "forms": {
     "transaction": {

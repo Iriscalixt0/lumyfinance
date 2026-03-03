@@ -36,6 +36,8 @@
     "login": {
       "title": "Iniciar sesión",
       "subtitle": "Accede al espacio de la familia y continúa donde lo dejaste.",
+      "welcomeBack": "Bienvenido de vuelta",
+      "welcomeSubtitle": "Gestiona tus finanzas con inteligencia y sencillez.",
       "email": "Correo electrónico",
       "password": "Contraseña",
       "submit": "Entrar",
@@ -45,7 +47,10 @@
       "signUpHere": "Regístrate aquí",
       "createAccount": "Crear cuenta",
       "forgotPassword": "Olvidé mi contraseña",
-      "backHome": "← Volver al inicio"
+      "backHome": "← Volver al inicio",
+      "continueGoogle": "Continuar con Google",
+      "continueApple": "Continuar con Apple",
+      "orEmail": "o entra con correo"
     },
     "register": {
       "title": "Crear cuenta",
@@ -298,22 +303,28 @@
     "newGoal": "Nueva meta"
   },
   "dashboard": {
-    "yearView": "Year overview",
-    "smartManagement": "Smart management — {year}",
-    "noWorkspace": "No workspace found.",
-    "settings": "Settings",
-    "seeReports": "View annual report",
-    "transactions": "Transactions",
-    "backToYear": "← Back to year",
-    "monthTransactions": "Monthly transactions",
-    "income": "Income",
-    "expenses": "Expenses",
-    "invested": "Invested",
-    "goals": "Goals",
-    "freeBalance": "Free balance",
-    "selectWorkspace": "Select a workspace in settings.",
+    "yearView": "Resumen del año",
+    "smartManagement": "Gestión inteligente — {year}",
+    "noWorkspace": "No se encontró espacio de trabajo.",
+    "settings": "Configuración",
+    "seeReports": "Ver informe anual",
+    "transactions": "Transacciones",
     "budgets": "Presupuestos",
-    "quickLinks": "Accesos r?pidos"
+    "backToYear": "← Volver al año",
+    "monthTransactions": "Transacciones del mes",
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "invested": "Invertido",
+    "goals": "Metas",
+    "freeBalance": "Saldo libre",
+    "selectWorkspace": "Seleccione un espacio de trabajo en configuración.",
+    "quickLinks": "Accesos rápidos",
+    "welcomeTitle": "¡Bienvenido a Lumyf! 🎉",
+    "welcomeSubtitle": "Tu dashboard cobrará vida cuando registres tu primera transacción. ¡Empecemos!",
+    "firstTransaction": "Registrar primera transacción",
+    "investments": "Inversiones",
+    "recurring": "Recurrentes",
+    "billings": "Cobros"
   },
   "forms": {
     "transaction": {

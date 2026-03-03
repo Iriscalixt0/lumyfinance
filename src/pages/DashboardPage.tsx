@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useGamification } from "@/hooks/useGamification";
+import { useTranslations } from "@/lib/i18n";
 import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
 import {
@@ -28,21 +29,6 @@ const MONTH_ICONS = [
   Waves, CloudSun, Leaf, TreePine, Cloudy, Sparkles,
 ];
 
-const MONTH_NAMES = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-];
-
-const QUICK_LINKS = [
-  { label: "Ver relatório anual", href: "/annual-report", primary: true },
-  { label: "Transações", href: "/transactions" },
-  { label: "Orçamentos", href: "/budgets" },
-  { label: "Cobranças", href: "/billings" },
-  { label: "Investimentos", href: "/investments" },
-  { label: "Metas", href: "/goals" },
-  { label: "Recorrentes", href: "/recurring" },
-];
-
 interface MonthData {
   month: number;
   total: number;
@@ -57,6 +43,8 @@ interface BudgetSummary {
 
 export function DashboardPage() {
   const fmt = useIntlFormat();
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common.months");
   const formatBRL = fmt.money;
   const { activeWorkspace } = useWorkspace();
   const { streak, unlockedKeys, totalTx, loading: gamLoading } = useGamification(activeWorkspace?.id ?? null);
@@ -143,9 +131,9 @@ export function DashboardPage() {
     return (
       <div className="animate-fade space-y-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Dashboard do ano</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">{t("yearView")}</h1>
           <p className="text-muted-foreground text-base mt-1">
-            {activeWorkspace?.name || "Gestão inteligente"} — {currentYear}
+            {activeWorkspace?.name || t("smartManagement", { year: String(currentYear) })} — {currentYear}
           </p>
         </div>
 
@@ -154,16 +142,16 @@ export function DashboardPage() {
             <Wallet2 className="h-12 w-12 text-primary" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-            Bem-vindo ao Lumyf! 🎉
+            {t("welcomeTitle")}
           </h2>
           <p className="text-muted-foreground max-w-md mb-8 text-base">
-            Seu dashboard vai ganhar vida assim que você registrar sua primeira transação. Vamos começar?
+            {t("welcomeSubtitle")}
           </p>
           <Link
             to="/transactions"
             className="bg-hero-gradient text-primary-foreground font-bold text-lg px-8 py-4 rounded-2xl hover:opacity-90 transition-opacity inline-flex items-center gap-3 shadow-lg"
           >
-            Cadastrar primeira transação <ArrowRight className="h-5 w-5" />
+            {t("firstTransaction")} <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
 
@@ -176,7 +164,15 @@ export function DashboardPage() {
         )}
 
         <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-          {QUICK_LINKS.map((link) => (
+          {[
+            { labelKey: "seeReports", href: "/annual-report", primary: true },
+            { labelKey: "transactions", href: "/transactions" },
+            { labelKey: "budgets", href: "/budgets" },
+            { labelKey: "billings", href: "/billings" },
+            { labelKey: "investments", href: "/investments" },
+            { labelKey: "goals", href: "/goals" },
+            { labelKey: "recurring", href: "/recurring" },
+          ].map((link) => (
             <Link
               key={link.href}
               to={link.href}
@@ -186,7 +182,7 @@ export function DashboardPage() {
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               }`}
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
         </div>
@@ -198,9 +194,9 @@ export function DashboardPage() {
   return (
     <div className="animate-fade space-y-6">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Dashboard do ano</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">{t("yearView")}</h1>
         <p className="text-muted-foreground text-base mt-1">
-          {activeWorkspace?.name || "Gestão inteligente"} — {currentYear}
+          {activeWorkspace?.name || t("smartManagement", { year: String(currentYear) })} — {currentYear}
         </p>
       </div>
 
@@ -215,7 +211,7 @@ export function DashboardPage() {
               className="bg-card border border-border rounded-xl p-5 flex flex-col items-center text-center hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer"
             >
               <Icon className="h-9 w-9 text-primary mb-3" />
-              <p className="text-sm font-semibold text-foreground mb-1">{MONTH_NAMES[m.month]}</p>
+              <p className="text-sm font-semibold text-foreground mb-1">{tc(["january","february","march","april","may","june","july","august","september","october","november","december"][m.month])}</p>
               <p className={`text-base font-bold ${
                 isNegative ? "text-rose-500" : isPositive ? "text-emerald-500" : "text-primary"
               }`}>
@@ -240,10 +236,10 @@ export function DashboardPage() {
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Wallet2 className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-foreground text-sm">Orçamentos</h3>
+              <h3 className="font-semibold text-foreground text-sm">{t("budgets")}</h3>
             </div>
             <Link to="/budgets" className="text-xs text-primary hover:underline flex items-center gap-1">
-              Ver todos <ArrowRight className="h-3 w-3" />
+              {t("quickLinks")} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -276,7 +272,15 @@ export function DashboardPage() {
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-        {QUICK_LINKS.map((link) => (
+        {[
+          { labelKey: "seeReports", href: "/annual-report", primary: true },
+          { labelKey: "transactions", href: "/transactions" },
+          { labelKey: "budgets", href: "/budgets" },
+          { labelKey: "billings", href: "/billings" },
+          { labelKey: "investments", href: "/investments" },
+          { labelKey: "goals", href: "/goals" },
+          { labelKey: "recurring", href: "/recurring" },
+        ].map((link) => (
           <Link
             key={link.href}
             to={link.href}
@@ -286,7 +290,7 @@ export function DashboardPage() {
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
           >
-            {link.label}
+            {t(link.labelKey)}
           </Link>
         ))}
       </div>

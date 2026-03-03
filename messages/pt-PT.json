@@ -36,6 +36,8 @@
     "login": {
       "title": "Entrar na sua conta",
       "subtitle": "Acesse o workspace da família e continue de onde parou.",
+      "welcomeBack": "Bem-vindo de volta",
+      "welcomeSubtitle": "Gerencie as suas finanças com inteligência e simplicidade.",
       "email": "E-mail",
       "password": "Senha",
       "submit": "Entrar",
@@ -45,7 +47,10 @@
       "signUpHere": "Cadastre-se aqui",
       "createAccount": "Criar conta",
       "forgotPassword": "Esqueci minha senha",
-      "backHome": "← Voltar para a home"
+      "backHome": "← Voltar para a home",
+      "continueGoogle": "Continuar com Google",
+      "continueApple": "Continuar com Apple",
+      "orEmail": "ou entre com e-mail"
     },
     "register": {
       "title": "Criar conta",
@@ -304,6 +309,7 @@
     "settings": "Configurações",
     "seeReports": "Ver relatório anual",
     "transactions": "Transações",
+    "budgets": "Orçamentos",
     "backToYear": "← Voltar ao ano",
     "monthTransactions": "Transações do mês",
     "income": "Receitas",
@@ -312,8 +318,13 @@
     "goals": "Metas",
     "freeBalance": "Saldo livre",
     "selectWorkspace": "Selecione um workspace nas configurações.",
-    "budgets": "Orçamentos",
-    "quickLinks": "Links rápidos"
+    "quickLinks": "Links rápidos",
+    "welcomeTitle": "Bem-vindo ao Lumyf! 🎉",
+    "welcomeSubtitle": "O seu dashboard ganhará vida assim que registar a primeira transação. Vamos começar?",
+    "firstTransaction": "Registar primeira transação",
+    "investments": "Investimentos",
+    "recurring": "Recorrentes",
+    "billings": "Cobranças"
   },
   "forms": {
     "transaction": {
