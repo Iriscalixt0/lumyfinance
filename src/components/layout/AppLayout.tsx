@@ -106,14 +106,19 @@ function CollapsibleGroup({ label, items, t, isActive, onNavigate, defaultOpen =
               to={item.href}
               onClick={onNavigate}
               title={t(item.labelKey)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
                 isActive(item.href)
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary hover:translate-x-0.5"
               }`}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className={`h-5 w-5 shrink-0 transition-colors ${
+                isActive(item.href) ? "text-primary" : "group-hover:text-foreground"
+              }`} />
               <span className="truncate">{t(item.labelKey)}</span>
+              {isActive(item.href) && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+              )}
             </Link>
           ))}
         </div>
@@ -182,14 +187,19 @@ export function AppLayout() {
             to={OVERVIEW_ITEM.href}
             onClick={closeSidebar}
             title={t(OVERVIEW_ITEM.labelKey)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${
+            className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
               isActive(OVERVIEW_ITEM.href)
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                ? "bg-primary/10 text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary hover:translate-x-0.5"
             }`}
           >
-            <OVERVIEW_ITEM.icon className="h-5 w-5 shrink-0" />
+            <OVERVIEW_ITEM.icon className={`h-5 w-5 shrink-0 transition-colors ${
+              isActive(OVERVIEW_ITEM.href) ? "text-primary" : "group-hover:text-foreground"
+            }`} />
             <span className="truncate">{t(OVERVIEW_ITEM.labelKey)}</span>
+            {isActive(OVERVIEW_ITEM.href) && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+            )}
           </Link>
         </div>
 
