@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { Wallet2, Pencil, Trash2, ChevronDown } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
@@ -32,6 +32,8 @@ const budgetSchema = z.object({
 const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 export function BudgetsPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;

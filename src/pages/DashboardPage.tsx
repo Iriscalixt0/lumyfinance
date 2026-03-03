@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useGamification } from "@/hooks/useGamification";
 import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
@@ -58,6 +58,8 @@ interface BudgetSummary {
 }
 
 export function DashboardPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { activeWorkspace } = useWorkspace();
   const { streak, unlockedKeys, totalTx, loading: gamLoading } = useGamification(activeWorkspace?.id ?? null);
   const [monthlyData, setMonthlyData] = useState<MonthData[]>(

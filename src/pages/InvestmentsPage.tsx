@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import {
   Plus,
   TrendingUp,
@@ -47,6 +47,8 @@ const PERIOD_OPTIONS = [
 ];
 
 export function InvestmentsPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { toast } = useToast();
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -165,7 +167,7 @@ export function InvestmentsPage() {
         <button
           onClick={() => {
             const rows = filtered.map((inv) => [
-              new Date(inv.date).toLocaleDateString("pt-BR"),
+              fmt.date(inv.date),
               inv.name,
               TYPE_LABELS[inv.type] ?? inv.type,
               (inv.amount / 100).toFixed(2).replace(".", ","),
@@ -227,7 +229,7 @@ export function InvestmentsPage() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Último aporte</span>
           </div>
           <p className="text-2xl font-bold text-foreground">
-            {lastDate ? new Date(lastDate).toLocaleDateString("pt-BR") : "Nenhum"}
+            {lastDate ? fmt.date(lastDate) : "Nenhum"}
           </p>
         </div>
       </div>
@@ -335,7 +337,7 @@ export function InvestmentsPage() {
                 {filtered.map((inv) => (
                   <div key={inv.id} className="px-6 py-3 grid grid-cols-4 gap-2 items-center group hover:bg-muted/30 transition-colors">
                     <span className="text-xs text-muted-foreground">
-                      {new Date(inv.date).toLocaleDateString("pt-BR")}
+                      {fmt.date(inv.date)}
                     </span>
                     <div>
                       <p className="text-sm font-medium text-foreground truncate">{inv.name}</p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { Repeat, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
@@ -43,6 +43,8 @@ const freqLabels: Record<string, string> = {
 };
 
 export function RecurringPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
@@ -331,8 +333,8 @@ export function RecurringPage() {
                     <div>
                       <p className="text-sm font-medium text-foreground">{item.description}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {freqLabels[item.frequency] || item.frequency} · {new Date(item.next_date).toLocaleDateString("pt-BR")}
-                        {item.end_date && ` → ${new Date(item.end_date).toLocaleDateString("pt-BR")}`}
+                        {freqLabels[item.frequency] || item.frequency} · {fmt.date(item.next_date)}
+                        {item.end_date && ` → ${fmt.date(item.end_date)}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">

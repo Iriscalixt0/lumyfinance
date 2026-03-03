@@ -4,7 +4,7 @@ import { Modal } from "@/components/ui/Modal";
 import { parseOFX, type OFXTransaction } from "@/lib/utils/ofx-parser";
 import { parseExcel, type ExcelTransaction } from "@/lib/utils/excel-parser";
 import { supabase } from "@/lib/supabase";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 
 type ParsedTx = (OFXTransaction | ExcelTransaction) & { selected: boolean };
 
@@ -23,6 +23,8 @@ export function ImportTransactionsModal({
   userId,
   onImported,
 }: ImportTransactionsModalProps) {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const fileRef = useRef<HTMLInputElement>(null);
   const [parsed, setParsed] = useState<ParsedTx[]>([]);
   const [fileName, setFileName] = useState("");
@@ -230,7 +232,7 @@ export function ImportTransactionsModal({
                         />
                       </td>
                       <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(tx.date + "T12:00:00").toLocaleDateString("pt-BR")}
+                        {fmt.date(new Date(tx.date + "T12:00:00"))}
                       </td>
                       <td className="px-3 py-2 text-foreground truncate max-w-[200px]">
                         {tx.description}

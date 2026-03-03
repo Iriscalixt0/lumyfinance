@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { Plus, Target, Calendar } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -20,6 +20,8 @@ interface Goal {
 }
 
 export function GoalsPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { toast } = useToast();
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -251,7 +253,7 @@ export function GoalsPage() {
                           <p className="text-sm font-medium text-foreground">{goal.title}</p>
                           {goal.deadline && (
                             <p className="text-[10px] text-muted-foreground">
-                              Prazo: {new Date(goal.deadline).toLocaleDateString("pt-BR")}
+                              Prazo: {fmt.date(goal.deadline)}
                             </p>
                           )}
                         </div>
