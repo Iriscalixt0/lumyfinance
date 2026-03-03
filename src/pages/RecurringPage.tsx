@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Repeat, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
+import { PermissionBanner } from "@/components/ui/PermissionBanner";
 
 interface RecurringTransaction {
   id: string;
@@ -48,6 +50,7 @@ export function RecurringPage() {
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
+  const permissions = usePermissions();
   const [items, setItems] = useState<RecurringTransaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,6 +192,8 @@ export function RecurringPage() {
 
   return (
     <div className="animate-fade space-y-6">
+      {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Transações recorrentes</h1>
@@ -301,7 +306,7 @@ export function RecurringPage() {
               )}
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !permissions.canEdit}
                 className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
               >
                 {saving ? "Salvando..." : editingId ? "Salvar" : "Adicionar"}
