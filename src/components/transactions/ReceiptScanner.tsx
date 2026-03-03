@@ -20,16 +20,20 @@ interface Category {
 
 interface ReceiptScannerProps {
   categories: Category[];
+  workspaceId: string;
+  userId: string;
   onExtracted: (data: ExtractedData) => void;
   onClose: () => void;
 }
 
-export function ReceiptScanner({ categories, onExtracted, onClose }: ReceiptScannerProps) {
+export function ReceiptScanner({ categories, workspaceId, userId, onExtracted, onClose }: ReceiptScannerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [rawFile, setRawFile] = useState<File | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ExtractedData | null>(null);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   async function handleFile(file: File) {
     setError("");
@@ -45,7 +49,8 @@ export function ReceiptScanner({ categories, onExtracted, onClose }: ReceiptScan
       return;
     }
 
-    // Convert to base64
+    setRawFile(file);
+
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = reader.result as string;
@@ -82,13 +87,48 @@ export function ReceiptScanner({ categories, onExtracted, onClose }: ReceiptScan
     }
   }
 
-  function handleConfirm() {
-    if (!result) return;
+  async function handleConfirm() {
+    if (!result || !rawFile) return;
+
+    setUploading(true);
+    try {
+      // Upload image to storage
+      const ext = rawFile.name.split(".").pop() || "jpg";
+      const fileName = `${userId}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("receipts")
+        .upload(fileName, rawFile, { contentType: rawFile.type });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        // Still proceed with extraction even if upload fails
+      } else {
+        // Save metadata to scanned_receipts table
+        await supabase.from("scanned_receipts").insert({
+          workspace_id: workspaceId,
+          user_id: userId,
+          image_path: fileName,
+          description: result.description || null,
+          amount: result.amount ? Math.round(result.amount * 100) : null,
+          date: result.date || null,
+          type: result.type || null,
+          category: result.category || null,
+          confidence: result.confidence || null,
+        });
+      }
+    } catch (err) {
+      console.error("Save receipt error:", err);
+    } finally {
+      setUploading(false);
+    }
+
     onExtracted(result);
   }
 
   function reset() {
     setPreview(null);
+    setRawFile(null);
     setResult(null);
     setError("");
     if (fileRef.current) fileRef.current.value = "";
@@ -215,10 +255,20 @@ export function ReceiptScanner({ categories, onExtracted, onClose }: ReceiptScan
                 </button>
                 <button
                   onClick={handleConfirm}
-                  className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  disabled={uploading}
+                  className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  <Check className="h-4 w-4" />
-                  Usar dados
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Usar dados
+                    </>
+                  )}
                 </button>
               </div>
             </div>

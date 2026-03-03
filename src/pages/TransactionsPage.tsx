@@ -28,6 +28,7 @@ import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
 import { ImportTransactionsModal } from "@/components/transactions/ImportTransactionsModal";
 import { ReceiptScanner } from "@/components/transactions/ReceiptScanner";
+import { ReceiptHistory } from "@/components/transactions/ReceiptHistory";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
 import { MiniCalculator } from "@/components/ui/MiniCalculator";
 import { Modal } from "@/components/ui/Modal";
@@ -89,6 +90,7 @@ export function TransactionsPage() {
   const [formError, setFormError] = useState("");
   const [importOpen, setImportOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [showReceiptHistory, setShowReceiptHistory] = useState(false);
 
   // Month/year selectors
   const now = new Date();
@@ -400,6 +402,16 @@ export function TransactionsPage() {
           className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
         >
           <Camera className="h-4 w-4" /> Escanear recibo
+        </button>
+        <button
+          onClick={() => setShowReceiptHistory((v) => !v)}
+          className={`border font-medium px-3 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 ${
+            showReceiptHistory
+              ? "border-primary/30 bg-primary/10 text-primary"
+              : "border-border text-foreground hover:bg-secondary"
+          }`}
+        >
+          <Receipt className="h-4 w-4" /> Recibos
         </button>
       </div>
 
@@ -757,6 +769,19 @@ export function TransactionsPage() {
         </div>
       </div>
 
+      {/* Receipt history */}
+      {showReceiptHistory && wsId && (
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-primary" />
+              Histórico de recibos escaneados
+            </h3>
+          </div>
+          <ReceiptHistory workspaceId={wsId} />
+        </div>
+      )}
+
       {/* Delete modal */}
       <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir transação">
         <p className="text-muted-foreground mb-6">Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.</p>
@@ -782,9 +807,10 @@ export function TransactionsPage() {
       <Modal open={scannerOpen} onClose={() => setScannerOpen(false)} title="Escanear recibo">
         <ReceiptScanner
           categories={categories}
+          workspaceId={wsId!}
+          userId={user!.id}
           onExtracted={(data) => {
             setScannerOpen(false);
-            // Auto-fill the form with extracted data
             const matchedCat = categories.find(
               (c) => c.name.toLowerCase() === (data.category || "").toLowerCase() && c.type === data.type
             );
