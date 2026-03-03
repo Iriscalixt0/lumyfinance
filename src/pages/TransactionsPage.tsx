@@ -47,6 +47,8 @@ export function TransactionsPage() {
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const emptyForm = {
     description: "",
@@ -184,6 +186,12 @@ export function TransactionsPage() {
     return true;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / PAGE_SIZE));
+  const paginatedTransactions = filteredTransactions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [filterType, filterCategoryId, filterDateFrom, filterDateTo]);
+
   function clearFilters() {
     setFilterType("all");
     setFilterCategoryId("");
@@ -311,13 +319,13 @@ export function TransactionsPage() {
 
       {/* List */}
       <div className="bg-card rounded-2xl border border-border shadow-card">
-        {filteredTransactions.length === 0 ? (
+      {filteredTransactions.length === 0 ? (
           <div className="px-5 py-16 text-center text-muted-foreground text-sm">
             {hasActiveFilters ? "Nenhuma transação encontrada com esses filtros." : 'Nenhuma transação ainda. Clique em "Nova" para adicionar.'}
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {filteredTransactions.map((tx) => (
+            {paginatedTransactions.map((tx) => (
               <div key={tx.id} className="px-5 py-3.5 flex items-center justify-between group">
                 <div className="flex items-center gap-3">
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === "income" ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
@@ -346,6 +354,51 @@ export function TransactionsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredTransactions.length)} de {filteredTransactions.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Anterior
+              </button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 5) { page = i + 1; }
+                else if (currentPage <= 3) { page = i + 1; }
+                else if (currentPage >= totalPages - 2) { page = totalPages - 4 + i; }
+                else { page = currentPage - 2 + i; }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-8 w-8 rounded-lg text-xs font-medium transition-colors ${
+                      currentPage === page
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Próxima
+              </button>
+            </div>
           </div>
         )}
       </div>
