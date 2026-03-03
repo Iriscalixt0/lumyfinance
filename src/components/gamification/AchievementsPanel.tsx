@@ -64,7 +64,7 @@ export function AchievementsPanel({ unlockedKeys }: AchievementsPanelProps) {
                       <p className={`text-[9px] font-medium mt-1 text-center truncate w-full ${
                         isUnlocked ? "text-foreground" : "text-muted-foreground"
                       }`}>
-                        {isUnlocked ? a.name : "???"}
+                        {isUnlocked ? a.name : a.hint}
                       </p>
                     </div>
                   );
