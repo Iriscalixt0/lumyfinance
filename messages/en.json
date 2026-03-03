@@ -318,13 +318,40 @@
     "goals": "Goals",
     "freeBalance": "Free balance",
     "selectWorkspace": "Select a workspace in settings.",
-    "quickLinks": "Quick links",
+    "quickLinks": "View all",
     "welcomeTitle": "Welcome to Lumyf! 🎉",
     "welcomeSubtitle": "Your dashboard will come alive once you add your first transaction. Let's get started!",
-    "firstTransaction": "Add first transaction",
+    "firstTransaction": "New transaction",
     "investments": "Investments",
     "recurring": "Recurring",
-    "billings": "Receivables"
+    "billings": "Receivables",
+    "quickStartTitle": "Quick Start Guide",
+    "quickStartSubtitle": "3 simple steps to organize your finances",
+    "step": "Step",
+    "step1Title": "Name your Workspace",
+    "step1Desc": "Give your financial space a name (e.g., Family, Personal).",
+    "step2Title": "Add your first expense",
+    "step2Desc": "Log a quick expense to start tracking.",
+    "step3Title": "Invite someone",
+    "step3Desc": "Share with a partner or family member.",
+    "lumyInsight": "Daily insight",
+    "askLumy": "Ask Lumy"
+  },
+  "gamification": {
+    "achievements": "Achievements",
+    "unlocked": "unlocked"
+  },
+  "quickTransaction": {
+    "title": "Lightning Transaction",
+    "expense": "Expense",
+    "income": "Income",
+    "howMuch": "How much?",
+    "whatFor": "What for?",
+    "placeholder": "E.g., Groceries, Uber, Salary...",
+    "predicted": "Suggested category",
+    "save": "Save in 1 tap",
+    "saved": "Saved!",
+    "error": "Error saving"
   },
   "forms": {
     "transaction": {
