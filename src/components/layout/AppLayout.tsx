@@ -56,17 +56,13 @@ const OPERATIONS_ITEMS: NavItem[] = [
   { labelKey: "goals", href: "/goals", icon: Target },
 ];
 
-// 🟡 Análises
-const ANALYTICS_ITEMS: NavItem[] = [
+// 🔵 Recursos Pro (inclui Análises)
+const PRO_ITEMS: NavItem[] = [
+  { labelKey: "lumy", href: "/lumy", icon: Bot },
   { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
   { labelKey: "projection", href: "/projection", icon: LineChart },
   { labelKey: "crypto", href: "/crypto", icon: Bitcoin },
   { labelKey: "calculators", href: "/calculators", icon: Calculator },
-];
-
-// 🔵 Recursos Pro
-const PRO_ITEMS: NavItem[] = [
-  { labelKey: "lumy", href: "/lumy", icon: Bot },
   { labelKey: "cobrancas", href: "/billings", icon: Receipt },
   { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
   { labelKey: "recurring", href: "/recurring", icon: Repeat },
@@ -225,15 +221,6 @@ export function AppLayout() {
           isActive={isActive}
           onNavigate={closeSidebar}
           defaultOpen
-        />
-
-        {/* 🟡 Análises */}
-        <CollapsibleGroup
-          label={t("analytics")}
-          items={ANALYTICS_ITEMS}
-          t={t}
-          isActive={isActive}
-          onNavigate={closeSidebar}
         />
 
         {/* 🔵 Recursos Pro */}
