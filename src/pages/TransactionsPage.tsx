@@ -24,6 +24,7 @@ import {
 import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
 import { ImportTransactionsModal } from "@/components/transactions/ImportTransactionsModal";
+import { MiniCalculator } from "@/components/ui/MiniCalculator";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
@@ -410,13 +411,10 @@ export function TransactionsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
-                <input
-                  type="text"
-                  required
+                <MiniCalculator
                   value={form.amount}
-                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  placeholder="0,00"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  onChange={(v) => setForm({ ...form, amount: v })}
+                  placeholder="0,00 ou 10+20+5"
                 />
               </div>
               <div>
