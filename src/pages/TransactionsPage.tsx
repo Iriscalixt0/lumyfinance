@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, convertCurrency, formatAmount, type CurrencyCode } from "@/lib/utils/exchange";
 import {
   Plus,
@@ -65,6 +65,8 @@ const MONTH_NAMES = [
 ];
 
 export function TransactionsPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { toast } = useToast();
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -255,7 +257,7 @@ export function TransactionsPage() {
 
   function copyWhatsApp() {
     const lines = filtered.map(
-      (tx) => `• ${tx.description} — ${tx.type === "income" ? "+" : "-"}${formatBRL(tx.amount)} (${new Date(tx.date).toLocaleDateString("pt-BR")})`
+      (tx) => `• ${tx.description} — ${tx.type === "income" ? "+" : "-"}${formatBRL(tx.amount)} (${fmt.date(tx.date)})`
     );
     const text = `Transações ${MONTH_NAMES[selectedMonth]} ${selectedYear}:\n${lines.join("\n")}\n\nSaldo: ${formatBRL(balance)}`;
     navigator.clipboard.writeText(text);
@@ -315,7 +317,7 @@ export function TransactionsPage() {
         <button
           onClick={() => {
             const rows = filtered.map((tx) => [
-              new Date(tx.date).toLocaleDateString("pt-BR"),
+              fmt.date(tx.date),
               tx.description,
               tx.type === "income" ? "Receita" : "Despesa",
               (tx.amount / 100).toFixed(2).replace(".", ","),
@@ -337,7 +339,7 @@ export function TransactionsPage() {
         <button
           onClick={() => {
             const rows = filtered.map((tx) => [
-              new Date(tx.date).toLocaleDateString("pt-BR"),
+              fmt.date(tx.date),
               tx.description,
               tx.type === "income" ? "Receita" : "Despesa",
               (tx.amount / 100).toFixed(2).replace(".", ","),
@@ -648,7 +650,7 @@ export function TransactionsPage() {
               {filtered.map((tx) => (
                 <div key={tx.id} className="px-6 py-3 grid grid-cols-3 gap-2 items-center group hover:bg-muted/30 transition-colors">
                   <span className="text-xs text-muted-foreground">
-                    {new Date(tx.date).toLocaleDateString("pt-BR")}
+                    {fmt.date(tx.date)}
                   </span>
                   <div>
                     <p className="text-sm font-medium text-foreground truncate">{tx.description}</p>

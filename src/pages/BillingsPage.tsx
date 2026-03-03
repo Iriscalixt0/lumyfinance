@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import {
   Receipt,
   Plus,
@@ -48,6 +48,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function BillingsPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
@@ -215,7 +217,7 @@ export function BillingsPage() {
     const pending = filtered.filter((b) => b.status !== "paid");
     if (!pending.length) { toast("Nenhuma cobrança pendente."); return; }
     const lines = pending.map(
-      (b) => `• ${b.description} — ${formatBRL(b.amount)} (venc. ${new Date(b.due_date).toLocaleDateString("pt-BR")})`
+      (b) => `• ${b.description} — ${formatBRL(b.amount)} (venc. ${fmt.date(b.due_date)})`
     );
     const text = `Cobranças pendentes:\n${lines.join("\n")}\n\nTotal: ${formatBRL(totalPending)}`;
     navigator.clipboard.writeText(text);
@@ -246,7 +248,7 @@ export function BillingsPage() {
               const rows = filtered.map((b) => [
                 b.description,
                 String(b.amount).replace(".", ","),
-                new Date(b.due_date).toLocaleDateString("pt-BR"),
+                fmt.date(b.due_date),
                 STATUS_LABELS[b.status] ?? b.status,
                 b.phone ?? "",
                 b.notes ?? "",
@@ -486,7 +488,7 @@ export function BillingsPage() {
                               {STATUS_LABELS[b.status]}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              Vencimento: {new Date(b.due_date).toLocaleDateString("pt-BR")}
+                              Vencimento: {fmt.date(b.due_date)}
                             </span>
                             {b.phone && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1">

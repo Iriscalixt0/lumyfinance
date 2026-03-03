@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { TrendingUp, Calendar, ArrowRight } from "lucide-react";
 import {
   LineChart,
@@ -23,6 +23,8 @@ interface ProjectionPoint {
 }
 
 export function ProjectionPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNotifications, getNotifCategory } from "@/hooks/useNotifications";
@@ -63,6 +64,7 @@ const SISTEMA_ITEMS = [
 ];
 
 export function AppLayout() {
+  const fmt = useIntlFormat();
   const { user, signOut } = useAuth();
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
   const { notifications, unreadCount, markAsRead, markAllAsRead, dismiss } = useNotifications();
@@ -298,7 +300,7 @@ export function AppLayout() {
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                               <p className="text-[10px] text-muted-foreground mt-1">
-                                {new Date(n.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                {fmt.dateTime(n.created_at)}
                               </p>
                             </div>
                             <button

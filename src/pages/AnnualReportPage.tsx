@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
 import {
   TrendingUp, TrendingDown, Landmark, Scale, ChevronDown,
   BarChart3, PieChart as PieIcon, Target, CalendarRange, Download, Filter, X,
@@ -19,6 +19,8 @@ const FULL_MONTHS = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out"
 const CATEGORY_COLORS = ["#f43f5e","#f59e0b","#3b82f6","#10b981","#8b5cf6","#ec4899","#06b6d4","#84cc16"];
 
 export function AnnualReportPage() {
+  const fmt = useIntlFormat();
+  const formatBRL = fmt.money;
   const { activeWorkspace } = useWorkspace();
   const [year, setYear] = useState(new Date().getFullYear());
   const [showYearPicker, setShowYearPicker] = useState(false);

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { formatBRL } from "@/lib/utils/currency";
+import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { formatByLocale } from "@/hooks/useIntlFormat";
 import { Calculator, Percent, Home, Car, Gift, TrendingUp, ArrowRight } from "lucide-react";
 
 type CalcType = "compound" | "financing" | "thirteenth" | "investment";
@@ -12,7 +13,7 @@ const CALC_TABS: { id: CalcType; label: string; icon: typeof Calculator }[] = [
 ];
 
 function formatCurrency(cents: number) {
-  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return formatByLocale(cents);
 }
 
 function CompoundInterest() {
