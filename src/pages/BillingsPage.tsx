@@ -1,8 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Receipt, Plus, Calendar, AlertCircle, CheckCircle2, Clock, Pencil, Trash2, Download } from "lucide-react";
+import {
+  Receipt,
+  Plus,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Pencil,
+  Trash2,
+  Download,
+  Search,
+  Phone,
+  Copy,
+  Users,
+  Wallet2,
+} from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
@@ -14,14 +28,24 @@ interface Billing {
   amount: number;
   due_date: string;
   status: "pending" | "paid" | "overdue";
+  phone?: string | null;
+  notes?: string | null;
 }
 
 const billingSchema = z.object({
-  description: z.string().trim().min(1, "Descrição obrigatória").max(200),
+  description: z.string().trim().min(1, "Nome obrigatório").max(200),
   amount: z.number().positive("Valor deve ser positivo"),
   due_date: z.string().min(1, "Data obrigatória"),
   status: z.enum(["pending", "paid", "overdue"]),
+  phone: z.string().max(20).optional(),
+  notes: z.string().max(500).optional(),
 });
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Pendente",
+  paid: "Pago",
+  overdue: "Atrasado",
+};
 
 export function BillingsPage() {
   const { toast } = useToast();
@@ -29,38 +53,41 @@ export function BillingsPage() {
   const workspaceId = activeWorkspace?.id ?? null;
   const [billings, setBillings] = useState<Billing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const emptyForm = { description: "", amount: "", due_date: "", status: "pending" as "pending" | "paid" | "overdue" };
+  // Filters
+  const [searchName, setSearchName] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+
+  const emptyForm = {
+    description: "",
+    amount: "",
+    due_date: "",
+    status: "pending" as "pending" | "paid" | "overdue",
+    phone: "",
+    notes: "",
+  };
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     async function load() {
       if (!workspaceId) { setLoading(false); return; }
-
       const { data } = await supabase
         .from("billings")
         .select("*")
         .eq("workspace_id", workspaceId)
         .order("due_date", { ascending: true });
-
       setBillings(data ?? []);
       setLoading(false);
     }
     load();
   }, [workspaceId]);
-
-  function openCreate() {
-    setEditingId(null);
-    setForm(emptyForm);
-    setErrors({});
-    setModalOpen(true);
-  }
 
   function openEdit(billing: Billing) {
     setEditingId(billing.id);
@@ -69,9 +96,16 @@ export function BillingsPage() {
       amount: String(billing.amount),
       due_date: billing.due_date,
       status: billing.status,
+      phone: billing.phone || "",
+      notes: billing.notes || "",
     });
     setErrors({});
-    setModalOpen(true);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setErrors({});
   }
 
   function openDelete(id: string) {
@@ -85,9 +119,11 @@ export function BillingsPage() {
 
     const parsed = billingSchema.safeParse({
       description: form.description,
-      amount: parseFloat(form.amount),
+      amount: parseFloat(form.amount.replace(",", ".")),
       due_date: form.due_date,
       status: form.status,
+      phone: form.phone || undefined,
+      notes: form.notes || undefined,
     });
 
     if (!parsed.success) {
@@ -102,10 +138,16 @@ export function BillingsPage() {
     if (!workspaceId) return;
     setSaving(true);
 
+    const payload = {
+      ...parsed.data,
+      phone: parsed.data.phone || null,
+      notes: parsed.data.notes || null,
+    };
+
     if (editingId) {
       const { data, error } = await supabase
         .from("billings")
-        .update(parsed.data)
+        .update(payload)
         .eq("id", editingId)
         .select()
         .single();
@@ -113,22 +155,35 @@ export function BillingsPage() {
       setSaving(false);
       if (error) { setErrors({ description: "Erro ao salvar." }); return; }
       setBillings((prev) => prev.map((b) => (b.id === editingId ? data : b)));
+      toast("Cobrança atualizada!");
     } else {
       const { data, error } = await supabase
         .from("billings")
-        .insert({ ...parsed.data, workspace_id: workspaceId })
+        .insert({ ...payload, workspace_id: workspaceId })
         .select()
         .single();
 
       setSaving(false);
       if (error) { setErrors({ description: "Erro ao salvar." }); return; }
       setBillings((prev) => [...prev, data]);
+      toast("Cobrança criada!");
     }
 
     setForm(emptyForm);
     setEditingId(null);
-    setModalOpen(false);
-    toast(editingId ? "Cobrança atualizada!" : "Cobrança criada!");
+  }
+
+  async function handleMarkPaid(id: string) {
+    const { data, error } = await supabase
+      .from("billings")
+      .update({ status: "paid" })
+      .eq("id", id)
+      .select()
+      .single();
+    if (!error && data) {
+      setBillings((prev) => prev.map((b) => (b.id === id ? data : b)));
+      toast("Marcado como pago!");
+    }
   }
 
   async function handleDelete() {
@@ -142,11 +197,30 @@ export function BillingsPage() {
     toast("Cobrança excluída!");
   }
 
-  const statusConfig = {
-    pending: { label: "Pendente", icon: Clock, className: "text-amber-500 bg-amber-500/10" },
-    paid: { label: "Pago", icon: CheckCircle2, className: "text-emerald-500 bg-emerald-500/10" },
-    overdue: { label: "Atrasado", icon: AlertCircle, className: "text-rose-500 bg-rose-500/10" },
-  };
+  const filtered = useMemo(() => {
+    return billings.filter((b) => {
+      if (searchName && !b.description.toLowerCase().includes(searchName.toLowerCase())) return false;
+      if (filterStatus !== "all" && b.status !== filterStatus) return false;
+      if (filterDateFrom && b.due_date < filterDateFrom) return false;
+      if (filterDateTo && b.due_date > filterDateTo) return false;
+      return true;
+    });
+  }, [billings, searchName, filterStatus, filterDateFrom, filterDateTo]);
+
+  const totalPending = useMemo(() => filtered.filter((b) => b.status !== "paid").reduce((s, b) => s + b.amount, 0), [filtered]);
+  const totalPaid = useMemo(() => filtered.filter((b) => b.status === "paid").reduce((s, b) => s + b.amount, 0), [filtered]);
+  const debtorsCount = useMemo(() => filtered.filter((b) => b.status !== "paid").length, [filtered]);
+
+  function copyWhatsApp() {
+    const pending = filtered.filter((b) => b.status !== "paid");
+    if (!pending.length) { toast("Nenhuma cobrança pendente."); return; }
+    const lines = pending.map(
+      (b) => `• ${b.description} — ${formatBRL(b.amount)} (venc. ${new Date(b.due_date).toLocaleDateString("pt-BR")})`
+    );
+    const text = `Cobranças pendentes:\n${lines.join("\n")}\n\nTotal: ${formatBRL(totalPending)}`;
+    navigator.clipboard.writeText(text);
+    toast("Copiado para a área de transferência!");
+  }
 
   if (loading) {
     return (
@@ -158,117 +232,316 @@ export function BillingsPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Cobranças</h1>
-          <p className="text-muted-foreground mt-1">Gerencie suas contas a pagar e receber</p>
+          <h1 className="text-2xl font-bold text-foreground">Cobranças</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Registre quem te deve, o valor e envie por PDF, WhatsApp ou CSV
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              const statusLabels: Record<string, string> = { pending: "Pendente", paid: "Pago", overdue: "Atrasado" };
-              const rows = billings.map((b) => [
+              const rows = filtered.map((b) => [
                 b.description,
                 String(b.amount).replace(".", ","),
                 new Date(b.due_date).toLocaleDateString("pt-BR"),
-                statusLabels[b.status] ?? b.status,
+                STATUS_LABELS[b.status] ?? b.status,
+                b.phone ?? "",
+                b.notes ?? "",
               ]);
-              downloadCSV("cobrancas.csv", ["Descrição", "Valor", "Vencimento", "Status"], rows);
+              downloadCSV("cobrancas.csv", ["Nome", "Valor", "Vencimento", "Status", "Telefone", "Obs"], rows);
             }}
-            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors inline-flex items-center gap-2"
+            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
           >
-            <Download className="h-4 w-4" /> CSV
+            <Download className="h-4 w-4" /> Exportar CSV
           </button>
-          <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Nova cobrança
+          <button
+            onClick={copyWhatsApp}
+            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          >
+            <Copy className="h-4 w-4" /> Copiar p/ WhatsApp
           </button>
         </div>
       </div>
 
-      {billings.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-12 text-center">
-          <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma cobrança cadastrada</h3>
-          <p className="text-muted-foreground">Adicione suas contas a pagar para não perder nenhum vencimento.</p>
+      {/* Filters */}
+      <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Cliente (nome)</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              placeholder="Buscar por nome..."
+              className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {billings.map((billing) => {
-            const status = statusConfig[billing.status] || statusConfig.pending;
-            const StatusIcon = status.icon;
-            return (
-              <div key={billing.id} className="bg-card border border-border rounded-xl p-5 flex items-center justify-between hover:shadow-card-hover transition-shadow group">
-                <div className="flex items-center gap-4">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${status.className}`}>
-                    <StatusIcon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">{billing.description}</p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      Vence em {new Date(billing.due_date).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className="text-lg font-bold text-foreground">{formatBRL(billing.amount)}</p>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(billing)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => openDelete(billing.id)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label="Excluir">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div>
+          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Status</label>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="all">Todos</option>
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="overdue">Atrasado</option>
+          </select>
         </div>
-      )}
+        <div>
+          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Vencimento de</label>
+          <input
+            type="date"
+            value={filterDateFrom}
+            onChange={(e) => setFilterDateFrom(e.target.value)}
+            className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">até</label>
+          <input
+            type="date"
+            value={filterDateTo}
+            onChange={(e) => setFilterDateTo(e.target.value)}
+            className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </div>
 
-      {/* Modal de criação/edição */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? "Editar cobrança" : "Nova cobrança"}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Descrição</label>
-            <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Ex: Conta de luz" className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={200} />
-            {errors.description && <p className="text-sm text-destructive mt-1">{errors.description}</p>}
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Wallet2 className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total a receber</span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <p className="text-2xl font-bold text-foreground">{formatBRL(totalPending)}</p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Devedores (filtro)</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{debtorsCount} itens</p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Já recebido (pagos)</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{formatBRL(totalPaid)}</p>
+        </div>
+      </div>
+
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Form */}
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <h3 className="font-semibold text-foreground mb-5 flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            {editingId ? "Editar cobrança" : "Nova cobrança"}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Valor (R$)</label>
-              <input type="number" step="0.01" min="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0,00" className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
-              {errors.amount && <p className="text-sm text-destructive mt-1">{errors.amount}</p>}
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Quem deve *
+              </label>
+              <input
+                type="text"
+                required
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Nome da pessoa"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                maxLength={200}
+              />
+              {errors.description && <p className="text-xs text-destructive mt-1">{errors.description}</p>}
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Vencimento</label>
-              <input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
-              {errors.due_date && <p className="text-sm text-destructive mt-1">{errors.due_date}</p>}
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Valor (R$) *
+              </label>
+              <input
+                type="text"
+                required
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                placeholder="0,00"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {errors.amount && <p className="text-xs text-destructive mt-1">{errors.amount}</p>}
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Vencimento
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="date"
+                  required
+                  value={form.due_date}
+                  onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              {errors.due_date && <p className="text-xs text-destructive mt-1">{errors.due_date}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Telefone (WhatsApp)
+              </label>
+              <input
+                type="text"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="11999999999"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                maxLength={20}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Observações
+              </label>
+              <input
+                type="text"
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Detalhes opcionais"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                maxLength={500}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
+              >
+                {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Adicionar cobrança"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Right: List */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-primary" />
+              Cobranças
+            </h3>
+            <span className="text-xs text-muted-foreground">
+              Total a receber: {formatBRL(totalPending)}
+            </span>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Status</label>
-            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as "pending" | "paid" | "overdue" })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
-              <option value="pending">Pendente</option>
-              <option value="paid">Pago</option>
-              <option value="overdue">Atrasado</option>
-            </select>
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
-            <button type="submit" disabled={saving} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-              {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Criar cobrança"}
-            </button>
-          </div>
-        </form>
-      </Modal>
+
+          {filtered.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <Receipt className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">Nenhuma cobrança encontrada.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {filtered.map((b) => {
+                const isPaid = b.status === "paid";
+                const isOverdue = b.status === "overdue";
+                return (
+                  <div key={b.id} className="px-6 py-4 group hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{b.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                isPaid
+                                  ? "bg-emerald-500/10 text-emerald-600"
+                                  : isOverdue
+                                  ? "bg-rose-500/10 text-rose-500"
+                                  : "bg-amber-500/10 text-amber-600"
+                              }`}
+                            >
+                              {STATUS_LABELS[b.status]}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              Vencimento: {new Date(b.due_date).toLocaleDateString("pt-BR")}
+                            </span>
+                            {b.phone && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {b.phone}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <p className={`text-sm font-bold ${isPaid ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                          {formatBRL(b.amount)}
+                        </p>
+                        {!isPaid && (
+                          <button
+                            onClick={() => handleMarkPaid(b.id)}
+                            className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors flex items-center gap-1"
+                          >
+                            <CheckCircle2 className="h-3 w-3" /> Pago
+                          </button>
+                        )}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => openEdit(b)}
+                            className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Editar"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => openDelete(b.id)}
+                            className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                            aria-label="Excluir"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Modal de confirmação de exclusão */}
       <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir cobrança">
         <p className="text-muted-foreground mb-6">Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.</p>
         <div className="flex justify-end gap-3">
-          <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
+          <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">
+            Cancelar
+          </button>
           <button onClick={handleDelete} disabled={saving} className="px-5 py-2.5 rounded-lg bg-destructive text-destructive-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
             {saving ? "Excluindo..." : "Excluir"}
           </button>
