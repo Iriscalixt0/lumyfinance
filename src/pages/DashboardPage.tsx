@@ -7,6 +7,8 @@ import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
 import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
+import { LumyInsightWidget } from "@/components/dashboard/LumyInsightWidget";
+import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
 import {
   ArrowRight,
   Snowflake,
@@ -22,6 +24,11 @@ import {
   Cloudy,
   Sparkles,
   Wallet2,
+  Plus,
+  Users,
+  PenLine,
+  Bookmark,
+  CheckCircle2,
 } from "lucide-react";
 
 const MONTH_ICONS = [
@@ -54,6 +61,7 @@ export function DashboardPage() {
   const [budgets, setBudgets] = useState<BudgetSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasTransactions, setHasTransactions] = useState(false);
+  const [quickTxOpen, setQuickTxOpen] = useState(false);
 
   const currentYear = new Date().getFullYear();
 
@@ -126,8 +134,14 @@ export function DashboardPage() {
     );
   }
 
-  /* ---------- Empty / Welcome State ---------- */
+  /* ---------- Empty / Welcome State — Quick Start Guide ---------- */
   if (!hasTransactions) {
+    const steps = [
+      { num: 1, icon: Bookmark, titleKey: "step1Title", descKey: "step1Desc", href: "/workspace", done: !!activeWorkspace?.name },
+      { num: 2, icon: PenLine, titleKey: "step2Title", descKey: "step2Desc", href: "/transactions", done: false },
+      { num: 3, icon: Users, titleKey: "step3Title", descKey: "step3Desc", href: "/workspace", done: false },
+    ];
+
     return (
       <div className="animate-fade space-y-6">
         <div>
@@ -137,22 +151,54 @@ export function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center justify-center text-center py-12 sm:py-20 px-4">
-          <div className="h-24 w-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-6">
-            <Wallet2 className="h-12 w-12 text-primary" />
+        {/* Quick Start Guide */}
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
+          <div className="text-center mb-8">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">{t("quickStartTitle")}</h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">{t("quickStartSubtitle")}</p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-            {t("welcomeTitle")}
-          </h2>
-          <p className="text-muted-foreground max-w-md mb-8 text-base">
-            {t("welcomeSubtitle")}
-          </p>
-          <Link
-            to="/transactions"
-            className="bg-hero-gradient text-primary-foreground font-bold text-lg px-8 py-4 rounded-2xl hover:opacity-90 transition-opacity inline-flex items-center gap-3 shadow-lg"
-          >
-            {t("firstTransaction")} <ArrowRight className="h-5 w-5" />
-          </Link>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+            {steps.map((step) => (
+              <Link
+                key={step.num}
+                to={step.href}
+                className={`relative flex flex-col items-center text-center p-5 rounded-xl border transition-all hover:shadow-md hover:-translate-y-0.5 group ${
+                  step.done
+                    ? "border-emerald-500/30 bg-emerald-500/5"
+                    : "border-border hover:border-primary/30 bg-card"
+                }`}
+              >
+                {step.done && (
+                  <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-emerald-500" />
+                )}
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                  step.done
+                    ? "bg-emerald-500/10 text-emerald-600"
+                    : "bg-primary/10 text-primary group-hover:bg-primary/20"
+                }`}>
+                  <step.icon className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                  {t("step")} {step.num}
+                </span>
+                <h3 className="text-sm font-bold text-foreground mb-1">{t(step.titleKey)}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t(step.descKey)}</p>
+              </Link>
+            ))}
+          </div>
+
+          <div className="text-center mt-6">
+            <button
+              onClick={() => setQuickTxOpen(true)}
+              className="bg-hero-gradient text-primary-foreground font-bold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity inline-flex items-center gap-2 shadow-lg"
+            >
+              <Plus className="h-4 w-4" /> {t("firstTransaction")}
+            </button>
+          </div>
         </div>
 
         {/* Gamification still shown */}
@@ -163,29 +209,11 @@ export function DashboardPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-          {[
-            { labelKey: "seeReports", href: "/annual-report", primary: true },
-            { labelKey: "transactions", href: "/transactions" },
-            { labelKey: "budgets", href: "/budgets" },
-            { labelKey: "billings", href: "/billings" },
-            { labelKey: "investments", href: "/investments" },
-            { labelKey: "goals", href: "/goals" },
-            { labelKey: "recurring", href: "/recurring" },
-          ].map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                link.primary
-                  ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`}
-            >
-              {t(link.labelKey)}
-            </Link>
-          ))}
-        </div>
+        <QuickTransactionModal
+          open={quickTxOpen}
+          onClose={() => setQuickTxOpen(false)}
+          onSaved={() => window.location.reload()}
+        />
       </div>
     );
   }
@@ -222,6 +250,9 @@ export function DashboardPage() {
         })}
       </div>
 
+      {/* Lumy Insight */}
+      <LumyInsightWidget />
+
       {/* Gamification */}
       {!gamLoading && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -229,6 +260,20 @@ export function DashboardPage() {
           <AchievementsPanel unlockedKeys={unlockedKeys} />
         </div>
       )}
+
+      {/* Quick Transaction FAB */}
+      <button
+        onClick={() => setQuickTxOpen(true)}
+        className="fixed bottom-20 right-6 z-40 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center justify-center"
+        aria-label={t("firstTransaction")}
+        title={t("firstTransaction")}
+      >
+        <Plus className="h-5 w-5" />
+      </button>
+      <QuickTransactionModal
+        open={quickTxOpen}
+        onClose={() => setQuickTxOpen(false)}
+      />
 
       {/* Budget progress */}
       {budgets.length > 0 && (

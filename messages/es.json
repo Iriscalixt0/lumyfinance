@@ -318,13 +318,40 @@
     "goals": "Metas",
     "freeBalance": "Saldo libre",
     "selectWorkspace": "Seleccione un espacio de trabajo en configuración.",
-    "quickLinks": "Accesos rápidos",
+    "quickLinks": "Ver todos",
     "welcomeTitle": "¡Bienvenido a Lumyf! 🎉",
     "welcomeSubtitle": "Tu dashboard cobrará vida cuando registres tu primera transacción. ¡Empecemos!",
-    "firstTransaction": "Registrar primera transacción",
+    "firstTransaction": "Nueva transacción",
     "investments": "Inversiones",
     "recurring": "Recurrentes",
-    "billings": "Cobros"
+    "billings": "Cobros",
+    "quickStartTitle": "Guía de Inicio Rápido",
+    "quickStartSubtitle": "3 pasos simples para organizar tus finanzas",
+    "step": "Paso",
+    "step1Title": "Nombra tu Workspace",
+    "step1Desc": "Dale un nombre a tu espacio financiero (ej: Familia, Personal).",
+    "step2Title": "Agrega tu primer gasto",
+    "step2Desc": "Registra un gasto rápido para empezar a rastrear.",
+    "step3Title": "Invita a alguien",
+    "step3Desc": "Comparte con tu pareja o familiar.",
+    "lumyInsight": "Insight del día",
+    "askLumy": "Preguntar a Lumy"
+  },
+  "gamification": {
+    "achievements": "Logros",
+    "unlocked": "desbloqueados"
+  },
+  "quickTransaction": {
+    "title": "Transacción Relámpago",
+    "expense": "Gasto",
+    "income": "Ingreso",
+    "howMuch": "¿Cuánto gastaste?",
+    "whatFor": "¿Qué fue?",
+    "placeholder": "Ej: Supermercado, Uber, Salario...",
+    "predicted": "Categoría sugerida",
+    "save": "Guardar en 1 toque",
+    "saved": "¡Guardado!",
+    "error": "Error al guardar"
   },
   "forms": {
     "transaction": {
