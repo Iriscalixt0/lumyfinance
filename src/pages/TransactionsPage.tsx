@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
+import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, convertCurrency, formatAmount, type CurrencyCode } from "@/lib/utils/exchange";
 import {
   Plus,
   ArrowDownLeft,
@@ -39,6 +40,9 @@ interface Transaction {
   date: string;
   category_id: string | null;
   notes: string | null;
+  currency?: string;
+  original_amount?: number;
+  exchange_rate?: number;
 }
 
 interface Category {
@@ -91,8 +95,11 @@ export function TransactionsPage() {
     date: now.toISOString().split("T")[0],
     category_id: "",
     notes: "",
+    currency: DEFAULT_CURRENCY as CurrencyCode,
   };
   const [form, setForm] = useState(emptyForm);
+  const [convertedPreview, setConvertedPreview] = useState<{ amount: number; rate: number } | null>(null);
+  const [converting, setConverting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -138,18 +145,21 @@ export function TransactionsPage() {
     setEditingId(tx.id);
     setForm({
       description: tx.description,
-      amount: String(tx.amount / 100),
+      amount: String((tx.original_amount || tx.amount) / 100),
       type: tx.type === "transfer" ? "expense" : tx.type,
       date: tx.date,
       category_id: tx.category_id || "",
       notes: tx.notes || "",
+      currency: (tx.currency as CurrencyCode) || DEFAULT_CURRENCY,
     });
+    setConvertedPreview(null);
     setFormError("");
   }
 
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setConvertedPreview(null);
     setFormError("");
   }
 
@@ -159,20 +169,41 @@ export function TransactionsPage() {
     setFormError("");
     setSaving(true);
 
-    const amountCents = Math.round(parseFloat(form.amount.replace(",", ".")) * 100);
-    if (isNaN(amountCents) || amountCents <= 0) {
+    const rawAmount = Math.round(parseFloat(form.amount.replace(",", ".")) * 100);
+    if (isNaN(rawAmount) || rawAmount <= 0) {
       setFormError("Valor inválido.");
       setSaving(false);
       return;
     }
 
-    const payload = {
+    // Convert to base currency (BRL) if needed
+    let amountCents = rawAmount;
+    let originalAmount: number | null = null;
+    let exchangeRate: number | null = null;
+
+    if (form.currency !== DEFAULT_CURRENCY) {
+      try {
+        const result = await convertCurrency(rawAmount, form.currency, DEFAULT_CURRENCY);
+        amountCents = result.convertedCents;
+        originalAmount = rawAmount;
+        exchangeRate = result.rate;
+      } catch {
+        setFormError("Erro ao converter moeda. Tente novamente.");
+        setSaving(false);
+        return;
+      }
+    }
+
+    const payload: Record<string, unknown> = {
       description: form.description.trim(),
       amount: amountCents,
       type: form.type,
       date: form.date,
       category_id: form.category_id || null,
       notes: form.notes || null,
+      currency: form.currency,
+      original_amount: originalAmount,
+      exchange_rate: exchangeRate,
     };
 
     if (!payload.description) {
@@ -467,14 +498,43 @@ export function TransactionsPage() {
               })()}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
                 <MiniCalculator
                   value={form.amount}
-                  onChange={(v) => setForm({ ...form, amount: v })}
-                  placeholder="0,00 ou 10+20+5"
+                  onChange={(v) => {
+                    setForm({ ...form, amount: v });
+                    setConvertedPreview(null);
+                  }}
+                  placeholder="0,00"
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Moeda</label>
+                <select
+                  value={form.currency}
+                  onChange={async (e) => {
+                    const cur = e.target.value as CurrencyCode;
+                    setForm({ ...form, currency: cur });
+                    setConvertedPreview(null);
+                    // Auto-preview conversion
+                    const val = parseFloat((form.amount || "0").replace(",", "."));
+                    if (cur !== DEFAULT_CURRENCY && val > 0) {
+                      setConverting(true);
+                      try {
+                        const result = await convertCurrency(Math.round(val * 100), cur, DEFAULT_CURRENCY);
+                        setConvertedPreview({ amount: result.convertedCents, rate: result.rate });
+                      } catch { /* ignore */ }
+                      setConverting(false);
+                    }
+                  }}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  {SUPPORTED_CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
@@ -488,6 +548,27 @@ export function TransactionsPage() {
                 </select>
               </div>
             </div>
+
+            {/* Currency conversion preview */}
+            {form.currency !== DEFAULT_CURRENCY && (
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 text-xs space-y-1">
+                {converting ? (
+                  <p className="text-muted-foreground">Consultando cotação...</p>
+                ) : convertedPreview ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Taxa: 1 {form.currency} = {convertedPreview.rate.toFixed(4)} {DEFAULT_CURRENCY}</span>
+                      <span className="font-semibold text-foreground">≈ {formatAmount(convertedPreview.amount, DEFAULT_CURRENCY)}</span>
+                    </div>
+                    <p className="text-muted-foreground">O valor será salvo em {DEFAULT_CURRENCY} com a cotação atual.</p>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Digite o valor para ver a conversão automática para {DEFAULT_CURRENCY}.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
@@ -576,9 +657,16 @@ export function TransactionsPage() {
                     )}
                   </div>
                   <div className="flex items-center justify-end gap-2">
-                    <p className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-500" : "text-destructive"}`}>
-                      {tx.type === "income" ? "+" : "-"}{formatBRL(tx.amount)}
-                    </p>
+                    <div className="text-right">
+                      <p className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-500" : "text-destructive"}`}>
+                        {tx.type === "income" ? "+" : "-"}{formatBRL(tx.amount)}
+                      </p>
+                      {tx.currency && tx.currency !== DEFAULT_CURRENCY && tx.original_amount && (
+                        <p className="text-[10px] text-muted-foreground">
+                          {formatAmount(tx.original_amount, tx.currency as CurrencyCode)} · {tx.exchange_rate?.toFixed(4)}
+                        </p>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => openEdit(tx)} className="h-6 w-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
                         <Pencil className="h-3 w-3" />
