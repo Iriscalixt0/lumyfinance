@@ -46,6 +46,13 @@ interface Category {
   type: string;
 }
 
+interface Budget {
+  id: string;
+  category: string;
+  limit_amount: number;
+  spent_amount: number;
+}
+
 const MONTH_NAMES = [
   "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
   "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
@@ -58,6 +65,7 @@ export function TransactionsPage() {
   const wsId = activeWorkspace?.id ?? null;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -85,12 +93,14 @@ export function TransactionsPage() {
   useEffect(() => {
     async function load() {
       if (!wsId) { setLoading(false); return; }
-      const [txRes, catRes] = await Promise.all([
+      const [txRes, catRes, budgetRes] = await Promise.all([
         supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false }),
         supabase.from("categories").select("id, name, icon, type").eq("workspace_id", wsId),
+        supabase.from("budgets").select("id, category, limit_amount, spent_amount").eq("workspace_id", wsId),
       ]);
       setTransactions(txRes.data ?? []);
       setCategories(catRes.data ?? []);
+      setBudgets(budgetRes.data ?? []);
       setLoading(false);
     }
     load();
@@ -406,6 +416,43 @@ export function TransactionsPage() {
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                 ))}
               </select>
+              {/* Budget feedback for expenses */}
+              {form.type === "expense" && form.category_id && (() => {
+                const selectedCat = categories.find((c) => c.id === form.category_id);
+                if (!selectedCat) return null;
+                const budget = budgets.find((b) => b.category === selectedCat.name);
+                if (!budget) return null;
+                const inputCents = Math.round(parseFloat((form.amount || "0").replace(",", ".")) * 100) || 0;
+                const remainingAfter = budget.limit_amount - budget.spent_amount - inputCents;
+                const remainingNow = budget.limit_amount - budget.spent_amount;
+                const pctAfter = budget.limit_amount > 0 ? Math.min(((budget.spent_amount + inputCents) / budget.limit_amount) * 100, 100) : 0;
+                const isOver = remainingAfter < 0;
+                const isWarning = pctAfter >= 80 && !isOver;
+                return (
+                  <div className={`mt-2 p-3 rounded-xl text-xs space-y-1.5 ${isOver ? "bg-destructive/10 border border-destructive/20" : isWarning ? "bg-amber-500/10 border border-amber-500/20" : "bg-emerald-500/10 border border-emerald-500/20"}`}>
+                    <div className="flex justify-between font-medium">
+                      <span className="text-muted-foreground">Orçamento de {selectedCat.name}</span>
+                      <span className={isOver ? "text-destructive" : isWarning ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}>
+                        {pctAfter.toFixed(0)}% usado
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${isOver ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-emerald-500"}`}
+                        style={{ width: `${Math.min(pctAfter, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Disponível agora: {formatBRL(Math.max(remainingNow, 0))}</span>
+                      {inputCents > 0 && (
+                        <span className={isOver ? "text-destructive font-semibold" : ""}>
+                          {isOver ? `Estouro: ${formatBRL(Math.abs(remainingAfter))}` : `Após lançar: ${formatBRL(remainingAfter)}`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
