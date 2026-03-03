@@ -95,6 +95,7 @@ export function TransactionsPage() {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [filterCategoryId, setFilterCategoryId] = useState("");
+  const [filterCurrency, setFilterCurrency] = useState("");
 
   const emptyForm = {
     description: "",
@@ -134,9 +135,32 @@ export function TransactionsPage() {
   }, [transactions, selectedMonth, selectedYear]);
 
   const filtered = useMemo(() => {
-    if (!filterCategoryId) return monthFiltered;
-    return monthFiltered.filter((tx) => tx.category_id === filterCategoryId);
-  }, [monthFiltered, filterCategoryId]);
+    let result = monthFiltered;
+    if (filterCategoryId) result = result.filter((tx) => tx.category_id === filterCategoryId);
+    if (filterCurrency) result = result.filter((tx) => (tx.currency || DEFAULT_CURRENCY) === filterCurrency);
+    return result;
+  }, [monthFiltered, filterCategoryId, filterCurrency]);
+
+  // KPI: expenses grouped by currency
+  const expenseByCurrency = useMemo(() => {
+    const map = new Map<string, number>();
+    monthFiltered
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        const cur = t.currency || DEFAULT_CURRENCY;
+        map.set(cur, (map.get(cur) || 0) + (t.original_amount || t.amount));
+      });
+    return Array.from(map.entries())
+      .map(([code, total]) => ({ code: code as CurrencyCode, total }))
+      .sort((a, b) => b.total - a.total);
+  }, [monthFiltered]);
+
+  // Unique currencies in current month for filter dropdown
+  const usedCurrencies = useMemo(() => {
+    const set = new Set<string>();
+    monthFiltered.forEach((t) => set.add(t.currency || DEFAULT_CURRENCY));
+    return Array.from(set).sort();
+  }, [monthFiltered]);
 
   // Summary
   const totalIncome = useMemo(() => monthFiltered.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0), [monthFiltered]);
@@ -411,6 +435,27 @@ export function TransactionsPage() {
         </div>
       </div>
 
+      {/* Currency breakdown KPI */}
+      {expenseByCurrency.length > 1 && (
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Despesas por moeda</h4>
+          <div className="flex flex-wrap gap-4">
+            {expenseByCurrency.map(({ code, total }) => {
+              const info = SUPPORTED_CURRENCIES.find((c) => c.code === code);
+              return (
+                <div key={code} className="flex items-center gap-2">
+                  <span className="text-lg">{info?.flag ?? "💱"}</span>
+                  <div>
+                    <p className="text-xs font-medium text-foreground">{code}</p>
+                    <p className="text-sm font-bold text-destructive">{formatAmount(total, code)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Free balance */}
       <div className="flex justify-end">
         <p className="text-sm text-muted-foreground">
@@ -634,16 +679,29 @@ export function TransactionsPage() {
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold text-foreground">Histórico do mês</h3>
-            <select
-              value={filterCategoryId}
-              onChange={(e) => setFilterCategoryId(e.target.value)}
-              className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none"
-            >
-              <option value="">Todas as categorias</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={filterCurrency}
+                onChange={(e) => setFilterCurrency(e.target.value)}
+                className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none"
+              >
+                <option value="">Todas moedas</option>
+                {usedCurrencies.map((c) => {
+                  const info = SUPPORTED_CURRENCIES.find((s) => s.code === c);
+                  return <option key={c} value={c}>{info?.flag ?? "💱"} {c}</option>;
+                })}
+              </select>
+              <select
+                value={filterCategoryId}
+                onChange={(e) => setFilterCategoryId(e.target.value)}
+                className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none"
+              >
+                <option value="">Todas categorias</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Table header */}
