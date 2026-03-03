@@ -17,3 +17,6 @@ site_url = "http://localhost:3000"
 
 [functions.check-alerts]
 verify_jwt = false
+
+[functions.scan-receipt]
+verify_jwt = false

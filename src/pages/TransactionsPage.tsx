@@ -21,10 +21,12 @@ import {
   Mic,
   FileText,
   Upload,
+  Camera,
 } from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
 import { ImportTransactionsModal } from "@/components/transactions/ImportTransactionsModal";
+import { ReceiptScanner } from "@/components/transactions/ReceiptScanner";
 import { MiniCalculator } from "@/components/ui/MiniCalculator";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -83,6 +85,7 @@ export function TransactionsPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [importOpen, setImportOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   // Month/year selectors
   const now = new Date();
@@ -362,6 +365,12 @@ export function TransactionsPage() {
           className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
         >
           <Upload className="h-4 w-4" /> Importar
+        </button>
+        <button
+          onClick={() => setScannerOpen(true)}
+          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+        >
+          <Camera className="h-4 w-4" /> Escanear recibo
         </button>
       </div>
 
@@ -706,6 +715,31 @@ export function TransactionsPage() {
           setTransactions(data ?? []);
         }}
       />
+
+      <Modal open={scannerOpen} onClose={() => setScannerOpen(false)} title="Escanear recibo">
+        <ReceiptScanner
+          categories={categories}
+          onExtracted={(data) => {
+            setScannerOpen(false);
+            // Auto-fill the form with extracted data
+            const matchedCat = categories.find(
+              (c) => c.name.toLowerCase() === (data.category || "").toLowerCase() && c.type === data.type
+            );
+            setForm({
+              description: data.description || "",
+              amount: data.amount ? String(data.amount).replace(".", ",") : "",
+              type: data.type || "expense",
+              date: data.date || new Date().toISOString().split("T")[0],
+              category_id: matchedCat?.id || "",
+              notes: `Extraído via OCR (confiança: ${data.confidence}%)`,
+              currency: "BRL" as any,
+            });
+            setConvertedPreview(null);
+            toast("Dados do recibo extraídos! Revise e salve.");
+          }}
+          onClose={() => setScannerOpen(false)}
+        />
+      </Modal>
 
       <AchievementToast
         achievement={newAchievement}
