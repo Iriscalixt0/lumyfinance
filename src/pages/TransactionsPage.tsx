@@ -28,6 +28,8 @@ import { MiniCalculator } from "@/components/ui/MiniCalculator";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
+import { useGamification, type AchievementDef } from "@/hooks/useGamification";
+import { AchievementToast } from "@/components/gamification/AchievementToast";
 
 interface Transaction {
   id: string;
@@ -63,6 +65,8 @@ export function TransactionsPage() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
+  const { recordActivity } = useGamification(wsId);
+  const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -197,6 +201,14 @@ export function TransactionsPage() {
     setSaving(false);
     toast(isEdit ? "Transação atualizada!" : "Transação criada!");
     triggerAlertCheck(wsId);
+
+    // Gamification: record activity and show achievement toast
+    if (!isEdit) {
+      const newAchs = await recordActivity();
+      if (newAchs && newAchs.length > 0) {
+        setNewAchievement(newAchs[0]);
+      }
+    }
   };
 
   async function handleDelete() {
@@ -603,6 +615,11 @@ export function TransactionsPage() {
           const { data } = await supabase.from("transactions").select("*").eq("workspace_id", wsId!).order("date", { ascending: false });
           setTransactions(data ?? []);
         }}
+      />
+
+      <AchievementToast
+        achievement={newAchievement}
+        onDone={() => setNewAchievement(null)}
       />
     </div>
   );

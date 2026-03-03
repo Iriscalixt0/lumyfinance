@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
+import { useGamification } from "@/hooks/useGamification";
+import { StreakCard } from "@/components/gamification/StreakCard";
+import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
 import {
   ArrowRight,
   HelpCircle,
@@ -56,6 +59,7 @@ interface BudgetSummary {
 
 export function DashboardPage() {
   const { activeWorkspace } = useWorkspace();
+  const { streak, unlockedKeys, totalTx, loading: gamLoading } = useGamification(activeWorkspace?.id ?? null);
   const [monthlyData, setMonthlyData] = useState<MonthData[]>(
     Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 }))
   );
@@ -178,6 +182,14 @@ export function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Gamification */}
+      {!gamLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <StreakCard streak={streak} totalTx={totalTx} />
+          <AchievementsPanel unlockedKeys={unlockedKeys} />
+        </div>
+      )}
 
       {/* Budget progress */}
       {budgets.length > 0 && (
