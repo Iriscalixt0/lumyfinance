@@ -49,27 +49,31 @@ interface NavItem {
 
 const OVERVIEW_ITEM: NavItem = { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard };
 
-const FINANCIAL_ITEMS: NavItem[] = [
+// 🟢 Operações
+const OPERATIONS_ITEMS: NavItem[] = [
   { labelKey: "transactions", href: "/transactions", icon: ArrowLeftRight },
   { labelKey: "investments", href: "/investments", icon: TrendingUp },
-  { labelKey: "cobrancas", href: "/billings", icon: Receipt },
   { labelKey: "goals", href: "/goals", icon: Target },
+];
+
+// 🟡 Análises
+const ANALYTICS_ITEMS: NavItem[] = [
+  { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
+  { labelKey: "projection", href: "/projection", icon: LineChart },
+  { labelKey: "crypto", href: "/crypto", icon: Bitcoin },
+  { labelKey: "calculators", href: "/calculators", icon: Calculator },
+];
+
+// 🔵 Recursos Pro
+const PRO_ITEMS: NavItem[] = [
+  { labelKey: "lumy", href: "/lumy", icon: Bot },
+  { labelKey: "cobrancas", href: "/billings", icon: Receipt },
   { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
   { labelKey: "recurring", href: "/recurring", icon: Repeat },
 ];
 
-const ANALYTICS_ITEMS: NavItem[] = [
-  { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
-  { labelKey: "projection", href: "/projection", icon: LineChart },
-  { labelKey: "calculators", href: "/calculators", icon: Calculator },
-  { labelKey: "crypto", href: "/crypto", icon: Bitcoin },
-];
-
-const ASSISTANT_ITEMS: NavItem[] = [
-  { labelKey: "lumy", href: "/lumy", icon: Bot },
-];
-
-const CONFIG_ITEMS: NavItem[] = [
+// ⚙️ Sistema
+const SYSTEM_ITEMS: NavItem[] = [
   { labelKey: "plan", href: "/plan", icon: CreditCard },
   { labelKey: "workspace", href: "/workspace", icon: Users },
   { labelKey: "support", href: "/support", icon: MessageCircle },
@@ -96,33 +100,31 @@ function CollapsibleGroup({ label, items, t, isActive, onNavigate, defaultOpen =
         className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
       >
         <span>{label}</span>
-        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-0" : "-rotate-90"}`} />
+        <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${open ? "rotate-0" : "-rotate-90"}`} />
       </button>
-      {open && (
-        <div className="space-y-0.5 mt-0.5">
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={onNavigate}
-              title={t(item.labelKey)}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
-                isActive(item.href)
-                  ? "bg-primary/10 text-primary shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary hover:translate-x-0.5"
-              }`}
-            >
-              <item.icon className={`h-5 w-5 shrink-0 transition-colors ${
-                isActive(item.href) ? "text-primary" : "group-hover:text-foreground"
-              }`} />
-              <span className="truncate">{t(item.labelKey)}</span>
-              {isActive(item.href) && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
-              )}
-            </Link>
-          ))}
-        </div>
-      )}
+      <div className={`space-y-0.5 mt-0.5 overflow-hidden transition-all duration-200 ${open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
+        {items.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            onClick={onNavigate}
+            title={t(item.labelKey)}
+            className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+              isActive(item.href)
+                ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:translate-x-0.5 hover:shadow-sm"
+            }`}
+          >
+            <item.icon className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
+              isActive(item.href) ? "text-primary scale-110" : "group-hover:text-foreground group-hover:scale-105"
+            }`} />
+            <span className="truncate">{t(item.labelKey)}</span>
+            {isActive(item.href) && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+            )}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -180,21 +182,21 @@ export function AppLayout() {
       </div>
 
       {/* Nav sections */}
-      <div className="flex-1 overflow-y-auto px-3 space-y-4">
-        {/* Overview (always visible, no group) */}
+      <div className="flex-1 overflow-y-auto px-3 space-y-3">
+        {/* Overview (always visible) */}
         <div>
           <Link
             to={OVERVIEW_ITEM.href}
             onClick={closeSidebar}
             title={t(OVERVIEW_ITEM.labelKey)}
-            className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
+            className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
               isActive(OVERVIEW_ITEM.href)
-                ? "bg-primary/10 text-primary shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary hover:translate-x-0.5"
+                ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:translate-x-0.5 hover:shadow-sm"
             }`}
           >
-            <OVERVIEW_ITEM.icon className={`h-5 w-5 shrink-0 transition-colors ${
-              isActive(OVERVIEW_ITEM.href) ? "text-primary" : "group-hover:text-foreground"
+            <OVERVIEW_ITEM.icon className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
+              isActive(OVERVIEW_ITEM.href) ? "text-primary scale-110" : "group-hover:text-foreground group-hover:scale-105"
             }`} />
             <span className="truncate">{t(OVERVIEW_ITEM.labelKey)}</span>
             {isActive(OVERVIEW_ITEM.href) && (
@@ -203,17 +205,29 @@ export function AppLayout() {
           </Link>
         </div>
 
-        {/* Financeiro */}
+        {/* CTA — Nova Transação */}
+        <div className="px-1">
+          <Link
+            to="/transactions?new=1"
+            onClick={closeSidebar}
+            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.97] transition-all duration-200 w-full"
+          >
+            <Plus className="h-4 w-4" />
+            {t("newTransaction")}
+          </Link>
+        </div>
+
+        {/* 🟢 Operações */}
         <CollapsibleGroup
-          label={t("financial")}
-          items={FINANCIAL_ITEMS}
+          label={t("operations")}
+          items={OPERATIONS_ITEMS}
           t={t}
           isActive={isActive}
           onNavigate={closeSidebar}
           defaultOpen
         />
 
-        {/* Análises */}
+        {/* 🟡 Análises */}
         <CollapsibleGroup
           label={t("analytics")}
           items={ANALYTICS_ITEMS}
@@ -222,19 +236,19 @@ export function AppLayout() {
           onNavigate={closeSidebar}
         />
 
-        {/* Assistente */}
+        {/* 🔵 Recursos Pro */}
         <CollapsibleGroup
-          label={t("assistant")}
-          items={ASSISTANT_ITEMS}
+          label={t("pro")}
+          items={PRO_ITEMS}
           t={t}
           isActive={isActive}
           onNavigate={closeSidebar}
         />
 
-        {/* Configurações */}
+        {/* ⚙️ Sistema */}
         <CollapsibleGroup
-          label={t("config")}
-          items={CONFIG_ITEMS}
+          label={t("system")}
+          items={SYSTEM_ITEMS}
           t={t}
           isActive={isActive}
           onNavigate={closeSidebar}
@@ -332,7 +346,7 @@ export function AppLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Notifications */}
             <div className="relative" ref={notifRef}>
               <button
@@ -407,10 +421,7 @@ export function AppLayout() {
               )}
             </div>
 
-            {/* Locale */}
-            <LocaleSwitcher />
-
-            {/* Dark mode toggle (single location — header only) */}
+            {/* Dark mode toggle */}
             <button
               onClick={toggleTheme}
               className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
@@ -419,6 +430,9 @@ export function AppLayout() {
             >
               {theme === "dark" ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
             </button>
+
+            {/* Locale */}
+            <LocaleSwitcher />
           </div>
         </header>
 
