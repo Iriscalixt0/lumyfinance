@@ -156,7 +156,7 @@ export function LumyPage() {
                 <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
                 <p className="text-sm text-muted-foreground mb-4">Olá! Sou a Lumy 👋</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {["Oi Lumy!", "Me dá uma dica", "Como economizar?", "Reserva de emergência", "Como investir?"].map((q) => (
+                  {["Resumo do mês", "Comparar com mês passado", "Saúde financeira", "Dicas personalizadas", "Como economizar?"].map((q) => (
                     <button
                       key={q}
                       onClick={() => {
