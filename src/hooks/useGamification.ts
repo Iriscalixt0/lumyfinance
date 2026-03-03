@@ -31,6 +31,7 @@ export interface AchievementDef {
   key: string;
   name: string;
   description: string;
+  hint: string;
   icon: string;
   category: "streak" | "transactions" | "budget" | "goals" | "investing" | "misc";
   check: (ctx: AchievementContext) => boolean;
@@ -38,39 +39,39 @@ export interface AchievementDef {
 
 export const ACHIEVEMENTS: AchievementDef[] = [
   // ── Streaks ──
-  { key: "first_tx", name: "Primeiro Passo", description: "Lançou sua primeira transação", icon: "🎯", category: "transactions", check: (c) => c.totalTx >= 1 },
-  { key: "streak_3", name: "Constância", description: "3 dias consecutivos lançando gastos", icon: "🔥", category: "streak", check: (c) => c.streak.longest_streak >= 3 },
-  { key: "streak_7", name: "Semana Perfeita", description: "7 dias consecutivos", icon: "⚡", category: "streak", check: (c) => c.streak.longest_streak >= 7 },
-  { key: "streak_14", name: "Disciplinado", description: "14 dias consecutivos", icon: "💪", category: "streak", check: (c) => c.streak.longest_streak >= 14 },
-  { key: "streak_30", name: "Mestre do Hábito", description: "30 dias consecutivos", icon: "🏆", category: "streak", check: (c) => c.streak.longest_streak >= 30 },
+  { key: "first_tx", name: "Primeiro Passo", description: "Lançou sua primeira transação", hint: "Cadastre sua primeira transação", icon: "🎯", category: "transactions", check: (c) => c.totalTx >= 1 },
+  { key: "streak_3", name: "Constância", description: "3 dias consecutivos lançando gastos", hint: "Lance gastos por 3 dias seguidos", icon: "🔥", category: "streak", check: (c) => c.streak.longest_streak >= 3 },
+  { key: "streak_7", name: "Semana Perfeita", description: "7 dias consecutivos", hint: "Lance gastos por 7 dias seguidos", icon: "⚡", category: "streak", check: (c) => c.streak.longest_streak >= 7 },
+  { key: "streak_14", name: "Disciplinado", description: "14 dias consecutivos", hint: "Mantenha 14 dias de streak", icon: "💪", category: "streak", check: (c) => c.streak.longest_streak >= 14 },
+  { key: "streak_30", name: "Mestre do Hábito", description: "30 dias consecutivos", hint: "Mantenha 30 dias de streak", icon: "🏆", category: "streak", check: (c) => c.streak.longest_streak >= 30 },
 
   // ── Transactions ──
-  { key: "tx_10", name: "Organizado", description: "10 transações registradas", icon: "📊", category: "transactions", check: (c) => c.totalTx >= 10 },
-  { key: "tx_50", name: "Detalhista", description: "50 transações registradas", icon: "🔍", category: "transactions", check: (c) => c.totalTx >= 50 },
-  { key: "tx_100", name: "Profissional", description: "100 transações registradas", icon: "💎", category: "transactions", check: (c) => c.totalTx >= 100 },
+  { key: "tx_10", name: "Organizado", description: "10 transações registradas", hint: "Cadastre 10 transações", icon: "📊", category: "transactions", check: (c) => c.totalTx >= 10 },
+  { key: "tx_50", name: "Detalhista", description: "50 transações registradas", hint: "Cadastre 50 transações", icon: "🔍", category: "transactions", check: (c) => c.totalTx >= 50 },
+  { key: "tx_100", name: "Profissional", description: "100 transações registradas", hint: "Cadastre 100 transações", icon: "💎", category: "transactions", check: (c) => c.totalTx >= 100 },
 
   // ── Days active ──
-  { key: "days_10", name: "Veterano", description: "10 dias ativos no total", icon: "📅", category: "streak", check: (c) => c.streak.total_days_active >= 10 },
-  { key: "days_30", name: "Lenda", description: "30 dias ativos no total", icon: "👑", category: "streak", check: (c) => c.streak.total_days_active >= 30 },
+  { key: "days_10", name: "Veterano", description: "10 dias ativos no total", hint: "Use o app por 10 dias diferentes", icon: "📅", category: "streak", check: (c) => c.streak.total_days_active >= 10 },
+  { key: "days_30", name: "Lenda", description: "30 dias ativos no total", hint: "Use o app por 30 dias diferentes", icon: "👑", category: "streak", check: (c) => c.streak.total_days_active >= 30 },
 
   // ── Budget achievements ──
-  { key: "budget_under_1", name: "No Controle", description: "Ficou dentro do orçamento por 1 mês", icon: "✅", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 1 },
-  { key: "budget_under_3", name: "Mão de Ferro", description: "3 meses seguidos dentro do orçamento", icon: "🛡️", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 3 },
-  { key: "budget_under_6", name: "Economia de Ouro", description: "6 meses seguidos dentro do orçamento", icon: "🥇", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 6 },
-  { key: "budget_under_12", name: "Orçamento Imbatível", description: "1 ano inteiro dentro do orçamento", icon: "🏅", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 12 },
+  { key: "budget_under_1", name: "No Controle", description: "Ficou dentro do orçamento por 1 mês", hint: "Fique dentro do orçamento por 1 mês", icon: "✅", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 1 },
+  { key: "budget_under_3", name: "Mão de Ferro", description: "3 meses seguidos dentro do orçamento", hint: "3 meses seguidos dentro do orçamento", icon: "🛡️", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 3 },
+  { key: "budget_under_6", name: "Economia de Ouro", description: "6 meses seguidos dentro do orçamento", hint: "6 meses dentro do orçamento", icon: "🥇", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 6 },
+  { key: "budget_under_12", name: "Orçamento Imbatível", description: "1 ano inteiro dentro do orçamento", hint: "12 meses dentro do orçamento", icon: "🏅", category: "budget", check: (c) => c.budgetUnderStreakMonths >= 12 },
 
   // ── Goal achievements ──
-  { key: "goal_created", name: "Sonhador", description: "Criou sua primeira meta", icon: "💭", category: "goals", check: (c) => c.totalGoals >= 1 },
-  { key: "goal_100", name: "Objetivo Atingido", description: "Alcançou 100% de uma meta", icon: "🎉", category: "goals", check: (c) => c.goalsCompleted >= 1 },
-  { key: "goal_3", name: "Colecionador de Sonhos", description: "Atingiu 3 metas diferentes", icon: "⭐", category: "goals", check: (c) => c.goalsCompleted >= 3 },
-  { key: "goal_5", name: "Realizador", description: "Atingiu 5 metas diferentes", icon: "🌟", category: "goals", check: (c) => c.goalsCompleted >= 5 },
+  { key: "goal_created", name: "Sonhador", description: "Criou sua primeira meta", hint: "Crie sua primeira meta", icon: "💭", category: "goals", check: (c) => c.totalGoals >= 1 },
+  { key: "goal_100", name: "Objetivo Atingido", description: "Alcançou 100% de uma meta", hint: "Conclua 100% de uma meta", icon: "🎉", category: "goals", check: (c) => c.goalsCompleted >= 1 },
+  { key: "goal_3", name: "Colecionador de Sonhos", description: "Atingiu 3 metas diferentes", hint: "Conclua 3 metas diferentes", icon: "⭐", category: "goals", check: (c) => c.goalsCompleted >= 3 },
+  { key: "goal_5", name: "Realizador", description: "Atingiu 5 metas diferentes", hint: "Conclua 5 metas diferentes", icon: "🌟", category: "goals", check: (c) => c.goalsCompleted >= 5 },
 
   // ── Investing ──
-  { key: "first_invest", name: "Investidor Iniciante", description: "Registrou seu primeiro investimento", icon: "📈", category: "investing", check: (c) => c.totalInvested > 0 },
-  { key: "crypto_start", name: "Hodler", description: "Adicionou seu primeiro criptoativo", icon: "₿", category: "investing", check: (c) => c.cryptoHoldings >= 1 },
+  { key: "first_invest", name: "Investidor Iniciante", description: "Registrou seu primeiro investimento", hint: "Registre seu primeiro investimento", icon: "📈", category: "investing", check: (c) => c.totalInvested > 0 },
+  { key: "crypto_start", name: "Hodler", description: "Adicionou seu primeiro criptoativo", hint: "Adicione um criptoativo", icon: "₿", category: "investing", check: (c) => c.cryptoHoldings >= 1 },
 
   // ── Misc ──
-  { key: "recurring_setup", name: "No Automático", description: "Configurou uma transação recorrente", icon: "🔄", category: "misc", check: (c) => c.recurringCount >= 1 },
+  { key: "recurring_setup", name: "No Automático", description: "Configurou uma transação recorrente", hint: "Configure uma transação recorrente", icon: "🔄", category: "misc", check: (c) => c.recurringCount >= 1 },
 ];
 
 export function useGamification(workspaceId: string | null) {

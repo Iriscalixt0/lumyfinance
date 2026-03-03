@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -129,12 +129,25 @@ export function AppLayout() {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
   const { notifications, unreadCount, markAsRead, markAllAsRead, dismiss } = useNotifications();
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wsSelectorOpen, setWsSelectorOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const wsSelectorRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Ctrl+K / Cmd+K shortcut to open Lumy
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        navigate("/lumy");
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [navigate]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -403,6 +416,21 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Floating Lumy button */}
+      {location.pathname !== "/lumy" && (
+        <button
+          onClick={() => navigate("/lumy")}
+          className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center justify-center group"
+          aria-label="Abrir Lumy (Ctrl+K)"
+          title="Lumy — Assistente IA (Ctrl+K)"
+        >
+          <Bot className="h-5 w-5" />
+          <span className="absolute -top-8 right-0 bg-card border border-border text-foreground text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm pointer-events-none">
+            Ctrl+K
+          </span>
+        </button>
+      )}
     </div>
   );
 }
