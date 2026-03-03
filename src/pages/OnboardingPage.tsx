@@ -29,43 +29,42 @@ export function OnboardingPage() {
     if (!user || !intent || !workspaceName.trim()) return;
     setSaving(true);
 
+    // Navigate immediately with loading state — setup runs in background
+    navigate("/dashboard");
+
     try {
-      // Update profile with onboarding intent
-      await supabase
-        .from("profiles")
-        .update({
-          onboarding_intent: intent,
-          onboarding_completed_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-
-      // Create workspace
       const slug = workspaceName.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-      const { data: ws, error: wsErr } = await supabase
-        .from("workspaces")
-        .insert({
-          name: workspaceName.trim(),
-          slug: slug || "meu-workspace",
-          owner_id: user.id,
-        })
-        .select()
-        .single();
 
-      if (wsErr) throw wsErr;
+      const [, wsRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .update({
+            onboarding_intent: intent,
+            onboarding_completed_at: new Date().toISOString(),
+          })
+          .eq("id", user.id),
+        supabase
+          .from("workspaces")
+          .insert({
+            name: workspaceName.trim(),
+            slug: slug || "meu-workspace",
+            owner_id: user.id,
+          })
+          .select()
+          .single(),
+      ]);
 
-      // Add user as owner member
+      if (wsRes.error) throw wsRes.error;
+
       await supabase.from("workspace_members").insert({
-        workspace_id: ws.id,
+        workspace_id: wsRes.data.id,
         user_id: user.id,
         role: "owner",
       });
 
       toast("Bem-vindo ao Lumyf! 🎉");
-      navigate("/dashboard");
     } catch {
-      toast("Erro ao configurar. Tente novamente.");
-    } finally {
-      setSaving(false);
+      toast("Erro ao configurar workspace. Acesse Configurações para tentar novamente.");
     }
   }
 
