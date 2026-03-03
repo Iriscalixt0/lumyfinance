@@ -18,8 +18,10 @@ import {
   Target,
   Wallet2,
   Mic,
+  FileText,
 } from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
+import { downloadPDF } from "@/lib/utils/pdf";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
@@ -274,6 +276,27 @@ export function TransactionsPage() {
           className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
         >
           <Copy className="h-4 w-4" /> WhatsApp
+        </button>
+        <button
+          onClick={() => {
+            const rows = filtered.map((tx) => [
+              new Date(tx.date).toLocaleDateString("pt-BR"),
+              tx.description,
+              tx.type === "income" ? "Receita" : "Despesa",
+              (tx.amount / 100).toFixed(2).replace(".", ","),
+              getCategoryName(tx.category_id),
+            ]);
+            downloadPDF(
+              "transacoes.pdf",
+              `Transações — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`,
+              ["Data", "Descrição", "Tipo", "Valor", "Categoria"],
+              rows,
+              `Saldo: R$ ${(balance / 100).toFixed(2).replace(".", ",")}`
+            );
+          }}
+          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" /> PDF
         </button>
       </div>
 

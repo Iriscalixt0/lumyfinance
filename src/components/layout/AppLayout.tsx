@@ -34,6 +34,8 @@ import {
   CheckCircle2,
   XCircle,
   Trash2,
+  Calculator,
+  LineChart,
 } from "lucide-react";
 
 const PRINCIPAL_ITEMS = [
@@ -45,6 +47,8 @@ const PRINCIPAL_ITEMS = [
   { label: "Orçamentos", href: "/budgets", icon: Wallet2 },
   { label: "Recorrentes", href: "/recurring", icon: Repeat },
   { label: "Relatório anual", href: "/annual-report", icon: FileBarChart },
+  { label: "Calculadoras", href: "/calculators", icon: Calculator },
+  { label: "Projeção de saldo", href: "/projection", icon: LineChart },
 ];
 
 const SISTEMA_ITEMS = [

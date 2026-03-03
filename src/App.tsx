@@ -19,6 +19,8 @@ import { PlanPage } from "@/pages/PlanPage";
 import { WorkspacePage } from "@/pages/WorkspacePage";
 import { SupportPage } from "@/pages/SupportPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { CalculatorsPage } from "@/pages/CalculatorsPage";
+import { ProjectionPage } from "@/pages/ProjectionPage";
 
 function App() {
   return (
@@ -55,6 +57,8 @@ function App() {
         <Route path="/budgets" element={<BudgetsPage />} />
         <Route path="/recurring" element={<RecurringPage />} />
         <Route path="/annual-report" element={<AnnualReportPage />} />
+        <Route path="/calculators" element={<CalculatorsPage />} />
+        <Route path="/projection" element={<ProjectionPage />} />
         <Route path="/plan" element={<PlanPage />} />
         <Route path="/workspace" element={<WorkspacePage />} />
         <Route path="/support" element={<SupportPage />} />
