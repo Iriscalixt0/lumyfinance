@@ -36,6 +36,7 @@ import {
   Trash2,
   Calculator,
   LineChart,
+  Bot,
 } from "lucide-react";
 
 const PRINCIPAL_ITEMS = [
@@ -49,6 +50,7 @@ const PRINCIPAL_ITEMS = [
   { label: "Relatório anual", href: "/annual-report", icon: FileBarChart },
   { label: "Calculadoras", href: "/calculators", icon: Calculator },
   { label: "Projeção de saldo", href: "/projection", icon: LineChart },
+  { label: "Lumy (Assistente)", href: "/lumy", icon: Bot },
 ];
 
 const SISTEMA_ITEMS = [
