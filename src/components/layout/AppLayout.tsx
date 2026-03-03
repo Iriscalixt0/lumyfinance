@@ -4,6 +4,7 @@ import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNotifications, getNotifCategory } from "@/hooks/useNotifications";
+import { useTranslations } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -20,7 +21,6 @@ import {
   Users,
   MessageCircle,
   Settings,
-  Download,
   Moon,
   Sun,
   LogOut,
@@ -41,30 +41,90 @@ import {
   Bitcoin,
 } from "lucide-react";
 
-const PRINCIPAL_ITEMS = [
-  { label: "Visão geral", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Transações", href: "/transactions", icon: ArrowLeftRight },
-  { label: "Investimentos", href: "/investments", icon: TrendingUp },
-  { label: "Cobranças", href: "/billings", icon: Receipt },
-  { label: "Metas", href: "/goals", icon: Target },
-  { label: "Orçamentos", href: "/budgets", icon: Wallet2 },
-  { label: "Recorrentes", href: "/recurring", icon: Repeat },
-  { label: "Criptoativos", href: "/crypto", icon: Bitcoin },
-  { label: "Relatório anual", href: "/annual-report", icon: FileBarChart },
-  { label: "Calculadoras", href: "/calculators", icon: Calculator },
-  { label: "Projeção de saldo", href: "/projection", icon: LineChart },
-  { label: "Lumy (Assistente)", href: "/lumy", icon: Bot },
+interface NavItem {
+  labelKey: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+}
+
+const OVERVIEW_ITEM: NavItem = { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard };
+
+const FINANCIAL_ITEMS: NavItem[] = [
+  { labelKey: "transactions", href: "/transactions", icon: ArrowLeftRight },
+  { labelKey: "investments", href: "/investments", icon: TrendingUp },
+  { labelKey: "cobrancas", href: "/billings", icon: Receipt },
+  { labelKey: "goals", href: "/goals", icon: Target },
+  { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
+  { labelKey: "recurring", href: "/recurring", icon: Repeat },
 ];
 
-const SISTEMA_ITEMS = [
-  { label: "Plano", href: "/plan", icon: CreditCard },
-  { label: "Workspace", href: "/workspace", icon: Users },
-  { label: "Suporte", href: "/support", icon: MessageCircle },
-  { label: "Configurações", href: "/settings", icon: Settings },
+const ANALYTICS_ITEMS: NavItem[] = [
+  { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
+  { labelKey: "projection", href: "/projection", icon: LineChart },
+  { labelKey: "calculators", href: "/calculators", icon: Calculator },
+  { labelKey: "crypto", href: "/crypto", icon: Bitcoin },
 ];
+
+const ASSISTANT_ITEMS: NavItem[] = [
+  { labelKey: "lumy", href: "/lumy", icon: Bot },
+];
+
+const CONFIG_ITEMS: NavItem[] = [
+  { labelKey: "plan", href: "/plan", icon: CreditCard },
+  { labelKey: "workspace", href: "/workspace", icon: Users },
+  { labelKey: "support", href: "/support", icon: MessageCircle },
+  { labelKey: "settings", href: "/settings", icon: Settings },
+];
+
+interface SidebarGroupProps {
+  label: string;
+  items: NavItem[];
+  t: (key: string) => string;
+  isActive: (href: string) => boolean;
+  onNavigate: () => void;
+  defaultOpen?: boolean;
+}
+
+function CollapsibleGroup({ label, items, t, isActive, onNavigate, defaultOpen = false }: SidebarGroupProps) {
+  const hasActive = items.some((item) => isActive(item.href));
+  const [open, setOpen] = useState(hasActive || defaultOpen);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <span>{label}</span>
+        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-0" : "-rotate-90"}`} />
+      </button>
+      {open && (
+        <div className="space-y-0.5 mt-0.5">
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={onNavigate}
+              title={t(item.labelKey)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${
+                isActive(item.href)
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+              <span className="truncate">{t(item.labelKey)}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function AppLayout() {
   const fmt = useIntlFormat();
+  const t = useTranslations("nav");
   const { user, signOut } = useAuth();
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
   const { notifications, unreadCount, markAsRead, markAllAsRead, dismiss } = useNotifications();
@@ -91,21 +151,7 @@ export function AppLayout() {
   }, [wsSelectorOpen, notifOpen]);
 
   const isActive = (href: string) => location.pathname === href;
-
-  const NavLink = ({ item }: { item: typeof PRINCIPAL_ITEMS[0] }) => (
-    <Link
-      to={item.href}
-      onClick={() => setSidebarOpen(false)}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-        isActive(item.href)
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-      }`}
-    >
-      <item.icon className="h-5 w-5" />
-      {item.label}
-    </Link>
-  );
+  const closeSidebar = () => setSidebarOpen(false);
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -116,51 +162,70 @@ export function AppLayout() {
       </div>
 
       {/* Nav sections */}
-      <div className="flex-1 overflow-y-auto px-3 space-y-5">
-        {/* PRINCIPAL */}
+      <div className="flex-1 overflow-y-auto px-3 space-y-4">
+        {/* Overview (always visible, no group) */}
         <div>
-          <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Principal
-          </p>
-          <div className="space-y-0.5">
-            {PRINCIPAL_ITEMS.map((item) => (
-              <NavLink key={item.href} item={item} />
-            ))}
-          </div>
+          <Link
+            to={OVERVIEW_ITEM.href}
+            onClick={closeSidebar}
+            title={t(OVERVIEW_ITEM.labelKey)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${
+              isActive(OVERVIEW_ITEM.href)
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            }`}
+          >
+            <OVERVIEW_ITEM.icon className="h-5 w-5 shrink-0" />
+            <span className="truncate">{t(OVERVIEW_ITEM.labelKey)}</span>
+          </Link>
         </div>
 
-        {/* SISTEMA */}
-        <div>
-          <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Sistema
-          </p>
-          <div className="space-y-0.5">
-            {SISTEMA_ITEMS.map((item) => (
-              <NavLink key={item.href} item={item} />
-            ))}
-          </div>
-        </div>
+        {/* Financeiro */}
+        <CollapsibleGroup
+          label={t("financial")}
+          items={FINANCIAL_ITEMS}
+          t={t}
+          isActive={isActive}
+          onNavigate={closeSidebar}
+          defaultOpen
+        />
+
+        {/* Análises */}
+        <CollapsibleGroup
+          label={t("analytics")}
+          items={ANALYTICS_ITEMS}
+          t={t}
+          isActive={isActive}
+          onNavigate={closeSidebar}
+        />
+
+        {/* Assistente */}
+        <CollapsibleGroup
+          label={t("assistant")}
+          items={ASSISTANT_ITEMS}
+          t={t}
+          isActive={isActive}
+          onNavigate={closeSidebar}
+        />
+
+        {/* Configurações */}
+        <CollapsibleGroup
+          label={t("config")}
+          items={CONFIG_ITEMS}
+          t={t}
+          isActive={isActive}
+          onNavigate={closeSidebar}
+        />
       </div>
 
-      {/* Bottom actions */}
+      {/* Bottom actions — only sign out (theme toggle moved to header only) */}
       <div className="px-3 py-3 border-t border-border space-y-0.5">
-        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full">
-          <Download className="h-5 w-5" />
-          Baixar o app
-        </button>
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full"
-        >
-          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
-        </button>
         <button
           onClick={signOut}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full"
         >
           <LogOut className="h-5 w-5" />
-          Sair da conta
+          {t("signOut")}
         </button>
       </div>
     </div>
@@ -176,12 +241,12 @@ export function AppLayout() {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={closeSidebar} />
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-card flex flex-col shadow-xl">
             <button
-              onClick={() => setSidebarOpen(false)}
+              onClick={closeSidebar}
               className="absolute right-3 top-4 text-muted-foreground hover:text-foreground"
-              aria-label="Fechar menu"
+              aria-label={t("closeMenu")}
             >
               <X className="h-5 w-5" />
             </button>
@@ -199,7 +264,7 @@ export function AppLayout() {
             <button
               onClick={() => setSidebarOpen(true)}
               className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
-              aria-label="Abrir menu"
+              aria-label="Menu"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -218,7 +283,7 @@ export function AppLayout() {
               {wsSelectorOpen && (
                 <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-xl shadow-card-hover py-1 z-50 animate-fade">
                   <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Seus workspaces
+                    {t("workspace")}
                   </p>
                   {workspaces.map((ws) => (
                     <button
@@ -236,7 +301,7 @@ export function AppLayout() {
                       onClick={() => setWsSelectorOpen(false)}
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                     >
-                      <Plus className="h-3.5 w-3.5" /> Gerenciar workspaces
+                      <Plus className="h-3.5 w-3.5" /> {t("workspace")}
                     </Link>
                   </div>
                 </div>
@@ -262,13 +327,13 @@ export function AppLayout() {
               {notifOpen && (
                 <div className="absolute top-full right-0 mt-1 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-card-hover z-50 animate-fade overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                    <h3 className="text-sm font-bold text-foreground">Notificações</h3>
+                    <h3 className="text-sm font-bold text-foreground">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllAsRead}
                         className="text-xs text-primary font-medium hover:underline"
                       >
-                        Marcar todas como lidas
+                        ✓
                       </button>
                     )}
                   </div>
@@ -276,7 +341,7 @@ export function AppLayout() {
                     {notifications.length === 0 ? (
                       <div className="py-8 text-center">
                         <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-40" />
-                        <p className="text-sm text-muted-foreground">Nenhuma notificação</p>
+                        <p className="text-sm text-muted-foreground">—</p>
                       </div>
                     ) : (
                       notifications.map((n) => {
@@ -306,7 +371,7 @@ export function AppLayout() {
                             <button
                               onClick={(e) => { e.stopPropagation(); dismiss(n.id); }}
                               className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 opacity-0 group-hover/notif:opacity-100"
-                              aria-label="Remover"
+                              aria-label="Remove"
                             >
                               <Trash2 className="h-3 w-3" />
                             </button>
@@ -322,11 +387,12 @@ export function AppLayout() {
             {/* Locale */}
             <LocaleSwitcher />
 
-            {/* Dark mode toggle (desktop) */}
+            {/* Dark mode toggle (single location — header only) */}
             <button
               onClick={toggleTheme}
-              className="hidden sm:flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
-              aria-label="Alternar tema"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+              aria-label={theme === "dark" ? t("lightMode") : t("darkMode")}
+              title={theme === "dark" ? t("lightMode") : t("darkMode")}
             >
               {theme === "dark" ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
             </button>
