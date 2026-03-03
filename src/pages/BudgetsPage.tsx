@@ -9,6 +9,8 @@ import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
+import { useGamification, type AchievementDef } from "@/hooks/useGamification";
+import { AchievementToast } from "@/components/gamification/AchievementToast";
 
 interface Budget {
   id: string;
@@ -40,6 +42,8 @@ export function BudgetsPage() {
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
+  const { checkAchievements } = useGamification(workspaceId);
+  const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,6 +139,8 @@ export function BudgetsPage() {
     setForm(emptyForm);
     setErrors({});
     if (workspaceId) triggerAlertCheck(workspaceId);
+    const newAchs = await checkAchievements();
+    if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   }
 
   async function handleDelete() {
@@ -355,6 +361,8 @@ export function BudgetsPage() {
           </button>
         </div>
       </Modal>
+
+      <AchievementToast achievement={newAchievement} onDone={() => setNewAchievement(null)} />
     </div>
   );
 }

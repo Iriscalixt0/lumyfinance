@@ -9,6 +9,8 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
+import { useGamification, type AchievementDef } from "@/hooks/useGamification";
+import { AchievementToast } from "@/components/gamification/AchievementToast";
 
 interface Goal {
   id: string;
@@ -29,6 +31,8 @@ export function GoalsPage() {
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
+  const { checkAchievements } = useGamification(wsId);
+  const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -97,6 +101,8 @@ export function GoalsPage() {
     setSaving(false);
     toast("Meta criada!");
     triggerAlertCheck(wsId);
+    const newAchs = await checkAchievements();
+    if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   };
 
   const handleContribute = async (e: React.FormEvent) => {
@@ -122,6 +128,8 @@ export function GoalsPage() {
     setContribSaving(false);
     toast("Contribuição registrada!");
     triggerAlertCheck(wsId);
+    const newAchs = await checkAchievements();
+    if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   };
 
   // Summary
@@ -321,6 +329,8 @@ export function GoalsPage() {
           </div>
         </form>
       </Modal>
+
+      <AchievementToast achievement={newAchievement} onDone={() => setNewAchievement(null)} />
     </div>
   );
 }
