@@ -1,9 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { formatBRL } from "@/lib/utils/currency";
-import { Plus, ArrowDownLeft, ArrowUpRight, Pencil, Trash2, Download, Filter, X, Calendar } from "lucide-react";
+import {
+  Plus,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Pencil,
+  Trash2,
+  Download,
+  Calendar,
+  Copy,
+  Receipt,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Wallet2,
+  Mic,
+} from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -26,6 +41,11 @@ interface Category {
   type: string;
 }
 
+const MONTH_NAMES = [
+  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
+];
+
 export function TransactionsPage() {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -34,27 +54,23 @@ export function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
-  // Filters
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
-  const [filterCategoryId, setFilterCategoryId] = useState<string>("");
-  const [filterDateFrom, setFilterDateFrom] = useState("");
-  const [filterDateTo, setFilterDateTo] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 20;
+  // Month/year selectors
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [filterCategoryId, setFilterCategoryId] = useState("");
 
   const emptyForm = {
     description: "",
     amount: "",
     type: "expense" as "income" | "expense",
-    date: new Date().toISOString().split("T")[0],
+    date: now.toISOString().split("T")[0],
     category_id: "",
     notes: "",
   };
@@ -63,12 +79,10 @@ export function TransactionsPage() {
   useEffect(() => {
     async function load() {
       if (!wsId) { setLoading(false); return; }
-
       const [txRes, catRes] = await Promise.all([
         supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false }),
         supabase.from("categories").select("id, name, icon, type").eq("workspace_id", wsId),
       ]);
-
       setTransactions(txRes.data ?? []);
       setCategories(catRes.data ?? []);
       setLoading(false);
@@ -76,12 +90,29 @@ export function TransactionsPage() {
     load();
   }, [wsId]);
 
-  function openCreate() {
-    setEditingId(null);
-    setForm(emptyForm);
-    setFormError("");
-    setModalOpen(true);
-  }
+  // Filter by month/year
+  const monthFiltered = useMemo(() => {
+    return transactions.filter((tx) => {
+      const d = new Date(tx.date);
+      return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+    });
+  }, [transactions, selectedMonth, selectedYear]);
+
+  const filtered = useMemo(() => {
+    if (!filterCategoryId) return monthFiltered;
+    return monthFiltered.filter((tx) => tx.category_id === filterCategoryId);
+  }, [monthFiltered, filterCategoryId]);
+
+  // Summary
+  const totalIncome = useMemo(() => monthFiltered.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0), [monthFiltered]);
+  const totalExpense = useMemo(() => monthFiltered.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0), [monthFiltered]);
+  const balance = totalIncome - totalExpense;
+
+  const getCategoryName = (id: string | null) => {
+    if (!id) return "";
+    const cat = categories.find((c) => c.id === id);
+    return cat ? `${cat.icon} ${cat.name}` : "";
+  };
 
   function openEdit(tx: Transaction) {
     setEditingId(tx.id);
@@ -94,12 +125,12 @@ export function TransactionsPage() {
       notes: tx.notes || "",
     });
     setFormError("");
-    setModalOpen(true);
   }
 
-  function openDelete(id: string) {
-    setDeletingId(id);
-    setDeleteModalOpen(true);
+  function cancelEdit() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormError("");
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -131,11 +162,7 @@ export function TransactionsPage() {
     }
 
     if (editingId) {
-      const { error } = await supabase
-        .from("transactions")
-        .update(payload)
-        .eq("id", editingId);
-
+      const { error } = await supabase.from("transactions").update(payload).eq("id", editingId);
       if (error) { setFormError(error.message); setSaving(false); return; }
     } else {
       const { error } = await supabase.from("transactions").insert({
@@ -143,15 +170,12 @@ export function TransactionsPage() {
         workspace_id: wsId,
         created_by: user!.id,
       });
-
       if (error) { setFormError(error.message); setSaving(false); return; }
     }
 
-    // Reload
     const isEdit = !!editingId;
     const { data } = await supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false });
     setTransactions(data ?? []);
-    setModalOpen(false);
     setEditingId(null);
     setForm(emptyForm);
     setSaving(false);
@@ -170,34 +194,16 @@ export function TransactionsPage() {
     toast("Transação excluída!");
   }
 
-  const getCategoryName = (id: string | null) => {
-    if (!id) return "";
-    const cat = categories.find((c) => c.id === id);
-    return cat ? `${cat.icon} ${cat.name}` : "";
-  };
-
-  const hasActiveFilters = filterType !== "all" || filterCategoryId || filterDateFrom || filterDateTo;
-
-  const filteredTransactions = transactions.filter((tx) => {
-    if (filterType !== "all" && tx.type !== filterType) return false;
-    if (filterCategoryId && tx.category_id !== filterCategoryId) return false;
-    if (filterDateFrom && tx.date < filterDateFrom) return false;
-    if (filterDateTo && tx.date > filterDateTo) return false;
-    return true;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / PAGE_SIZE));
-  const paginatedTransactions = filteredTransactions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  // Reset page when filters change
-  useEffect(() => { setCurrentPage(1); }, [filterType, filterCategoryId, filterDateFrom, filterDateTo]);
-
-  function clearFilters() {
-    setFilterType("all");
-    setFilterCategoryId("");
-    setFilterDateFrom("");
-    setFilterDateTo("");
+  function copyWhatsApp() {
+    const lines = filtered.map(
+      (tx) => `• ${tx.description} — ${tx.type === "income" ? "+" : "-"}${formatBRL(tx.amount)} (${new Date(tx.date).toLocaleDateString("pt-BR")})`
+    );
+    const text = `Transações ${MONTH_NAMES[selectedMonth]} ${selectedYear}:\n${lines.join("\n")}\n\nSaldo: ${formatBRL(balance)}`;
+    navigator.clipboard.writeText(text);
+    toast("Copiado para a área de transferência!");
   }
+
+  const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i + 1);
 
   if (loading) {
     return (
@@ -209,263 +215,298 @@ export function TransactionsPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Transações</h1>
-          <p className="text-muted-foreground text-sm mt-1">Receitas e despesas</p>
+          <h1 className="text-2xl font-bold text-foreground">
+            {MONTH_NAMES[selectedMonth]} {selectedYear}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Transações do mês</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`border font-medium px-3 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 ${
-              hasActiveFilters
-                ? "bg-primary/10 border-primary text-primary"
-                : "border-border text-foreground hover:bg-secondary"
-            }`}
-          >
-            <Filter className="h-4 w-4" />
-            Filtros
-            {hasActiveFilters && (
-              <span className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-                {[filterType !== "all", filterCategoryId, filterDateFrom, filterDateTo].filter(Boolean).length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => {
-              const rows = filteredTransactions.map((tx) => [
-                tx.description,
-                tx.type === "income" ? "Receita" : "Despesa",
-                (tx.amount / 100).toFixed(2).replace(".", ","),
-                new Date(tx.date).toLocaleDateString("pt-BR"),
-                getCategoryName(tx.category_id),
-                tx.notes ?? "",
-              ]);
-              downloadCSV("transacoes.csv", ["Descrição", "Tipo", "Valor", "Data", "Categoria", "Notas"], rows);
-            }}
-            className="border border-border text-foreground font-medium px-3 py-2.5 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" /> CSV
-          </button>
-          <button onClick={openCreate} className="bg-hero-gradient text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Nova
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Mês</span>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="bg-card border border-border rounded-lg px-2 py-2 text-sm font-medium text-foreground focus:outline-none"
+            >
+              {MONTH_NAMES.map((m, i) => (
+                <option key={i} value={i}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Ano</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="bg-card border border-border rounded-lg px-2 py-2 text-sm font-medium text-foreground focus:outline-none"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Filter bar */}
-      {showFilters && (
-        <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap items-end gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as "all" | "income" | "expense")}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="all">Todos</option>
-              <option value="income">Receita</option>
-              <option value="expense">Despesa</option>
-            </select>
+      {/* Action buttons */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => {
+            const rows = filtered.map((tx) => [
+              new Date(tx.date).toLocaleDateString("pt-BR"),
+              tx.description,
+              tx.type === "income" ? "Receita" : "Despesa",
+              (tx.amount / 100).toFixed(2).replace(".", ","),
+              getCategoryName(tx.category_id),
+              tx.notes ?? "",
+            ]);
+            downloadCSV("transacoes.csv", ["Data", "Descrição", "Tipo", "Valor", "Categoria", "Notas"], rows);
+          }}
+          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" /> Exportar CSV
+        </button>
+        <button
+          onClick={copyWhatsApp}
+          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+        >
+          <Copy className="h-4 w-4" /> WhatsApp
+        </button>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Receitas</span>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
+          <p className="text-xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
+        </div>
+        <div className="bg-card border-2 border-destructive/30 rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingDown className="h-4 w-4 text-destructive" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Despesas</span>
+          </div>
+          <p className="text-xl font-bold text-destructive">{formatBRL(totalExpense)}</p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Wallet2 className="h-4 w-4 text-primary" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Investido</span>
+          </div>
+          <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="h-4 w-4 text-primary" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Metas</span>
+          </div>
+          <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
+        </div>
+      </div>
+
+      {/* Free balance */}
+      <div className="flex justify-end">
+        <p className="text-sm text-muted-foreground">
+          Saldo livre: <span className="font-bold text-foreground">{formatBRL(balance)}</span>
+        </p>
+      </div>
+
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Form */}
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              {editingId ? "Editar transação" : "Nova transação"}
+            </h3>
+            <button
+              type="button"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors"
+              aria-label="Falar"
+              title="Falar"
+            >
+              <Mic className="h-4 w-4" />
+            </button>
+          </div>
+
+          {formError && <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-4">{formError}</div>}
+
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data</label>
+              <input
+                type="date"
+                required
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Descrição</label>
+              <input
+                type="text"
+                required
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Ex: Supermercado"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                maxLength={200}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Selecione uma categoria</option>
+                {categories.filter((c) => c.type === form.type).map((c) => (
+                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
+                <input
+                  type="text"
+                  required
+                  value={form.amount}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                  placeholder="0,00"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
+                <select
+                  value={form.type}
+                  onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="expense">Saída</option>
+                  <option value="income">Entrada</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
+              <select
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                defaultValue="fixo"
+              >
+                <option value="fixo">Fixo</option>
+                <option value="variavel">Variável</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Notas</label>
+              <input
+                type="text"
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Observações opcionais"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                maxLength={500}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
+              >
+                {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Salvar"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Right: History */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-semibold text-foreground">Histórico do mês</h3>
             <select
               value={filterCategoryId}
               onChange={(e) => setFilterCategoryId(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none"
             >
-              <option value="">Todas</option>
+              <option value="">Todas as categorias</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">De</label>
-            <input
-              type="date"
-              value={filterDateFrom}
-              onChange={(e) => setFilterDateFrom(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+
+          {/* Table header */}
+          <div className="px-6 py-2 border-b border-border grid grid-cols-3 gap-2">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Data</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Categoria / Descrição</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Valor</span>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Até</label>
-            <input
-              type="date"
-              value={filterDateTo}
-              onChange={(e) => setFilterDateTo(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition"
-            >
-              <X className="h-3.5 w-3.5" /> Limpar filtros
-            </button>
+
+          {filtered.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <Receipt className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm font-semibold text-foreground mb-1">Nenhuma transação neste mês</p>
+              <p className="text-xs text-muted-foreground">Use o formulário para registrar sua primeira receita ou despesa.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {filtered.map((tx) => (
+                <div key={tx.id} className="px-6 py-3 grid grid-cols-3 gap-2 items-center group hover:bg-muted/30 transition-colors">
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(tx.date).toLocaleDateString("pt-BR")}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-foreground truncate">{tx.description}</p>
+                    {getCategoryName(tx.category_id) && (
+                      <p className="text-xs text-muted-foreground">{getCategoryName(tx.category_id)}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <p className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-500" : "text-destructive"}`}>
+                      {tx.type === "income" ? "+" : "-"}{formatBRL(tx.amount)}
+                    </p>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEdit(tx)} className="h-6 w-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      <button onClick={() => { setDeletingId(tx.id); setDeleteModalOpen(true); }} className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label="Excluir">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      )}
-
-      {/* Results count when filtered */}
-      {hasActiveFilters && (
-        <p className="text-xs text-muted-foreground">
-          {filteredTransactions.length} de {transactions.length} transações
-        </p>
-      )}
-
-      {/* List */}
-      <div className="bg-card rounded-2xl border border-border shadow-card">
-      {filteredTransactions.length === 0 ? (
-          <div className="px-5 py-16 text-center text-muted-foreground text-sm">
-            {hasActiveFilters ? "Nenhuma transação encontrada com esses filtros." : 'Nenhuma transação ainda. Clique em "Nova" para adicionar.'}
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {paginatedTransactions.map((tx) => (
-              <div key={tx.id} className="px-5 py-3.5 flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === "income" ? "bg-emerald-500/10" : "bg-rose-500/10"}`}>
-                    {tx.type === "income" ? <ArrowDownLeft className="h-4 w-4 text-emerald-500" /> : <ArrowUpRight className="h-4 w-4 text-rose-500" />}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{tx.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(tx.date).toLocaleDateString("pt-BR")}
-                      {getCategoryName(tx.category_id) && ` · ${getCategoryName(tx.category_id)}`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className={`text-sm font-bold ${tx.type === "income" ? "text-emerald-500" : "text-rose-500"}`}>
-                    {tx.type === "income" ? "+" : "-"}{formatBRL(tx.amount)}
-                  </p>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(tx)} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => openDelete(tx.id)} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label="Excluir">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-            <p className="text-xs text-muted-foreground">
-              {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredTransactions.length)} de {filteredTransactions.length}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                Anterior
-              </button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let page: number;
-                if (totalPages <= 5) { page = i + 1; }
-                else if (currentPage <= 3) { page = i + 1; }
-                else if (currentPage >= totalPages - 2) { page = totalPages - 4 + i; }
-                else { page = currentPage - 2 + i; }
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`h-8 w-8 rounded-lg text-xs font-medium transition-colors ${
-                      currentPage === page
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                Próxima
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Modal de criação/edição */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? "Editar transação" : "Nova transação"}>
-        <form onSubmit={handleSave} className="space-y-4">
-          {formError && <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm">{formError}</div>}
-
-          <div className="flex gap-2">
-            {(["expense", "income"] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setForm({ ...form, type: t })}
-                className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                  form.type === t
-                    ? t === "income" ? "bg-emerald-500/10 border-emerald-500 text-emerald-600" : "bg-rose-500/10 border-rose-500 text-rose-600"
-                    : "border-border text-muted-foreground hover:bg-secondary"
-                }`}
-              >
-                {t === "income" ? "Receita" : "Despesa"}
-              </button>
-            ))}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Descrição</label>
-            <input required placeholder="Descrição" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={200} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Valor</label>
-              <input required placeholder="150,00" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Data</label>
-              <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Categoria</label>
-            <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
-              <option value="">Sem categoria</option>
-              {categories.filter(c => c.type === form.type).map((c) => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Notas (opcional)</label>
-            <input placeholder="Observações" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={500} />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
-            <button type="submit" disabled={saving} className="bg-hero-gradient text-primary-foreground font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-              {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Criar transação"}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal de confirmação de exclusão */}
+      {/* Delete modal */}
       <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir transação">
         <p className="text-muted-foreground mb-6">Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.</p>
         <div className="flex justify-end gap-3">
