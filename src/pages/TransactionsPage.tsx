@@ -361,69 +361,80 @@ export function TransactionsPage() {
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => {
-            const rows = filtered.map((tx) => [
-              fmt.date(tx.date),
-              tx.description,
-              tx.type === "income" ? "Receita" : "Despesa",
-              (tx.amount / 100).toFixed(2).replace(".", ","),
-              getCategoryName(tx.category_id),
-              tx.notes ?? "",
-            ]);
-            downloadCSV("transacoes.csv", ["Data", "Descrição", "Tipo", "Valor", "Categoria", "Notas"], rows);
-          }}
-          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
-        >
-          <Download className="h-4 w-4" /> Exportar CSV
-        </button>
-        <button
-          onClick={copyWhatsApp}
-          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
-        >
-          <Copy className="h-4 w-4" /> WhatsApp
-        </button>
-        <button
-          onClick={() => {
-            const rows = filtered.map((tx) => [
-              fmt.date(tx.date),
-              tx.description,
-              tx.type === "income" ? "Receita" : "Despesa",
-              (tx.amount / 100).toFixed(2).replace(".", ","),
-              getCategoryName(tx.category_id),
-            ]);
-            downloadPDF(
-              "transacoes.pdf",
-              `Transações — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`,
-              ["Data", "Descrição", "Tipo", "Valor", "Categoria"],
-              rows,
-              `Saldo: R$ ${(balance / 100).toFixed(2).replace(".", ",")}`
-            );
-          }}
-          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
-        >
-          <FileText className="h-4 w-4" /> PDF
-        </button>
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Export group — unified muted style */}
+        <div className="flex items-center gap-1.5 bg-muted/50 rounded-xl p-1">
+          <button
+            onClick={() => {
+              const rows = filtered.map((tx) => [
+                fmt.date(tx.date),
+                tx.description,
+                tx.type === "income" ? "Receita" : "Despesa",
+                (tx.amount / 100).toFixed(2).replace(".", ","),
+                getCategoryName(tx.category_id),
+                tx.notes ?? "",
+              ]);
+              downloadCSV("transacoes.csv", ["Data", "Descrição", "Tipo", "Valor", "Categoria", "Notas"], rows);
+            }}
+            className="text-muted-foreground hover:text-foreground hover:bg-background font-medium px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
+            title="Exportar CSV"
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </button>
+          <button
+            onClick={() => {
+              const rows = filtered.map((tx) => [
+                fmt.date(tx.date),
+                tx.description,
+                tx.type === "income" ? "Receita" : "Despesa",
+                (tx.amount / 100).toFixed(2).replace(".", ","),
+                getCategoryName(tx.category_id),
+              ]);
+              downloadPDF(
+                "transacoes.pdf",
+                `Transações — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`,
+                ["Data", "Descrição", "Tipo", "Valor", "Categoria"],
+                rows,
+                `Saldo: R$ ${(balance / 100).toFixed(2).replace(".", ",")}`
+              );
+            }}
+            className="text-muted-foreground hover:text-foreground hover:bg-background font-medium px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
+            title="Exportar PDF"
+          >
+            <FileText className="h-3.5 w-3.5" /> PDF
+          </button>
+          <button
+            onClick={copyWhatsApp}
+            className="text-muted-foreground hover:text-foreground hover:bg-background font-medium px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
+            title="Copiar para WhatsApp"
+          >
+            <Copy className="h-3.5 w-3.5" /> WhatsApp
+          </button>
+        </div>
+
+        {/* Action buttons */}
         <button
           onClick={() => setImportOpen(true)}
-          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          className="border border-border text-muted-foreground hover:text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          title="Importar transações"
         >
           <Upload className="h-4 w-4" /> Importar
         </button>
         <button
           onClick={() => setScannerOpen(true)}
-          className="border border-border text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          className="border border-border text-muted-foreground hover:text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+          title="Escanear recibo com OCR"
         >
-          <Camera className="h-4 w-4" /> Escanear recibo
+          <Camera className="h-4 w-4" /> Escanear
         </button>
         <button
           onClick={() => setShowReceiptHistory((v) => !v)}
           className={`border font-medium px-3 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 ${
             showReceiptHistory
               ? "border-primary/30 bg-primary/10 text-primary"
-              : "border-border text-foreground hover:bg-secondary"
+              : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
           }`}
+          title="Ver histórico de recibos"
         >
           <Receipt className="h-4 w-4" /> Recibos
         </button>
