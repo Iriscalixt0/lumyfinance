@@ -7,15 +7,41 @@ interface UseVoiceInputOptions {
   onError?: (error: string) => void;
 }
 
-/**
- * Hook for browser-native speech recognition (Web Speech API).
- * Supports auto-detect language mode and TTS feedback.
- */
-export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: UseVoiceInputOptions = {}) {
+function postProcess(text: string, lang: string): string {
+  let r = text.trim();
+  const l = lang.toLowerCase();
+  if (l.startsWith("pt")) {
+    r = r
+      .replace(/\b(\d+)\s*(rais|reis|real)\b/gi, "$1 reais")
+      .replace(/\bpix\b/gi, "Pix")
+      .replace(/\bcartao\b/gi, "cartão")
+      .replace(/\bdebito\b/gi, "débito")
+      .replace(/\bcredito\b/gi, "crédito")
+      .replace(/\btransferencia\b/gi, "transferência")
+      .replace(/\bfarmacia\b/gi, "farmácia");
+  } else if (l.startsWith("es")) {
+    r = r.replace(/\b(\d+)\s*peso\b/gi, "$1 pesos");
+  } else if (l.startsWith("fr")) {
+    r = r.replace(/\b(\d+)\s*euro\b/gi, "$1 euros");
+  } else if (l.startsWith("en")) {
+    r = r
+      .replace(/\b(\d+)\s*dollar\b/gi, "$1 dollars")
+      .replace(/\b(\d+)\s*buck\b/gi, "$1 dollars");
+  }
+  return r.charAt(0).toUpperCase() + r.slice(1);
+}
+
+export function useVoiceInput({
+  lang = "pt-BR",
+  onResult,
+  onInterim,
+  onError,
+}: UseVoiceInputOptions = {}) {
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
   const isListeningRef = useRef(false);
+  const finalCalledRef = useRef(false);
 
   const onResultRef = useRef(onResult);
   const onInterimRef = useRef(onInterim);
@@ -29,7 +55,7 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
     setSupported(!!SR);
     return () => {
       isListeningRef.current = false;
-      recognitionRef.current?.stop();
+      try { recognitionRef.current?.abort(); } catch {}
     };
   }, []);
 
@@ -38,58 +64,63 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
     if (!SR) { onErrorRef.current?.("not_supported"); return; }
 
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch {}
+      try { recognitionRef.current.abort(); } catch {}
     }
 
     const recognition = new SR();
     recognition.lang = lang;
-    recognition.continuous = true;
+    recognition.continuous = false;      // FIX: no loop
     recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    recognition.maxAlternatives = 3;     // FIX: pick best alternative
+
+    finalCalledRef.current = false;
 
     recognition.onresult = (event: any) => {
       let finalTranscript = "";
       let interimTranscript = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        const text = result[0].transcript;
-        if (result.isFinal) { finalTranscript += text; }
-        else { interimTranscript += text; }
+        const res = event.results[i];
+        let bestText = res[0].transcript;
+        let bestConf = res[0].confidence ?? 0;
+        for (let j = 1; j < res.length; j++) {
+          const c = res[j].confidence ?? 0;
+          if (c > bestConf) { bestText = res[j].transcript; bestConf = c; }
+        }
+        if (res.isFinal) finalTranscript += bestText;
+        else interimTranscript += bestText;
       }
 
       if (interimTranscript) onInterimRef.current?.(interimTranscript.trim());
 
-      if (finalTranscript.trim()) {
+      if (finalTranscript.trim() && !finalCalledRef.current) {
+        finalCalledRef.current = true;
         isListeningRef.current = false;
         setListening(false);
-        try { recognition.stop(); } catch {}
-        onResultRef.current?.(finalTranscript.trim());
+        onResultRef.current?.(postProcess(finalTranscript, lang)); // FIX: post-process
       }
     };
 
     recognition.onerror = (event: any) => {
-      const error = event.error;
-      if (error === "no-speech") return;
-      if (error === "not-allowed" || error === "service-not-allowed") onErrorRef.current?.("not-allowed");
-      else if (error === "audio-capture") onErrorRef.current?.("audio-capture");
-      else if (error === "aborted") { /* noop */ }
-      else if (error === "network") onErrorRef.current?.("network");
-      else onErrorRef.current?.(error);
+      const err = event.error;
+      if (err === "no-speech" || err === "aborted") return;
+      if (err === "not-allowed" || err === "service-not-allowed") onErrorRef.current?.("not-allowed");
+      else if (err === "audio-capture") onErrorRef.current?.("audio-capture");
+      else if (err === "network") onErrorRef.current?.("network");
+      else onErrorRef.current?.(err);
       isListeningRef.current = false;
       setListening(false);
     };
 
     recognition.onend = () => {
-      if (isListeningRef.current) {
-        try { recognition.start(); } catch { isListeningRef.current = false; setListening(false); }
-        return;
-      }
+      // FIX: do NOT restart — no infinite loop
+      isListeningRef.current = false;
       setListening(false);
     };
 
     recognitionRef.current = recognition;
     isListeningRef.current = true;
+    finalCalledRef.current = false;
     setListening(true);
 
     try { recognition.start(); }
