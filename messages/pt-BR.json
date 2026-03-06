@@ -393,6 +393,20 @@
     "missingAmount": "Informe o valor",
     "missingDesc": "Informe a descrição"
   },
+  "magicInput": {
+    "placeholder": "Digite: Uber 25.50, Netflix 15 USD, Aluguel 1200...",
+    "description": "Descrição",
+    "category": "Categoria",
+    "categoryPlaceholder": "Auto-detectada",
+    "date": "Data",
+    "expense": "Despesa",
+    "income": "Receita",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "converting": "Convertendo moeda...",
+    "ruleLearnedTitle": "Regra aprendida!",
+    "ruleLearnedDesc": "'{term}' será sempre categorizado como {category}."
+  },
   "forms": {
     "transaction": {
       "edit": "Editar transação",
