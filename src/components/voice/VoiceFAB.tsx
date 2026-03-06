@@ -40,6 +40,7 @@ export function VoiceFAB() {
   const [parsed, setParsed] = useState<VoiceParsedTransaction | null>(null);
   const [countdown, setCountdown] = useState(5);
   const [interimText, setInterimText] = useState("");
+  const [modelProgress, setModelProgress] = useState(0);
 
   // Editable fields
   const [editAmount, setEditAmount] = useState("");
