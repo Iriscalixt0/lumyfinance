@@ -70,7 +70,7 @@ export function VoiceFAB() {
       toast(t("noSpeech"), "error");
     } else if (err === "not_supported" || err === "start-failed") {
       toast(t("notSupported"), "error");
-    } else if (err === "not-allowed" || err === "service-not-allowed") {
+    } else if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") {
       toast(t("micDenied"), "error");
     } else if (err === "network") {
       toast(t("voiceError"), "error");
