@@ -48,7 +48,7 @@ export function OnboardingPage() {
 
   const [step, setStep] = useState(0); // 0 = language, 1 = currency, 2 = intent, 3 = workspace name, 4 = confirm
   const [intent, setIntent] = useState<Intent | null>(null);
-  const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(LOCALE_DEFAULT_CURRENCY[locale] ?? DEFAULT_CURRENCY);
+  const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(LOCALE_DEFAULT_CURRENCY[locale as Locale] ?? DEFAULT_CURRENCY);
   const [workspaceName, setWorkspaceName] = useState("");
   const [saving, setSaving] = useState(false);
 
