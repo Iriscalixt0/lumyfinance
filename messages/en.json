@@ -359,6 +359,25 @@
     "voiceError": "Voice recognition error",
     "voiceHint": "Say: 'I spent 50 dollars at the grocery store'"
   },
+  "voiceFAB": {
+    "hint": "Tap and speak your transaction",
+    "startListening": "Speak transaction",
+    "stopListening": "Stop recording",
+    "listening": "Listening...",
+    "confirm": "Confirm",
+    "amount": "Amount",
+    "whatFor": "Description",
+    "date": "Date",
+    "category": "Category",
+    "cancel": "Cancel",
+    "saveNow": "Save",
+    "couldNotParse": "Didn't catch that. Try: 'I spent 50 dollars at the store'",
+    "noSpeech": "No speech detected. Try again.",
+    "notSupported": "Your browser does not support voice input",
+    "voiceError": "Voice recognition error",
+    "saveError": "Error saving transaction",
+    "noWorkspace": "Select a workspace first"
+  },
   "forms": {
     "transaction": {
       "edit": "Edit transaction",
