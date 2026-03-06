@@ -73,6 +73,9 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
                 type: data.type,
                 date: data.date,
                 category_id: categoryId,
+                currency: data.currency,
+                original_amount: data.originalAmount ?? null,
+                exchange_rate: data.exchangeRate ?? null,
               });
 
               if (error) {
