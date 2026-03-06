@@ -249,7 +249,38 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {/* ── Localização ── */}
+      {/* ── Moeda base ── */}
+      <section className="bg-card border border-border rounded-2xl p-5 space-y-3">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <Coins className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-bold text-foreground">Moeda principal</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Transações em outras moedas serão convertidas automaticamente para esta.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {SUPPORTED_CURRENCIES.map((cur) => (
+            <button
+              key={cur.code}
+              onClick={() => {
+                setBaseCurrency(cur.code);
+                toast(`Moeda alterada para ${cur.code}`);
+              }}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-left transition-all text-sm ${
+                baseCurrency === cur.code
+                  ? "border-primary bg-primary/5 font-semibold text-foreground"
+                  : "border-border text-muted-foreground hover:border-primary/30 hover:bg-secondary"
+              }`}
+            >
+              <span>{cur.flag}</span>
+              <span>{cur.code}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="bg-card border border-border rounded-2xl p-5 space-y-3">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
