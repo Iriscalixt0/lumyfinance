@@ -280,7 +280,7 @@ export function DashboardPage() {
       {/* Quick Transaction FAB — positioned left of the VoiceFAB */}
       <button
         onClick={() => setQuickTxOpen(true)}
-        className="fixed bottom-6 right-[88px] z-40 h-[60px] w-[60px] rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-30 h-[60px] w-[60px] rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center mb-[72px]"
         aria-label={t("firstTransaction")}
         title={t("firstTransaction")}
       >
