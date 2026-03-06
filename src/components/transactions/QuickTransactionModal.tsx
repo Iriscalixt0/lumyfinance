@@ -9,13 +9,6 @@ import { useGamification } from "@/hooks/useGamification";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 import { parseVoiceTransaction, predictCategory } from "@/lib/utils/voice-parser";
 
-// predictCategory is now imported from voice-parser (multilingual)
-// Keeping local reference for backward compat
-function predictCategoryLocal(description: string): string | null {
-  return predictCategory(description);
-  }
-  return null;
-}
 
 interface QuickTransactionModalProps {
   open: boolean;
