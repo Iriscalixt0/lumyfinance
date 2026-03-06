@@ -6,7 +6,8 @@ import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
-import { useVoiceInput, speak } from "@/hooks/useVoiceInput";
+import { useHybridVoice, speak } from "@/hooks/useHybridVoice";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 import {
   parseVoiceTransaction,
   predictCategory,
@@ -25,7 +26,7 @@ const LOCALE_TO_VOICE: Record<string, string> = {
   de: "de-DE",
 };
 
-type Stage = "idle" | "listening" | "confirm" | "voice-confirm" | "saving" | "done" | "error";
+type Stage = "idle" | "loading-model" | "listening" | "transcribing" | "confirm" | "voice-confirm" | "saving" | "done" | "error";
 
 export function VoiceFAB() {
   const t = useTranslations("voiceFAB");
