@@ -101,17 +101,19 @@ export function VoiceFAB() {
     } else if (err === "network") {
       toast(t("networkError"), "error");
     } else {
-      console.warn("[VoiceFAB] Speech recognition error:", err);
+      console.warn("[VoiceFAB] Voice error:", err);
       toast(t("voiceError"), "error");
     }
     setStage("idle");
   }, [t, toast]);
 
-  const { listening, supported, start: startVoice, stop: stopVoice } = useVoiceInput({
+  const { status: hybridStatus, activeEngine, modelProgress: hybridModelProgress, supported, start: startVoice, stop: stopVoice } = useHybridVoice({
     lang: voiceLang,
     onResult: handleResult,
     onInterim: handleInterim,
     onError: handleError,
+    onEngineChange: (engine) => console.log("[VoiceFAB] Engine:", engine),
+    onModelProgress: (p) => setModelProgress(p),
   });
 
   // ========== Voice confirmation listener ==========
