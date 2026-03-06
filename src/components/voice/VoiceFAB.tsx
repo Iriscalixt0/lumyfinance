@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
 import { useHybridVoice } from "@/hooks/useHybridVoice";
 import { useVoiceInput, speak } from "@/hooks/useVoiceInput";
+import { buildVoiceResponse } from "@/lib/utils/voice-response";
 import {
   parseVoiceTransaction,
   predictCategory,
