@@ -1450,5 +1450,28 @@
     "redirecting": "Redirigiendo al dashboard...",
     "invalidTitle": "Invitaci?n inv?lida",
     "goToDashboard": "Ir al dashboard"
+  },
+  "onboarding": {
+    "continue": "Continuar",
+    "howToUse": "¿Cómo quieres usar Lumyf?",
+    "howToUseDesc": "Esto nos ayuda a personalizar tu experiencia",
+    "intentPersonal": "Personal",
+    "intentPersonalDesc": "Control financiero individual",
+    "intentFamily": "Familia / Pareja",
+    "intentFamilyDesc": "Finanzas compartidas en casa",
+    "intentBusiness": "Pequeño negocio",
+    "intentBusinessDesc": "Control financiero empresarial",
+    "intentOther": "Otro",
+    "intentOtherDesc": "Explorar lo que la plataforma ofrece",
+    "nameWorkspace": "Dale un nombre a tu espacio",
+    "nameWorkspaceDesc": "Puedes cambiarlo después en configuraciones",
+    "allReady": "¡Todo listo!",
+    "allReadyDesc": "Vamos a comenzar a organizar tus finanzas",
+    "language": "Idioma",
+    "usage": "Uso",
+    "settingUp": "Configurando...",
+    "start": "¡Empezar!",
+    "welcome": "¡Bienvenido a Lumyf! 🎉",
+    "errorSetup": "Error al configurar workspace. Ve a Configuraciones para intentar de nuevo."
   }
 }

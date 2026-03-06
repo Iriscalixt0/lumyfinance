@@ -1450,5 +1450,28 @@
         }
       }
     }
+  },
+  "onboarding": {
+    "continue": "Continue",
+    "howToUse": "How do you want to use Lumyf?",
+    "howToUseDesc": "This helps us personalize your experience",
+    "intentPersonal": "Personal",
+    "intentPersonalDesc": "Individual finance control",
+    "intentFamily": "Family / Couple",
+    "intentFamilyDesc": "Shared finances at home",
+    "intentBusiness": "Small business",
+    "intentBusinessDesc": "Business financial control",
+    "intentOther": "Other",
+    "intentOtherDesc": "Explore what the platform offers",
+    "nameWorkspace": "Name your workspace",
+    "nameWorkspaceDesc": "You can change it later in settings",
+    "allReady": "All set!",
+    "allReadyDesc": "Let's start organizing your finances",
+    "language": "Language",
+    "usage": "Usage",
+    "settingUp": "Setting up...",
+    "start": "Let's go!",
+    "welcome": "Welcome to Lumyf! 🎉",
+    "errorSetup": "Error setting up workspace. Go to Settings to try again."
   }
 }
