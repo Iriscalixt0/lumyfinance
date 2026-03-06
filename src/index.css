@@ -176,3 +176,9 @@ body {
 .voice-bar-3 { animation: voice-bar-3 0.9s ease-in-out infinite 0.15s; }
 .voice-bar-4 { animation: voice-bar-4 0.75s ease-in-out infinite 0.2s; }
 .voice-bar-5 { animation: voice-bar-5 0.85s ease-in-out infinite 0.05s; }
+
+/* Magic Input preview card animation */
+@keyframes magic-preview-in {
+  0% { opacity: 0; transform: translateY(8px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}

@@ -393,6 +393,20 @@
     "missingAmount": "Enter the amount",
     "missingDesc": "Enter the description"
   },
+  "magicInput": {
+    "placeholder": "Type: Uber 25.50, Netflix 15 USD, Rent 1200...",
+    "description": "Description",
+    "category": "Category",
+    "categoryPlaceholder": "Auto-detected",
+    "date": "Date",
+    "expense": "Expense",
+    "income": "Income",
+    "save": "Save",
+    "cancel": "Cancel",
+    "converting": "Converting currency...",
+    "ruleLearnedTitle": "Rule learned!",
+    "ruleLearnedDesc": "'{term}' will always be categorized as {category}."
+  },
   "forms": {
     "transaction": {
       "edit": "Edit transaction",

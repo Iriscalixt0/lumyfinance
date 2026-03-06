@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
+import { MagicInput } from "@/components/transactions/MagicInput";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, convertCurrency, formatAmount, type CurrencyCode } from "@/lib/utils/exchange";
 import {
@@ -24,6 +25,7 @@ import {
   FileText,
   Upload,
   Camera,
+  Sparkles,
 } from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
@@ -502,215 +504,120 @@ export function TransactionsPage() {
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Form */}
+        {/* Left: Magic Input + traditional form for editing */}
         <div className="bg-card border border-border rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              {editingId ? "Editar transação" : "Entrada rápida"}
-            </h3>
-            <button
-              type="button"
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors"
-              aria-label="Falar"
-              title="Falar"
-            >
-              <Mic className="h-4 w-4" />
-            </button>
-          </div>
-
-          {formError && <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-4">{formError}</div>}
-
-          <form onSubmit={handleSave} className="space-y-4">
-            {/* Quick Entry: Value + Type + Date */}
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
-                <MiniCalculator
-                  value={form.amount}
-                  onChange={(v) => {
-                    setForm({ ...form, amount: v });
-                    setConvertedPreview(null);
-                  }}
-                  placeholder="0,00"
-                />
+          {editingId ? (
+            <>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-semibold text-foreground">Editar transação</h3>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
-                <select
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="expense">Saída</option>
-                  <option value="income">Entrada</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data</label>
-                <input
-                  type="date"
-                  required
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Descrição</label>
-              <input
-                type="text"
-                required
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Ex: Supermercado"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                maxLength={200}
-              />
-            </div>
-
-            {/* Toggle advanced fields */}
-            <button
-              type="button"
-              onClick={() => setShowAdvanced((v) => !v)}
-              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
-            >
-              {showAdvanced ? "− Menos detalhes" : "+ Mais detalhes"}
-            </button>
-
-            {/* Advanced fields */}
-            {showAdvanced && (
-              <div className="space-y-4 animate-fade">
+              {formError && <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-4">{formError}</div>}
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
+                    <MiniCalculator
+                      value={form.amount}
+                      onChange={(v) => { setForm({ ...form, amount: v }); setConvertedPreview(null); }}
+                      placeholder="0,00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
+                    <select
+                      value={form.type}
+                      onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="expense">Saída</option>
+                      <option value="income">Entrada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data</label>
+                    <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Descrição</label>
+                  <input type="text" required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="Ex: Supermercado"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={200} />
+                </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
-                  <select
-                    value={form.category_id}
-                    onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="">Selecione uma categoria</option>
+                  <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="">Selecione</option>
                     {categories.filter((c) => c.type === form.type).map((c) => (
                       <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                     ))}
                   </select>
-                  {form.type === "expense" && form.category_id && (() => {
-                    const selectedCat = categories.find((c) => c.id === form.category_id);
-                    if (!selectedCat) return null;
-                    const budget = budgets.find((b) => b.category === selectedCat.name);
-                    if (!budget) return null;
-                    const inputCents = Math.round(parseFloat((form.amount || "0").replace(",", ".")) * 100) || 0;
-                    const remainingAfter = budget.limit_amount - budget.spent_amount - inputCents;
-                    const remainingNow = budget.limit_amount - budget.spent_amount;
-                    const pctAfter = budget.limit_amount > 0 ? Math.min(((budget.spent_amount + inputCents) / budget.limit_amount) * 100, 100) : 0;
-                    const isOver = remainingAfter < 0;
-                    const isWarning = pctAfter >= 80 && !isOver;
-                    return (
-                      <div className={`mt-2 p-3 rounded-xl text-xs space-y-1.5 ${isOver ? "bg-destructive/10 border border-destructive/20" : isWarning ? "bg-amber-500/10 border border-amber-500/20" : "bg-emerald-500/10 border border-emerald-500/20"}`}>
-                        <div className="flex justify-between font-medium">
-                          <span className="text-muted-foreground">Orçamento de {selectedCat.name}</span>
-                          <span className={isOver ? "text-destructive" : isWarning ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}>
-                            {pctAfter.toFixed(0)}% usado
-                          </span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${isOver ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-emerald-500"}`}
-                            style={{ width: `${Math.min(pctAfter, 100)}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between text-muted-foreground">
-                          <span>Disponível: {formatBRL(Math.max(remainingNow, 0))}</span>
-                          {inputCents > 0 && (
-                            <span className={isOver ? "text-destructive font-semibold" : ""}>
-                              {isOver ? `Estouro: ${formatBRL(Math.abs(remainingAfter))}` : `Após: ${formatBRL(remainingAfter)}`}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Moeda</label>
-                  <select
-                    value={form.currency}
-                    onChange={async (e) => {
-                      const cur = e.target.value as CurrencyCode;
-                      setForm({ ...form, currency: cur });
-                      setConvertedPreview(null);
-                      const val = parseFloat((form.amount || "0").replace(",", "."));
-                      if (cur !== DEFAULT_CURRENCY && val > 0) {
-                        setConverting(true);
-                        try {
-                          const result = await convertCurrency(Math.round(val * 100), cur, DEFAULT_CURRENCY);
-                          setConvertedPreview({ amount: result.convertedCents, rate: result.rate });
-                        } catch { /* ignore */ }
-                        setConverting(false);
-                      }
-                    }}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {SUPPORTED_CURRENCIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
-                    ))}
-                  </select>
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={cancelEdit}
+                    className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors">
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={saving}
+                    className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
+                    {saving ? "Salvando..." : "Salvar alterações"}
+                  </button>
                 </div>
-
-                {form.currency !== DEFAULT_CURRENCY && (
-                  <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 text-xs space-y-1">
-                    {converting ? (
-                      <p className="text-muted-foreground">Consultando cotação...</p>
-                    ) : convertedPreview ? (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Taxa: 1 {form.currency} = {convertedPreview.rate.toFixed(4)} {DEFAULT_CURRENCY}</span>
-                          <span className="font-semibold text-foreground">≈ {formatAmount(convertedPreview.amount, DEFAULT_CURRENCY)}</span>
-                        </div>
-                        <p className="text-muted-foreground">O valor será salvo em {DEFAULT_CURRENCY} com a cotação atual.</p>
-                      </>
-                    ) : (
-                      <p className="text-muted-foreground">
-                        Digite o valor para ver a conversão automática para {DEFAULT_CURRENCY}.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Notas</label>
-                  <input
-                    type="text"
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    placeholder="Observações opcionais"
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    maxLength={500}
-                  />
-                </div>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-foreground">Magic Input</h3>
               </div>
-            )}
+              <p className="text-xs text-muted-foreground mb-4">
+                Digite naturalmente: "Uber 25.50", "Netflix 15 USD", "Aluguel 1200"
+              </p>
+              <MagicInput
+                baseCurrency={localeCurrency}
+                disabled={!permissions.canEdit}
+                onSubmit={async (data) => {
+                  if (!wsId || !user) return;
+                  setSaving(true);
 
-            <div className="flex gap-2 pt-1">
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={cancelEdit}
-                  className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors"
-                >
-                  Cancelar
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={saving || !permissions.canEdit}
-                className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
-              >
-                {saving ? "Salvando..." : editingId ? "Salvar alterações" : "Salvar"}
-              </button>
-            </div>
-          </form>
+                  // Find category id
+                  let categoryId: string | null = null;
+                  if (data.category) {
+                    const match = categories.find(c => c.name.toLowerCase() === data.category!.toLowerCase());
+                    categoryId = match?.id ?? null;
+                  }
+
+                  const payload: Record<string, unknown> = {
+                    workspace_id: wsId,
+                    created_by: user.id,
+                    description: data.description,
+                    amount: data.amount,
+                    type: data.type,
+                    date: data.date,
+                    category_id: categoryId,
+                    currency: data.currency,
+                    original_amount: data.originalAmount ?? null,
+                    exchange_rate: data.exchangeRate ?? null,
+                  };
+
+                  const { error } = await supabase.from("transactions").insert(payload);
+                  if (error) { toast("Erro ao salvar"); setSaving(false); return; }
+
+                  const { data: txData } = await supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false });
+                  setTransactions(txData ?? []);
+                  setSaving(false);
+                  toast("Transação criada!");
+                  triggerAlertCheck(wsId);
+
+                  const newAchs = await recordActivity();
+                  if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
+                }}
+              />
+            </>
+          )}
         </div>
 
         {/* Right: History */}
