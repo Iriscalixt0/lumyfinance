@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { VoiceFAB } from "@/components/voice/VoiceFAB";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -428,20 +429,8 @@ export function AppLayout() {
         </main>
       </div>
 
-      {/* Floating Lumy button */}
-      {location.pathname !== "/lumy" && (
-        <button
-          onClick={() => navigate("/lumy")}
-          className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center justify-center group"
-          aria-label="Abrir Lumy (Ctrl+K)"
-          title="Lumy — Assistente IA (Ctrl+K)"
-        >
-          <Bot className="h-5 w-5" />
-          <span className="absolute -top-8 right-0 bg-card border border-border text-foreground text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm pointer-events-none">
-            Ctrl+K
-          </span>
-        </button>
-      )}
+      {/* Voice FAB — always-on voice input */}
+      <VoiceFAB />
     </div>
   );
 }
