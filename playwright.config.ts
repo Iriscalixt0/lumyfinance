@@ -22,8 +22,8 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "msedge",
-      use: { channel: "msedge", viewport: { width: 1280, height: 720 } },
+      name: "chromium",
+      use: { viewport: { width: 1280, height: 720 } },
     },
   ],
   webServer: {
