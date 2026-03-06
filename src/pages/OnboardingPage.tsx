@@ -6,7 +6,8 @@ import { useToast } from "@/components/ui/Toast";
 import { Logo } from "@/components/logo";
 import { useI18n, LOCALES, type Locale } from "@/lib/i18n";
 import { useTranslations } from "@/lib/i18n";
-import { User, Users, Briefcase, Sparkles, ArrowRight, ArrowLeft, Check, Globe } from "lucide-react";
+import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/utils/exchange";
+import { User, Users, Briefcase, Sparkles, ArrowRight, ArrowLeft, Check, Globe, Coins } from "lucide-react";
 
 type Intent = "personal" | "family" | "business" | "other";
 
@@ -28,6 +29,15 @@ const LANG_LABELS: Record<Locale, string> = {
   de: "Deutsch",
 };
 
+const LOCALE_DEFAULT_CURRENCY: Record<Locale, CurrencyCode> = {
+  "pt-BR": "BRL",
+  "pt-PT": "EUR",
+  en: "USD",
+  es: "EUR",
+  fr: "EUR",
+  de: "EUR",
+};
+
 export function OnboardingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -36,8 +46,9 @@ export function OnboardingPage() {
   const t = useTranslations("onboarding");
   const tCommon = useTranslations("common");
 
-  const [step, setStep] = useState(0); // 0 = language, 1 = intent, 2 = workspace name, 3 = confirm
+  const [step, setStep] = useState(0); // 0 = language, 1 = currency, 2 = intent, 3 = workspace name, 4 = confirm
   const [intent, setIntent] = useState<Intent | null>(null);
+  const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(LOCALE_DEFAULT_CURRENCY[locale as Locale] ?? DEFAULT_CURRENCY);
   const [workspaceName, setWorkspaceName] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -48,6 +59,12 @@ export function OnboardingPage() {
     { value: "other", label: t("intentOther") || "Outro", desc: t("intentOtherDesc") || "Explorar o que a plataforma oferece", icon: Sparkles },
   ];
 
+  // Auto-update currency when locale changes
+  function handleLocaleChange(loc: Locale) {
+    setLocale(loc);
+    setBaseCurrency(LOCALE_DEFAULT_CURRENCY[loc] ?? DEFAULT_CURRENCY);
+  }
+
   async function handleFinish() {
     if (!user || !intent || !workspaceName.trim()) return;
     setSaving(true);
@@ -56,6 +73,8 @@ export function OnboardingPage() {
     try {
       const slug = workspaceName.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
+      localStorage.setItem("lmyf_base_currency", baseCurrency);
+
       const [, wsRes] = await Promise.all([
         supabase
           .from("profiles")
@@ -63,6 +82,7 @@ export function OnboardingPage() {
             onboarding_intent: intent,
             onboarding_completed_at: new Date().toISOString(),
             preferred_locale: locale,
+            preferred_currency: baseCurrency,
           })
           .eq("id", user.id),
         supabase
@@ -90,7 +110,7 @@ export function OnboardingPage() {
     }
   }
 
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -130,7 +150,7 @@ export function OnboardingPage() {
                 return (
                   <button
                     key={loc}
-                    onClick={() => setLocale(loc)}
+                    onClick={() => handleLocaleChange(loc)}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
                       selected
                         ? "border-primary bg-primary/5"
@@ -153,8 +173,59 @@ export function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 1: Intent */}
+        {/* Step 1: Currency Selection */}
         {step === 1 && (
+          <div className="animate-fade space-y-6">
+            <div className="text-center">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Coins className="h-7 w-7 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">{t("selectCurrency") || "Qual é sua moeda principal?"}</h1>
+              <p className="text-muted-foreground mt-2 text-sm">{t("selectCurrencyDesc") || "Transações em outras moedas serão convertidas automaticamente"}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto pr-1">
+              {SUPPORTED_CURRENCIES.map((cur) => {
+                const selected = baseCurrency === cur.code;
+                return (
+                  <button
+                    key={cur.code}
+                    onClick={() => setBaseCurrency(cur.code)}
+                    className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                      selected
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30 bg-card"
+                    }`}
+                  >
+                    <span className="text-lg">{cur.flag}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground text-sm">{cur.code}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{cur.name}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep(0)}
+                className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
+              </button>
+              <button
+                onClick={() => setStep(2)}
+                className="flex-1 bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              >
+                {t("continue") || "Continuar"} <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Intent */}
+        {step === 2 && (
           <div className="animate-fade space-y-6">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-foreground">{t("howToUse") || "Como você quer usar o Lumyf?"}</h1>
@@ -185,13 +256,13 @@ export function OnboardingPage() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(0)}
+                onClick={() => setStep(1)}
                 className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
               </button>
               <button
-                onClick={() => intent && setStep(2)}
+                onClick={() => intent && setStep(3)}
                 disabled={!intent}
                 className="flex-1 bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -201,8 +272,8 @@ export function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 2: Workspace name */}
-        {step === 2 && (
+        {/* Step 3: Workspace name */}
+        {step === 3 && (
           <div className="animate-fade space-y-6">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-foreground">{t("nameWorkspace") || "Dê um nome ao seu espaço"}</h1>
@@ -223,13 +294,13 @@ export function OnboardingPage() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(1)}
+                onClick={() => setStep(2)}
                 className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
               </button>
               <button
-                onClick={() => workspaceName.trim() && setStep(3)}
+                onClick={() => workspaceName.trim() && setStep(4)}
                 disabled={!workspaceName.trim()}
                 className="flex-1 bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -239,8 +310,8 @@ export function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 3: Confirm */}
-        {step === 3 && (
+        {/* Step 4: Confirm */}
+        {step === 4 && (
           <div className="animate-fade space-y-6">
             <div className="text-center">
               <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -256,6 +327,12 @@ export function OnboardingPage() {
                 <span className="text-sm font-medium text-foreground">{FLAGS[locale as Locale]} {LANG_LABELS[locale as Locale]}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">{t("currency") || "Moeda"}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {SUPPORTED_CURRENCIES.find(c => c.code === baseCurrency)?.flag} {baseCurrency}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">{t("usage") || "Uso"}</span>
                 <span className="text-sm font-medium text-foreground">{INTENTS.find(i => i.value === intent)?.label}</span>
               </div>
@@ -267,7 +344,7 @@ export function OnboardingPage() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
