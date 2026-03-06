@@ -359,6 +359,25 @@
     "voiceError": "Erro ao reconhecer voz",
     "voiceHint": "Diga: 'Gastei 50 euros no supermercado'"
   },
+  "voiceFAB": {
+    "hint": "Toque e fale a sua transação",
+    "startListening": "Falar transação",
+    "stopListening": "Parar gravação",
+    "listening": "A ouvir...",
+    "confirm": "Confirmar",
+    "amount": "Valor",
+    "whatFor": "Descrição",
+    "date": "Data",
+    "category": "Categoria",
+    "cancel": "Cancelar",
+    "saveNow": "Guardar",
+    "couldNotParse": "Não percebi. Tente: 'Gastei 50 euros no supermercado'",
+    "noSpeech": "Não ouvi nada. Tente novamente.",
+    "notSupported": "O seu navegador não suporta entrada de voz",
+    "voiceError": "Erro no reconhecimento de voz",
+    "saveError": "Erro ao guardar transação",
+    "noWorkspace": "Selecione um workspace primeiro"
+  },
   "forms": {
     "transaction": {
       "edit": "Editar transação",

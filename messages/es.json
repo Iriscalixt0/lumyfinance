@@ -359,6 +359,25 @@
     "voiceError": "Error al reconocer voz",
     "voiceHint": "Di: 'Gasté 50 dólares en el supermercado'"
   },
+  "voiceFAB": {
+    "hint": "Toca y habla tu transacción",
+    "startListening": "Hablar transacción",
+    "stopListening": "Detener grabación",
+    "listening": "Escuchando...",
+    "confirm": "Confirmar",
+    "amount": "Monto",
+    "whatFor": "Descripción",
+    "date": "Fecha",
+    "category": "Categoría",
+    "cancel": "Cancelar",
+    "saveNow": "Guardar",
+    "couldNotParse": "No entendí. Intenta: 'Gasté 50 pesos en el supermercado'",
+    "noSpeech": "No detecté voz. Intenta de nuevo.",
+    "notSupported": "Tu navegador no soporta entrada de voz",
+    "voiceError": "Error en el reconocimiento de voz",
+    "saveError": "Error al guardar transacción",
+    "noWorkspace": "Selecciona un workspace primero"
+  },
   "forms": {
     "transaction": {
       "edit": "Edit transaction",
