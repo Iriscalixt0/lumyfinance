@@ -115,5 +115,28 @@
     "converting": "Conversion en cours...",
     "ruleLearnedTitle": "Règle apprise !",
     "ruleLearnedDesc": "'{term}' sera toujours catégorisé comme {category}."
+  },
+  "receiptScanner": {
+    "description": "Prenez une photo du reçu. L'OCR local extraira le montant, la date et la catégorie automatiquement.",
+    "takePhoto": "Prendre une photo",
+    "camera": "Caméra du téléphone",
+    "chooseFile": "Choisir un fichier",
+    "gallery": "De la galerie",
+    "analyzing": "Analyse du reçu...",
+    "extracting": "Extraction des données...",
+    "finishing": "Finalisation...",
+    "dataExtracted": "Données extraites",
+    "confidence": "Confiance",
+    "establishment": "Établissement",
+    "amount": "Montant",
+    "date": "Date",
+    "category": "Catégorie",
+    "tryAnother": "Essayer une autre photo",
+    "useData": "Utiliser les données",
+    "errorNotImage": "Sélectionnez une image (photo du reçu).",
+    "errorTooLarge": "Image trop grande. Maximum 10 Mo.",
+    "errorNoData": "Impossible d'extraire les données. Essayez avec une photo plus nette.",
+    "errorProcessing": "Erreur lors du traitement de l'image. Réessayez.",
+    "privacyNotice": "🔒 Traité localement — votre photo ne quitte jamais cet appareil"
   }
 }
