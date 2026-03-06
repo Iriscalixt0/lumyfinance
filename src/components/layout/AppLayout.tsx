@@ -53,15 +53,15 @@ interface NavItem {
 const MAIN_ITEMS: NavItem[] = [
   { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard },
   { labelKey: "transactions", href: "/transactions", icon: ArrowLeftRight },
+  { labelKey: "investments", href: "/investments", icon: TrendingUp },
+  { labelKey: "goals", href: "/goals", icon: Target },
+  { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
+  { labelKey: "recurring", href: "/recurring", icon: Repeat },
   { labelKey: "lumy", href: "/lumy", icon: Bot },
 ];
 
 // 🧰 Mais Ferramentas (collapsed by default)
 const MORE_TOOLS_ITEMS: NavItem[] = [
-  { labelKey: "investments", href: "/investments", icon: TrendingUp },
-  { labelKey: "goals", href: "/goals", icon: Target },
-  { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
-  { labelKey: "recurring", href: "/recurring", icon: Repeat },
   { labelKey: "cobrancas", href: "/billings", icon: Receipt },
   { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
   { labelKey: "projection", href: "/projection", icon: LineChart },
