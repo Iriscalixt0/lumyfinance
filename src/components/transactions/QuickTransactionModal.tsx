@@ -225,7 +225,14 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
             />
           </div>
 
-          {/* AI Category Prediction */}
+          {/* Voice hint */}
+          {voiceSupported && !amount && !description && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Mic className="h-3 w-3" />
+              {t("voiceHint")}
+            </p>
+          )}
+
           {predictedCategory && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
               <span className="text-xs text-primary font-medium">🤖 {t("predicted")}:</span>
