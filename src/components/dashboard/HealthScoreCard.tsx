@@ -7,9 +7,15 @@ interface HealthScoreCardProps {
 }
 
 function getScoreColor(score: number) {
-  if (score < 40) return { stroke: "hsl(0, 84%, 60%)", label: "text-rose-500", bg: "bg-rose-500/10" };
-  if (score <= 70) return { stroke: "hsl(45, 93%, 47%)", label: "text-amber-500", bg: "bg-amber-500/10" };
-  return { stroke: "hsl(142, 71%, 45%)", label: "text-emerald-500", bg: "bg-emerald-500/10" };
+  if (score < 40) return { label: "text-rose-500", bg: "bg-rose-500/10" };
+  if (score <= 70) return { label: "text-amber-500", bg: "bg-amber-500/10" };
+  return { label: "text-emerald-500", bg: "bg-emerald-500/10" };
+}
+
+function getScorePhrase(score: number, t: (k: string) => string): string {
+  if (score <= 40) return t("scorePhraseLow");
+  if (score <= 70) return t("scorePhraseMid");
+  return t("scorePhraseHigh");
 }
 
 export function HealthScoreCard({ score, loading }: HealthScoreCardProps) {
@@ -37,6 +43,9 @@ export function HealthScoreCard({ score, loading }: HealthScoreCardProps) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (animatedScore / 100) * circumference;
 
+  // Gradient stop colors based on score position
+  const gradientId = "health-score-gradient";
+
   if (loading) {
     return (
       <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center gap-4 animate-pulse">
@@ -54,11 +63,18 @@ export function HealthScoreCard({ score, loading }: HealthScoreCardProps) {
 
       <div className="relative w-44 h-44">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(0, 84%, 60%)" />
+              <stop offset="50%" stopColor="hsl(45, 93%, 47%)" />
+              <stop offset="100%" stopColor="hsl(142, 71%, 45%)" />
+            </linearGradient>
+          </defs>
           <circle cx="80" cy="80" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
           <circle
             cx="80" cy="80" r={radius}
             fill="none"
-            stroke={colors.stroke}
+            stroke={`url(#${gradientId})`}
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -73,6 +89,11 @@ export function HealthScoreCard({ score, loading }: HealthScoreCardProps) {
           <span className="text-xs text-muted-foreground font-medium mt-0.5">/ 100</span>
         </div>
       </div>
+
+      {/* Dynamic phrase */}
+      <p className={`text-sm font-medium text-center max-w-xs leading-relaxed ${colors.label}`}>
+        {getScorePhrase(score, t)}
+      </p>
     </div>
   );
 }
