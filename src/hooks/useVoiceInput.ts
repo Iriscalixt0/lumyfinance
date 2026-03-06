@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+// Web Speech API types (vendor-prefixed)
+type SpeechRecognitionType = typeof window extends { SpeechRecognition: infer T } ? T : any;
+
 interface UseVoiceInputOptions {
   lang?: string;
   onResult?: (transcript: string) => void;
@@ -9,15 +12,15 @@ interface UseVoiceInputOptions {
 export function useVoiceInput({ lang = "pt-BR", onResult, onError }: UseVoiceInputOptions = {}) {
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    const SR = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     setSupported(!!SR);
   }, []);
 
   const start = useCallback(() => {
-    const SR = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
       onError?.("not_supported");
       return;
