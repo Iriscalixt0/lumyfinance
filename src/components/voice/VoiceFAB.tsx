@@ -61,8 +61,10 @@ export function VoiceFAB() {
   const handleError = useCallback((err: string) => {
     if (err === "no-speech") {
       toast(t("noSpeech"), "error");
-    } else if (err === "not_supported") {
+    } else if (err === "not_supported" || err === "start-failed") {
       toast(t("notSupported"), "error");
+    } else if (err === "not-allowed" || err === "service-not-allowed") {
+      toast(t("micDenied"), "error");
     } else {
       toast(t("voiceError"), "error");
     }

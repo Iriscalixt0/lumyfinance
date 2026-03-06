@@ -376,7 +376,8 @@
     "notSupported": "Seu navegador não suporta entrada de voz",
     "voiceError": "Erro no reconhecimento de voz",
     "saveError": "Erro ao salvar transação",
-    "noWorkspace": "Selecione um workspace primeiro"
+    "noWorkspace": "Selecione um workspace primeiro",
+    "micDenied": "Permissão do microfone negada. Permita o acesso nas configurações do navegador."
   },
   "forms": {
     "transaction": {
