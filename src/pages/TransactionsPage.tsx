@@ -574,7 +574,7 @@ export function TransactionsPage() {
                 <h3 className="font-semibold text-foreground">Magic Input</h3>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
-                Digite naturalmente: "Uber 25.50", "Netflix 15 USD", "Aluguel 1200"
+                Digite naturalmente: "Uber 25.50", "Netflix 15 USD", "Café €4", "Aluguel 1200"
               </p>
               <MagicInput
                 baseCurrency={localeCurrency}
