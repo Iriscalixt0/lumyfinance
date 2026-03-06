@@ -739,9 +739,6 @@ export function TransactionsPage() {
 
       <Modal open={scannerOpen} onClose={() => setScannerOpen(false)} title="Escanear recibo">
         <ReceiptScanner
-          categories={categories}
-          workspaceId={wsId!}
-          userId={user!.id}
           onExtracted={(data) => {
             setScannerOpen(false);
             const matchedCat = categories.find(
@@ -753,7 +750,7 @@ export function TransactionsPage() {
               type: data.type || "expense",
               date: data.date || new Date().toISOString().split("T")[0],
               category_id: matchedCat?.id || "",
-              notes: `Extraído via OCR (confiança: ${data.confidence}%)`,
+              notes: `Extraído via OCR local (confiança: ${data.confidence}%)`,
               currency: localeCurrency,
             });
             setConvertedPreview(null);
