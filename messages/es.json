@@ -389,7 +389,9 @@
     "voiceError": "Error en el reconocimiento de voz",
     "saveError": "Error al guardar transacción",
     "noWorkspace": "Selecciona un workspace primero",
-    "micDenied": "Permiso de micrófono denegado. Permite el acceso en la configuración del navegador."
+    "micDenied": "Permiso de micrófono denegado. Permite el acceso en la configuración del navegador.",
+    "missingAmount": "Ingresa el monto",
+    "missingDesc": "Ingresa la descripción"
   },
   "forms": {
     "transaction": {
