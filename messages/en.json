@@ -389,7 +389,9 @@
     "voiceError": "Voice recognition error",
     "saveError": "Error saving transaction",
     "noWorkspace": "Select a workspace first",
-    "micDenied": "Microphone permission denied. Please allow access in your browser settings."
+    "micDenied": "Microphone permission denied. Please allow access in your browser settings.",
+    "missingAmount": "Enter the amount",
+    "missingDesc": "Enter the description"
   },
   "forms": {
     "transaction": {

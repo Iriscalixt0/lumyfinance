@@ -1,36 +1,29 @@
-import { useState, useCallback, useEffect } from "react";
-import { Mic, Check, X, Loader2 } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Mic, Check, X, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
-import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { parseVoiceTransaction, type VoiceParsedTransaction } from "@/lib/utils/voice-parser";
+import { useVoiceInput, speak } from "@/hooks/useVoiceInput";
+import {
+  parseVoiceTransaction,
+  predictCategory,
+  buildConfirmationPhrase,
+  YES_WORDS,
+  NO_WORDS,
+  type VoiceParsedTransaction,
+} from "@/lib/utils/voice-parser";
 
-/** Category prediction keywords (same as QuickTransactionModal) */
-const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  "Alimentação": ["mercado", "supermercado", "restaurante", "lanche", "ifood", "padaria", "pizza", "burger", "café", "almoço", "jantar", "comida"],
-  "Transporte": ["uber", "99", "gasolina", "combustível", "estacionamento", "pedágio", "ônibus", "metrô", "taxi"],
-  "Moradia": ["aluguel", "condomínio", "iptu", "luz", "água", "gás", "internet", "energia"],
-  "Saúde": ["farmácia", "médico", "dentista", "hospital", "plano de saúde", "remédio", "consulta"],
-  "Educação": ["curso", "escola", "faculdade", "livro", "material", "mensalidade"],
-  "Lazer": ["cinema", "show", "viagem", "netflix", "spotify", "jogo", "bar", "festa", "parque"],
-  "Vestuário": ["roupa", "calçado", "tênis", "camisa", "vestido", "sapato"],
-  "Investimento": ["cdb", "tesouro", "fundo", "ação", "ações", "cripto", "bitcoin", "eth", "poupança", "lci", "lca", "debenture"],
-  "Salário": ["salário", "pagamento", "freelance", "renda", "dividendo", "pix recebido"],
+const LOCALE_TO_VOICE: Record<string, string> = {
+  "pt-BR": "pt-BR",
+  "pt-PT": "pt-PT",
+  en: "en-US",
+  es: "es-ES",
 };
 
-function predictCategory(description: string): string | null {
-  const lower = description.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) return category;
-  }
-  return null;
-}
-
-type Stage = "idle" | "listening" | "confirm" | "saving" | "done" | "error";
+type Stage = "idle" | "listening" | "confirm" | "voice-confirm" | "saving" | "done" | "error";
 
 export function VoiceFAB() {
   const t = useTranslations("voiceFAB");
@@ -42,24 +35,52 @@ export function VoiceFAB() {
 
   const [stage, setStage] = useState<Stage>("idle");
   const [parsed, setParsed] = useState<VoiceParsedTransaction | null>(null);
-  const [autoSaveTimer, setAutoSaveTimer] = useState<number | null>(null);
   const [countdown, setCountdown] = useState(5);
   const [interimText, setInterimText] = useState("");
 
-  const voiceLang = locale === "pt-BR" ? "pt-BR" : locale === "pt-PT" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US";
+  // Editable fields
+  const [editAmount, setEditAmount] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editCategory, setEditCategory] = useState<string | null>(null);
+
+  // Missing field highlights (orange)
+  const [missingAmount, setMissingAmount] = useState(false);
+  const [missingDesc, setMissingDesc] = useState(false);
+
+  const autoSaveRef = useRef<number | null>(null);
+
+  const voiceLang = LOCALE_TO_VOICE[locale] || "en-US";
+
+  // ========== Voice input handlers ==========
 
   const handleResult = useCallback((transcript: string) => {
     setInterimText("");
     const result = parseVoiceTransaction(transcript);
     setParsed(result);
-    if (result.amount && result.description) {
+
+    const hasAmount = result.amount !== null && result.amount > 0;
+    const hasDesc = result.description.length > 0;
+
+    setEditAmount(hasAmount ? String(result.amount) : "");
+    setEditDesc(result.description);
+    setEditCategory(predictCategory(result.description) || predictCategory(result.raw));
+    setMissingAmount(!hasAmount);
+    setMissingDesc(!hasDesc);
+
+    if (hasAmount && hasDesc) {
       setStage("confirm");
       setCountdown(5);
+      // TTS confirmation
+      const amtStr = fmt.money(Math.round(result.amount! * 100));
+      const cat = predictCategory(result.description) || result.description;
+      const phrase = buildConfirmationPhrase(result.detectedLang, amtStr, cat);
+      speak(phrase, result.detectedLang);
     } else {
-      toast(t("couldNotParse"), "error");
-      setStage("idle");
+      // Partial parse — show confirm card but highlight missing fields, no auto-save
+      setStage("confirm");
+      setCountdown(0); // no auto-save
     }
-  }, [t, toast]);
+  }, [fmt]);
 
   const handleInterim = useCallback((transcript: string) => {
     setInterimText(transcript);
@@ -67,17 +88,10 @@ export function VoiceFAB() {
 
   const handleError = useCallback((err: string) => {
     setInterimText("");
-    if (err === "no-speech") {
-      toast(t("noSpeech"), "error");
-    } else if (err === "not_supported" || err === "start-failed") {
-      toast(t("notSupported"), "error");
-    } else if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") {
-      toast(t("micDenied"), "error");
-    } else if (err === "network") {
-      toast(t("voiceError"), "error");
-    } else {
-      toast(t("voiceError"), "error");
-    }
+    if (err === "no-speech") toast(t("noSpeech"), "error");
+    else if (err === "not_supported" || err === "start-failed") toast(t("notSupported"), "error");
+    else if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") toast(t("micDenied"), "error");
+    else toast(t("voiceError"), "error");
     setStage("idle");
   }, [t, toast]);
 
@@ -88,10 +102,36 @@ export function VoiceFAB() {
     onError: handleError,
   });
 
-  // Auto-save countdown
+  // ========== Voice confirmation listener ==========
+
+  const handleVoiceConfirm = useCallback((transcript: string) => {
+    const lower = transcript.toLowerCase().trim();
+    if (YES_WORDS.some(w => lower.includes(w))) {
+      handleSave();
+    } else if (NO_WORDS.some(w => lower.includes(w))) {
+      handleCancel();
+    }
+  }, []);
+
+  const confirmVoice = useVoiceInput({
+    lang: voiceLang,
+    onResult: handleVoiceConfirm,
+    onError: () => {}, // silent errors for confirmation
+  });
+
+  // Start voice confirmation listener after TTS
   useEffect(() => {
-    if (stage !== "confirm") {
-      if (autoSaveTimer) clearInterval(autoSaveTimer);
+    if (stage === "voice-confirm") {
+      const timeout = setTimeout(() => confirmVoice.start(), 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [stage]);
+
+  // ========== Auto-save countdown ==========
+
+  useEffect(() => {
+    if (stage !== "confirm" || countdown <= 0) {
+      if (autoSaveRef.current) clearInterval(autoSaveRef.current);
       return;
     }
 
@@ -106,53 +146,64 @@ export function VoiceFAB() {
       });
     }, 1000);
 
-    setAutoSaveTimer(interval);
+    autoSaveRef.current = interval;
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage]);
+  }, [stage, countdown > 0]);
+
+  // ========== Actions ==========
 
   const handleStartListening = () => {
-    if (!activeWorkspace) {
-      toast(t("noWorkspace"), "error");
-      return;
-    }
+    if (!activeWorkspace) { toast(t("noWorkspace"), "error"); return; }
     setStage("listening");
+    setMissingAmount(false);
+    setMissingDesc(false);
     startVoice();
   };
 
   const handleCancel = () => {
-    if (autoSaveTimer) clearInterval(autoSaveTimer);
+    if (autoSaveRef.current) clearInterval(autoSaveRef.current);
     stopVoice();
+    confirmVoice.stop();
     setParsed(null);
     setInterimText("");
+    setEditAmount("");
+    setEditDesc("");
+    setEditCategory(null);
+    setMissingAmount(false);
+    setMissingDesc(false);
     setStage("idle");
   };
 
   const handleSave = async () => {
-    if (!parsed || !activeWorkspace || !parsed.amount) return;
-    if (autoSaveTimer) clearInterval(autoSaveTimer);
+    const amount = parseFloat(editAmount);
+    if (!amount || amount <= 0) { setMissingAmount(true); return; }
+    if (!editDesc.trim()) { setMissingDesc(true); return; }
+    if (!activeWorkspace) return;
+
+    if (autoSaveRef.current) clearInterval(autoSaveRef.current);
+    confirmVoice.stop();
     setStage("saving");
 
-    // Find category
-    const categoryName = predictCategory(parsed.description) || predictCategory(parsed.raw);
+    // Resolve category ID
     let categoryId: string | null = null;
-    if (categoryName) {
+    if (editCategory) {
       const { data: cats } = await supabase
         .from("categories")
         .select("id, name")
         .eq("workspace_id", activeWorkspace.id);
-      const match = cats?.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+      const match = cats?.find(c => c.name.toLowerCase() === editCategory.toLowerCase());
       categoryId = match?.id ?? null;
     }
 
     const { error } = await supabase.from("transactions").insert({
       workspace_id: activeWorkspace.id,
-      description: parsed.description.trim(),
-      amount: Math.round(parsed.amount * 100),
-      type: parsed.type,
-      date: parsed.date,
+      description: editDesc.trim(),
+      amount: Math.round(amount * 100),
+      type: parsed?.type || "expense",
+      date: parsed?.date || new Date().toISOString().split("T")[0],
       category_id: categoryId,
-      currency: fmt.currency,
+      currency: parsed?.currency || fmt.currency,
     });
 
     if (error) {
@@ -165,55 +216,103 @@ export function VoiceFAB() {
     await recordActivity();
     setStage("done");
     toast(
-      `✅ ${parsed.type === "income" ? "+" : "-"}${fmt.money(Math.round(parsed.amount * 100))} • ${parsed.description}`,
+      `✅ ${parsed?.type === "income" ? "+" : "-"}${fmt.money(Math.round(amount * 100))} • ${editDesc}`,
       "success"
     );
     setTimeout(() => {
       setStage("idle");
       setParsed(null);
+      setEditAmount("");
+      setEditDesc("");
+      setEditCategory(null);
     }, 2000);
   };
 
   if (!supported) return null;
 
-  // Confirmation card
+  // ========== Confirmation Card ==========
   if (stage === "confirm" && parsed) {
+    const hasMissing = missingAmount || missingDesc;
+
     return (
-      <div className="fixed bottom-6 right-6 z-50 animate-fade">
-        <div className="bg-card border border-border rounded-2xl shadow-xl p-4 w-72">
+      <div className="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-50 animate-fade">
+        <div className="bg-card border border-border rounded-2xl shadow-xl p-4 w-full sm:w-80 mx-auto sm:mx-0">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("confirm")}</span>
-            <span className="text-xs font-medium text-primary tabular-nums">{countdown}s</span>
-          </div>
-
-          {/* Parsed data */}
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{t("amount")}</span>
-              <span className={`text-lg font-bold ${parsed.type === "income" ? "text-emerald-500" : "text-destructive"}`}>
-                {parsed.type === "income" ? "+" : "-"}{fmt.money(Math.round((parsed.amount ?? 0) * 100))}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{t("whatFor")}</span>
-              <span className="text-sm font-semibold text-foreground truncate max-w-[160px]">{parsed.description}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{t("date")}</span>
-              <span className="text-sm text-foreground">{fmt.date(parsed.date)}</span>
-            </div>
-            {predictCategory(parsed.description) && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t("category")}</span>
-                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  {predictCategory(parsed.description)}
-                </span>
-              </div>
+            {countdown > 0 && (
+              <span className="text-xs font-medium text-primary tabular-nums">{countdown}s</span>
             )}
           </div>
 
-          {/* Transcript */}
+          {/* Editable fields */}
+          <div className="space-y-2.5 mb-4">
+            {/* Amount */}
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("amount")}</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={editAmount}
+                onChange={(e) => { setEditAmount(e.target.value); setMissingAmount(false); }}
+                className={`w-full mt-0.5 px-3 py-2 rounded-lg text-lg font-bold tabular-nums bg-secondary border transition-colors outline-none ${
+                  missingAmount
+                    ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 ring-1 ring-orange-400/50"
+                    : "border-border text-foreground focus:border-primary"
+                }`}
+                placeholder="0.00"
+                autoFocus={missingAmount}
+              />
+              {missingAmount && (
+                <div className="flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3 text-orange-500" />
+                  <span className="text-[10px] text-orange-500 font-medium">{t("missingAmount")}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("whatFor")}</label>
+              <input
+                type="text"
+                value={editDesc}
+                onChange={(e) => { setEditDesc(e.target.value); setMissingDesc(false); }}
+                className={`w-full mt-0.5 px-3 py-2 rounded-lg text-sm font-semibold bg-secondary border transition-colors outline-none ${
+                  missingDesc
+                    ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 ring-1 ring-orange-400/50"
+                    : "border-border text-foreground focus:border-primary"
+                }`}
+                placeholder={t("whatFor")}
+                autoFocus={missingDesc && !missingAmount}
+              />
+              {missingDesc && (
+                <div className="flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3 text-orange-500" />
+                  <span className="text-[10px] text-orange-500 font-medium">{t("missingDesc")}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Category + Currency (read-only display) */}
+            <div className="flex items-center gap-2">
+              {editCategory && (
+                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  {editCategory}
+                </span>
+              )}
+              {parsed.currency && (
+                <span className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                  {parsed.currency}
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground ml-auto">
+                {parsed.detectedLang}
+              </span>
+            </div>
+          </div>
+
+          {/* Raw transcript */}
           <p className="text-[10px] text-muted-foreground italic mb-3 line-clamp-2">"{parsed.raw}"</p>
 
           {/* Actions */}
@@ -227,7 +326,8 @@ export function VoiceFAB() {
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all"
+              disabled={hasMissing && (!editAmount || !editDesc)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50"
             >
               <Check className="h-3.5 w-3.5" />
               {t("saveNow")}
@@ -235,18 +335,20 @@ export function VoiceFAB() {
           </div>
 
           {/* Progress bar */}
-          <div className="mt-3 h-1 bg-secondary rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear"
-              style={{ width: `${(countdown / 5) * 100}%` }}
-            />
-          </div>
+          {countdown > 0 && (
+            <div className="mt-3 h-1 bg-secondary rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear"
+                style={{ width: `${(countdown / 5) * 100}%` }}
+              />
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // Saving / Done states
+  // ========== Saving / Done states ==========
   if (stage === "saving") {
     return (
       <div className="fixed bottom-6 right-6 z-50">
@@ -267,10 +369,9 @@ export function VoiceFAB() {
     );
   }
 
-  // Main FAB button
+  // ========== Main FAB ==========
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
-      {/* Ripple rings — only during listening */}
       {stage === "listening" && (
         <>
           <span
@@ -295,7 +396,6 @@ export function VoiceFAB() {
         title={stage === "listening" ? t("stopListening") : t("startListening")}
       >
         {stage === "listening" ? (
-          /* Soundwave bars inside button */
           <div className="flex items-center justify-center gap-[3px] h-6 w-6 text-destructive-foreground">
             <span className="voice-bar voice-bar-1 w-[3px]" />
             <span className="voice-bar voice-bar-2 w-[3px]" />
@@ -308,21 +408,21 @@ export function VoiceFAB() {
         )}
       </button>
 
-      {/* Listening label + live transcript */}
+      {/* Live transcript bubble */}
       {stage === "listening" && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded-xl shadow-md animate-fade max-w-[250px]">
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
+        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-xl shadow-md animate-fade max-w-[280px]">
+          <div className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse shrink-0" />
             {interimText ? (
-              <span className="truncate text-primary italic font-normal">{interimText}</span>
+              <span className="text-primary italic font-normal truncate">{interimText}</span>
             ) : (
-              t("listening")
+              <span>{t("listening")}</span>
             )}
           </div>
         </div>
       )}
 
-      {/* Idle hint on hover */}
+      {/* Idle hint */}
       {stage === "idle" && (
         <div className="absolute -top-10 right-0 bg-card border border-border text-foreground text-[10px] font-medium px-2.5 py-1 rounded-lg shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           {t("hint")}
