@@ -3,7 +3,7 @@ import { X, Zap, Mic, MicOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
-import { useTranslations } from "@/lib/i18n";
+import { useTranslations, useLocale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
@@ -40,6 +40,7 @@ interface QuickTransactionModalProps {
 
 export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransactionModalProps) {
   const t = useTranslations("quickTransaction");
+  const locale = useLocale();
   const fmt = useIntlFormat();
   const { activeWorkspace } = useWorkspace();
   const { recordActivity } = useGamification(activeWorkspace?.id ?? null);
@@ -53,7 +54,7 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
   const [predictedCategory, setPredictedCategory] = useState<string | null>(null);
 
   // Voice input
-  const voiceLang = fmt.currency === "BRL" ? "pt-BR" : fmt.currency === "EUR" ? "es-ES" : "en-US";
+  const voiceLang = locale === "pt-BR" ? "pt-BR" : locale === "pt-PT" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US";
   const { listening, supported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceInput({
     lang: voiceLang,
     onResult: (transcript) => {
