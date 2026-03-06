@@ -144,9 +144,25 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
             </div>
             <h2 className="text-base font-bold text-foreground">{t("title")}</h2>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {voiceSupported && (
+              <button
+                type="button"
+                onClick={listening ? stopVoice : startVoice}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all ${
+                  listening
+                    ? "bg-destructive/10 text-destructive animate-pulse"
+                    : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                }`}
+                title={listening ? t("voiceStop") : t("voiceStart")}
+              >
+                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            )}
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
