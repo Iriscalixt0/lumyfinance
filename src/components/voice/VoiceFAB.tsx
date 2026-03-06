@@ -306,11 +306,17 @@ export function VoiceFAB() {
         )}
       </button>
 
-      {/* Listening label */}
+      {/* Listening label + live transcript */}
       {stage === "listening" && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap animate-fade">
-          <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse mr-1.5 align-middle" />
-          {t("listening")}
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded-xl shadow-md animate-fade max-w-[250px]">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse shrink-0" />
+            {interimText ? (
+              <span className="truncate text-primary italic font-normal">{interimText}</span>
+            ) : (
+              t("listening")
+            )}
+          </div>
         </div>
       )}
 
