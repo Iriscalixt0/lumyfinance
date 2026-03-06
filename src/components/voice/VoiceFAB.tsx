@@ -167,13 +167,20 @@ export function VoiceFAB() {
 
   // ========== Actions ==========
 
-  const handleStartListening = () => {
+  const handleStartListening = async () => {
     if (!activeWorkspace) { toast(t("noWorkspace"), "error"); return; }
-    setStage("listening");
     setMissingAmount(false);
     setMissingDesc(false);
-    startVoice();
+    // Stage is driven by hybridStatus via useEffect below
+    await startVoice();
   };
+
+  // Sync stage with hybrid voice status
+  useEffect(() => {
+    if (hybridStatus === "loading-model") setStage("loading-model");
+    else if (hybridStatus === "listening") setStage("listening");
+    else if (hybridStatus === "transcribing") setStage("transcribing");
+  }, [hybridStatus]);
 
   const handleCancel = () => {
     if (autoSaveRef.current) clearInterval(autoSaveRef.current);
