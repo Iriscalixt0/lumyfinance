@@ -416,10 +416,13 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <main className="p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 max-w-7xl mx-auto">
           <Outlet />
         </main>
       </div>
+
+      {/* Bottom navigation — mobile only */}
+      <BottomNav />
 
       {/* Voice FAB — always-on voice input */}
       <VoiceFAB />
