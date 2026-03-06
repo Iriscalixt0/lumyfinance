@@ -4,32 +4,53 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { Logo } from "@/components/logo";
-import { User, Users, Briefcase, Sparkles, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { useI18n, LOCALES, type Locale } from "@/lib/i18n";
+import { useTranslations } from "@/lib/i18n";
+import { User, Users, Briefcase, Sparkles, ArrowRight, ArrowLeft, Check, Globe } from "lucide-react";
 
 type Intent = "personal" | "family" | "business" | "other";
 
-const INTENTS: { value: Intent; label: string; desc: string; icon: typeof User }[] = [
-  { value: "personal", label: "Pessoal", desc: "Controle individual de finanças", icon: User },
-  { value: "family", label: "Família / Casal", desc: "Finanças compartilhadas em casa", icon: Users },
-  { value: "business", label: "Pequeno negócio", desc: "Controle financeiro empresarial", icon: Briefcase },
-  { value: "other", label: "Outro", desc: "Explorar o que a plataforma oferece", icon: Sparkles },
-];
+const FLAGS: Record<Locale, string> = {
+  "pt-BR": "🇧🇷",
+  "pt-PT": "🇵🇹",
+  en: "🇺🇸",
+  es: "🇪🇸",
+  fr: "🇫🇷",
+  de: "🇩🇪",
+};
+
+const LANG_LABELS: Record<Locale, string> = {
+  "pt-BR": "Português (Brasil)",
+  "pt-PT": "Português (Portugal)",
+  en: "English",
+  es: "Español",
+  fr: "Français",
+  de: "Deutsch",
+};
 
 export function OnboardingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { locale, setLocale } = useI18n();
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // 0 = language, 1 = intent, 2 = workspace name, 3 = confirm
   const [intent, setIntent] = useState<Intent | null>(null);
   const [workspaceName, setWorkspaceName] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const INTENTS: { value: Intent; label: string; desc: string; icon: typeof User }[] = [
+    { value: "personal", label: t("intentPersonal") || "Pessoal", desc: t("intentPersonalDesc") || "Controle individual de finanças", icon: User },
+    { value: "family", label: t("intentFamily") || "Família / Casal", desc: t("intentFamilyDesc") || "Finanças compartilhadas em casa", icon: Users },
+    { value: "business", label: t("intentBusiness") || "Pequeno negócio", desc: t("intentBusinessDesc") || "Controle financeiro empresarial", icon: Briefcase },
+    { value: "other", label: t("intentOther") || "Outro", desc: t("intentOtherDesc") || "Explorar o que a plataforma oferece", icon: Sparkles },
+  ];
+
   async function handleFinish() {
     if (!user || !intent || !workspaceName.trim()) return;
     setSaving(true);
-
-    // Navigate immediately with loading state — setup runs in background
     navigate("/dashboard");
 
     try {
@@ -41,6 +62,7 @@ export function OnboardingPage() {
           .update({
             onboarding_intent: intent,
             onboarding_completed_at: new Date().toISOString(),
+            preferred_locale: locale,
           })
           .eq("id", user.id),
         supabase
@@ -62,11 +84,13 @@ export function OnboardingPage() {
         role: "owner",
       });
 
-      toast("Bem-vindo ao Lumyf! 🎉");
+      toast(t("welcome") || "Bem-vindo ao Lumyf! 🎉");
     } catch {
-      toast("Erro ao configurar workspace. Acesse Configurações para tentar novamente.");
+      toast(t("errorSetup") || "Erro ao configurar workspace. Acesse Configurações para tentar novamente.");
     }
   }
+
+  const totalSteps = 4;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -79,7 +103,7 @@ export function OnboardingPage() {
 
         {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3].map((s) => (
+          {Array.from({ length: totalSteps }, (_, s) => (
             <div
               key={s}
               className={`h-2 rounded-full transition-all ${
@@ -89,12 +113,52 @@ export function OnboardingPage() {
           ))}
         </div>
 
+        {/* Step 0: Language Selection */}
+        {step === 0 && (
+          <div className="animate-fade space-y-6">
+            <div className="text-center">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Globe className="h-7 w-7 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">Como prefere continuar?</h1>
+              <p className="text-muted-foreground mt-2 text-sm">How would you like to continue? · ¿Cómo prefiere continuar?</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {LOCALES.map((loc) => {
+                const selected = locale === loc;
+                return (
+                  <button
+                    key={loc}
+                    onClick={() => setLocale(loc)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      selected
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30 bg-card"
+                    }`}
+                  >
+                    <span className="text-2xl">{FLAGS[loc]}</span>
+                    <p className="font-semibold text-foreground text-sm mt-2">{LANG_LABELS[loc]}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setStep(1)}
+              className="w-full bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            >
+              {t("continue") || "Continuar"} <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         {/* Step 1: Intent */}
         {step === 1 && (
           <div className="animate-fade space-y-6">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-foreground">Como você quer usar o Lumyf?</h1>
-              <p className="text-muted-foreground mt-2">Isso nos ajuda a personalizar sua experiência</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("howToUse") || "Como você quer usar o Lumyf?"}</h1>
+              <p className="text-muted-foreground mt-2">{t("howToUseDesc") || "Isso nos ajuda a personalizar sua experiência"}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -119,13 +183,21 @@ export function OnboardingPage() {
               })}
             </div>
 
-            <button
-              onClick={() => intent && setStep(2)}
-              disabled={!intent}
-              className="w-full bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              Continuar <ArrowRight className="h-4 w-4" />
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep(0)}
+                className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
+              </button>
+              <button
+                onClick={() => intent && setStep(2)}
+                disabled={!intent}
+                className="flex-1 bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {t("continue") || "Continuar"} <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -133,8 +205,8 @@ export function OnboardingPage() {
         {step === 2 && (
           <div className="animate-fade space-y-6">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-foreground">Dê um nome ao seu espaço</h1>
-              <p className="text-muted-foreground mt-2">Você pode mudar depois nas configurações</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("nameWorkspace") || "Dê um nome ao seu espaço"}</h1>
+              <p className="text-muted-foreground mt-2">{t("nameWorkspaceDesc") || "Você pode mudar depois nas configurações"}</p>
             </div>
 
             <div>
@@ -154,14 +226,14 @@ export function OnboardingPage() {
                 onClick={() => setStep(1)}
                 className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
               >
-                <ArrowLeft className="h-4 w-4" /> Voltar
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
               </button>
               <button
                 onClick={() => workspaceName.trim() && setStep(3)}
                 disabled={!workspaceName.trim()}
                 className="flex-1 bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Continuar <ArrowRight className="h-4 w-4" />
+                {t("continue") || "Continuar"} <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -174,13 +246,17 @@ export function OnboardingPage() {
               <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Check className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">Tudo pronto!</h1>
-              <p className="text-muted-foreground mt-2">Vamos começar a organizar suas finanças</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("allReady") || "Tudo pronto!"}</h1>
+              <p className="text-muted-foreground mt-2">{t("allReadyDesc") || "Vamos começar a organizar suas finanças"}</p>
             </div>
 
             <div className="bg-card border border-border rounded-xl p-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Uso</span>
+                <span className="text-sm text-muted-foreground">{t("language") || "Idioma"}</span>
+                <span className="text-sm font-medium text-foreground">{FLAGS[locale as Locale]} {LANG_LABELS[locale as Locale]}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">{t("usage") || "Uso"}</span>
                 <span className="text-sm font-medium text-foreground">{INTENTS.find(i => i.value === intent)?.label}</span>
               </div>
               <div className="flex justify-between">
@@ -194,14 +270,14 @@ export function OnboardingPage() {
                 onClick={() => setStep(2)}
                 className="flex-1 border border-border bg-card text-foreground font-medium py-3 rounded-xl hover:bg-secondary transition-colors flex items-center justify-center gap-2"
               >
-                <ArrowLeft className="h-4 w-4" /> Voltar
+                <ArrowLeft className="h-4 w-4" /> {tCommon("back") || "Voltar"}
               </button>
               <button
                 onClick={handleFinish}
                 disabled={saving}
                 className="flex-1 bg-hero-gradient text-primary-foreground font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {saving ? "Configurando..." : "Começar!"} <Sparkles className="h-4 w-4" />
+                {saving ? (t("settingUp") || "Configurando...") : (t("start") || "Começar!")} <Sparkles className="h-4 w-4" />
               </button>
             </div>
           </div>

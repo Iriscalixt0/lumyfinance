@@ -21,6 +21,8 @@ const LOCALE_TO_VOICE: Record<string, string> = {
   "pt-PT": "pt-PT",
   en: "en-US",
   es: "es-ES",
+  fr: "fr-FR",
+  de: "de-DE",
 };
 
 type Stage = "idle" | "listening" | "confirm" | "voice-confirm" | "saving" | "done" | "error";
