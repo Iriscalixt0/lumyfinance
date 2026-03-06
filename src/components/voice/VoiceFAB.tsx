@@ -43,10 +43,12 @@ export function VoiceFAB() {
   const [parsed, setParsed] = useState<VoiceParsedTransaction | null>(null);
   const [autoSaveTimer, setAutoSaveTimer] = useState<number | null>(null);
   const [countdown, setCountdown] = useState(5);
+  const [interimText, setInterimText] = useState("");
 
   const voiceLang = fmt.currency === "BRL" ? "pt-BR" : fmt.currency === "EUR" ? "es-ES" : "en-US";
 
   const handleResult = useCallback((transcript: string) => {
+    setInterimText("");
     const result = parseVoiceTransaction(transcript);
     setParsed(result);
     if (result.amount && result.description) {
@@ -58,13 +60,20 @@ export function VoiceFAB() {
     }
   }, [t, toast]);
 
+  const handleInterim = useCallback((transcript: string) => {
+    setInterimText(transcript);
+  }, []);
+
   const handleError = useCallback((err: string) => {
+    setInterimText("");
     if (err === "no-speech") {
       toast(t("noSpeech"), "error");
     } else if (err === "not_supported" || err === "start-failed") {
       toast(t("notSupported"), "error");
     } else if (err === "not-allowed" || err === "service-not-allowed") {
       toast(t("micDenied"), "error");
+    } else if (err === "network") {
+      toast(t("voiceError"), "error");
     } else {
       toast(t("voiceError"), "error");
     }
@@ -74,6 +83,7 @@ export function VoiceFAB() {
   const { listening, supported, start: startVoice, stop: stopVoice } = useVoiceInput({
     lang: voiceLang,
     onResult: handleResult,
+    onInterim: handleInterim,
     onError: handleError,
   });
 
