@@ -390,6 +390,44 @@ export function VoiceFAB() {
     );
   }
 
+  // ========== Loading model state ==========
+  if (stage === "loading-model") {
+    return (
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-2">
+        <div className="bg-card border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-xl shadow-md animate-fade max-w-[220px] text-center">
+          <span>{t("loadingModel")}</span>
+          <div className="mt-1.5 h-1.5 bg-secondary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${modelProgress}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-muted-foreground mt-1 block">{modelProgress}%</span>
+        </div>
+        <button
+          onClick={handleCancel}
+          className="h-14 w-14 rounded-full bg-muted text-muted-foreground shadow-lg flex items-center justify-center animate-pulse"
+        >
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </button>
+      </div>
+    );
+  }
+
+  // ========== Transcribing state ==========
+  if (stage === "transcribing") {
+    return (
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-2">
+        <div className="bg-card border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-xl shadow-md animate-fade">
+          {t("transcribing")}
+        </div>
+        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-pulse">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
   // ========== Main FAB ==========
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
@@ -407,7 +445,7 @@ export function VoiceFAB() {
       )}
 
       <button
-        onClick={stage === "listening" ? handleCancel : handleStartListening}
+        onClick={stage === "listening" ? () => { stopVoice(); } : handleStartListening}
         className={`relative group h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
           stage === "listening"
             ? "bg-destructive text-destructive-foreground scale-110"
