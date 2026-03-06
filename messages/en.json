@@ -256,6 +256,7 @@
   },
   "nav": {
     "main": "Main",
+    "moreTools": "More Tools",
     "system": "System",
     "financial": "Financial",
     "operations": "Operations",
@@ -335,7 +336,17 @@
     "step3Title": "Invite someone",
     "step3Desc": "Share with a partner or family member.",
     "lumyInsight": "Daily insight",
-    "askLumy": "Ask Lumy"
+    "askLumy": "Ask Lumy",
+    "healthScore": "Financial Health",
+    "balanceForecast": "Balance Forecast",
+    "forecastDesc": "Estimated end-of-month balance based on recurring income and expenses.",
+    "recIncome": "Recurring income",
+    "recExpenses": "Recurring expenses",
+    "insightOverAvg": "Warning: your spending this month is {pct}% above average.",
+    "insightDailyBudget": "You can spend {amount} per day to stay on track.",
+    "insightOnTrack": "Great job! Your spending is under control this month. 🎯",
+    "insightPositive": "Your balance is positive — keep it up!",
+    "insightNegative": "Your expenses exceeded your income. Time to review your budget."
   },
   "gamification": {
     "achievements": "Achievements",

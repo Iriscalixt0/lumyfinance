@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -7,63 +7,43 @@ import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
 import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
-import { LumyInsightWidget } from "@/components/dashboard/LumyInsightWidget";
+import { HealthScoreCard } from "@/components/dashboard/HealthScoreCard";
+import { InsightPhrase } from "@/components/dashboard/InsightPhrase";
+import { BalanceForecastCard } from "@/components/dashboard/BalanceForecastCard";
 import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
 import {
-  ArrowRight,
-  Snowflake,
-  Flame,
-  Wind,
-  CloudRain,
-  Flower2,
-  Sun,
-  Waves,
-  CloudSun,
-  Leaf,
-  TreePine,
-  Cloudy,
-  Sparkles,
-  Wallet2,
   Plus,
-  Users,
+  Sparkles,
   PenLine,
   Bookmark,
+  Users,
   CheckCircle2,
 } from "lucide-react";
 
-const MONTH_ICONS = [
-  Snowflake, Flame, Wind, CloudRain, Flower2, Sun,
-  Waves, CloudSun, Leaf, TreePine, Cloudy, Sparkles,
-];
-
-interface MonthData {
-  month: number;
-  total: number;
-}
-
-interface BudgetSummary {
-  id: string;
-  category: string;
-  limit_amount: number;
-  spent_amount: number;
+interface TxRow {
+  amount: number;
+  type: string;
+  date: string;
+  tags?: string | null;
 }
 
 export function DashboardPage() {
   const fmt = useIntlFormat();
   const t = useTranslations("dashboard");
-  const tc = useTranslations("common.months");
   const formatBRL = fmt.money;
   const { activeWorkspace } = useWorkspace();
   const { streak, unlockedKeys, totalTx, loading: gamLoading } = useGamification(activeWorkspace?.id ?? null);
-  const [monthlyData, setMonthlyData] = useState<MonthData[]>(
-    Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 }))
-  );
-  const [budgets, setBudgets] = useState<BudgetSummary[]>([]);
+
+  const [transactions, setTransactions] = useState<TxRow[]>([]);
+  const [recurringExpenses, setRecurringExpenses] = useState(0);
+  const [recurringIncome, setRecurringIncome] = useState(0);
+  const [budgetLimit, setBudgetLimit] = useState(0);
   const [loading, setLoading] = useState(true);
   const [hasTransactions, setHasTransactions] = useState(false);
   const [quickTxOpen, setQuickTxOpen] = useState(false);
 
   const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
 
   useEffect(() => {
     async function load() {
@@ -72,42 +52,79 @@ export function DashboardPage() {
       const startOfYear = `${currentYear}-01-01`;
       const endOfYear = `${currentYear}-12-31`;
 
-      const [txRes, budgetRes] = await Promise.all([
+      const [txRes, budgetRes, recRes] = await Promise.all([
         supabase
           .from("transactions")
-          .select("amount, type, date")
+          .select("amount, type, date, tags")
           .eq("workspace_id", activeWorkspace.id)
           .gte("date", startOfYear)
           .lte("date", endOfYear),
         supabase
           .from("budgets")
-          .select("id, category, limit_amount, spent_amount")
+          .select("limit_amount")
           .eq("workspace_id", activeWorkspace.id),
+        supabase
+          .from("transactions")
+          .select("amount, type, tags")
+          .eq("workspace_id", activeWorkspace.id)
+          .or("tags.cs.{recorrente},tags.cs.{fixo}"),
       ]);
 
-      const transactions = txRes.data;
-      if (transactions && transactions.length > 0) {
-        setHasTransactions(true);
-        const monthly = Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 }));
+      const txData = txRes.data ?? [];
+      setTransactions(txData);
+      setHasTransactions(txData.length > 0);
 
-        transactions.forEach((tx) => {
-          const monthIdx = new Date(tx.date).getMonth();
-          const value = tx.type === "income" ? tx.amount : -tx.amount;
-          monthly[monthIdx].total += value;
-        });
+      const totalBudget = (budgetRes.data ?? []).reduce((s, b) => s + (b.limit_amount || 0), 0);
+      setBudgetLimit(totalBudget);
 
-        setMonthlyData(monthly);
-      }
+      const recData = recRes.data ?? [];
+      setRecurringExpenses(recData.filter(r => r.type === "expense").reduce((s, r) => s + r.amount, 0));
+      setRecurringIncome(recData.filter(r => r.type === "income").reduce((s, r) => s + r.amount, 0));
 
-      setBudgets(budgetRes.data ?? []);
       setLoading(false);
     }
     setLoading(true);
-    setMonthlyData(Array.from({ length: 12 }, (_, i) => ({ month: i, total: 0 })));
+    setTransactions([]);
     setHasTransactions(false);
-    setBudgets([]);
     load();
   }, [activeWorkspace, currentYear]);
+
+  // Derived metrics
+  const metrics = useMemo(() => {
+    const totalIncome = transactions.filter(tx => tx.type === "income").reduce((s, tx) => s + tx.amount, 0);
+    const totalExpenses = transactions.filter(tx => tx.type === "expense").reduce((s, tx) => s + tx.amount, 0);
+    const currentMonthTx = transactions.filter(tx => new Date(tx.date).getMonth() === currentMonth);
+    const currentMonthExpenses = currentMonthTx.filter(tx => tx.type === "expense").reduce((s, tx) => s + tx.amount, 0);
+    const currentMonthIncome = currentMonthTx.filter(tx => tx.type === "income").reduce((s, tx) => s + tx.amount, 0);
+    const monthsPassed = Math.max(currentMonth, 1);
+    const avgMonthlyExpenses = totalExpenses / monthsPassed;
+    const currentBalance = currentMonthIncome - currentMonthExpenses;
+    const estimatedEndOfMonth = currentBalance - recurringExpenses + recurringIncome;
+
+    return { totalIncome, totalExpenses, currentMonthExpenses, avgMonthlyExpenses, currentBalance, estimatedEndOfMonth };
+  }, [transactions, currentMonth, recurringExpenses, recurringIncome]);
+
+  // Health Score calculation (local logic)
+  const healthScore = useMemo(() => {
+    if (!hasTransactions) return 50;
+    const { totalIncome, totalExpenses, currentMonthExpenses, avgMonthlyExpenses } = metrics;
+    let score = 50;
+
+    // Savings rate component (0-40 pts)
+    if (totalIncome > 0) {
+      const savingsRate = (totalIncome - totalExpenses) / totalIncome;
+      score += Math.min(Math.max(savingsRate * 100, -20), 40);
+    }
+
+    // Spending trend (0-10 pts)
+    if (avgMonthlyExpenses > 0) {
+      const trend = currentMonthExpenses / avgMonthlyExpenses;
+      if (trend < 0.9) score += 10;
+      else if (trend > 1.2) score -= 10;
+    }
+
+    return Math.round(Math.min(Math.max(score, 0), 100));
+  }, [hasTransactions, metrics]);
 
   /* ---------- Skeleton Loader ---------- */
   if (loading) {
@@ -117,24 +134,19 @@ export function DashboardPage() {
           <div className="h-9 w-64 bg-muted rounded-lg animate-pulse" />
           <div className="h-5 w-48 bg-muted rounded-md animate-pulse mt-2" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col items-center gap-2">
-              <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
-              <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-              <div className="h-5 w-20 bg-muted rounded animate-pulse" />
-            </div>
-          ))}
+        <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center gap-4 animate-pulse">
+          <div className="h-44 w-44 rounded-full bg-muted" />
+          <div className="h-5 w-48 bg-muted rounded" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="h-32 bg-card border border-border rounded-2xl animate-pulse" />
-          <div className="h-32 bg-card border border-border rounded-2xl animate-pulse" />
+          <div className="h-40 bg-card border border-border rounded-2xl animate-pulse" />
+          <div className="h-40 bg-card border border-border rounded-2xl animate-pulse" />
         </div>
       </div>
     );
   }
 
-  /* ---------- Empty / Welcome State — Quick Start Guide ---------- */
+  /* ---------- Empty / Welcome State ---------- */
   if (!hasTransactions) {
     const steps = [
       { num: 1, icon: Bookmark, titleKey: "step1Title", descKey: "step1Desc", href: "/workspace", done: !!activeWorkspace?.name },
@@ -172,9 +184,7 @@ export function DashboardPage() {
                     : "border-border hover:border-primary/30 bg-card"
                 }`}
               >
-                {step.done && (
-                  <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-emerald-500" />
-                )}
+                {step.done && <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-emerald-500" />}
                 <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${
                   step.done
                     ? "bg-emerald-500/10 text-emerald-600"
@@ -201,7 +211,6 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Gamification still shown */}
         {!gamLoading && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <StreakCard streak={streak} totalTx={totalTx} />
@@ -228,38 +237,31 @@ export function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {monthlyData.map((m) => {
-          const Icon = MONTH_ICONS[m.month];
-          const isNegative = m.total < 0;
-          const isPositive = m.total > 0;
-          return (
-            <div
-              key={m.month}
-              className="bg-card border border-border rounded-xl p-5 flex flex-col items-center text-center hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer"
-            >
-              <Icon className="h-9 w-9 text-primary mb-3" />
-              <p className="text-sm font-semibold text-foreground mb-1">{tc(["january","february","march","april","may","june","july","august","september","october","november","december"][m.month])}</p>
-              <p className={`text-base font-bold ${
-                isNegative ? "text-rose-500" : isPositive ? "text-emerald-500" : "text-primary"
-              }`}>
-                {m.total !== 0 && (isNegative ? "-" : "")}{formatBRL(Math.abs(m.total))}
-              </p>
-            </div>
-          );
-        })}
+      {/* Health Score */}
+      <HealthScoreCard score={healthScore} />
+
+      {/* Insight Phrase */}
+      <InsightPhrase
+        totalIncome={metrics.totalIncome}
+        totalExpenses={metrics.totalExpenses}
+        avgMonthlyExpenses={metrics.avgMonthlyExpenses}
+        currentMonthExpenses={metrics.currentMonthExpenses}
+        budgetLimit={budgetLimit}
+      />
+
+      {/* Balance Forecast + Gamification */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <BalanceForecastCard
+          currentBalance={metrics.currentBalance}
+          estimatedEndOfMonth={metrics.estimatedEndOfMonth}
+          recurringExpenses={recurringExpenses}
+          recurringIncome={recurringIncome}
+        />
+
+        {!gamLoading && <StreakCard streak={streak} totalTx={totalTx} />}
       </div>
 
-      {/* Lumy Insight */}
-      <LumyInsightWidget />
-
-      {/* Gamification */}
-      {!gamLoading && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <StreakCard streak={streak} totalTx={totalTx} />
-          <AchievementsPanel unlockedKeys={unlockedKeys} />
-        </div>
-      )}
+      {!gamLoading && <AchievementsPanel unlockedKeys={unlockedKeys} />}
 
       {/* Quick Transaction FAB */}
       <button
@@ -275,56 +277,12 @@ export function DashboardPage() {
         onClose={() => setQuickTxOpen(false)}
       />
 
-      {/* Budget progress */}
-      {budgets.length > 0 && (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Wallet2 className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-foreground text-sm">{t("budgets")}</h3>
-            </div>
-            <Link to="/budgets" className="text-xs text-primary hover:underline flex items-center gap-1">
-              {t("quickLinks")} <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {budgets.slice(0, 6).map((b) => {
-              const pct = b.limit_amount > 0 ? Math.min((b.spent_amount / b.limit_amount) * 100, 100) : 0;
-              const isOver = pct >= 90;
-              return (
-                <div key={b.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-foreground truncate">{b.category}</p>
-                    <span className={`text-xs font-bold ${isOver ? "text-destructive" : "text-primary"}`}>
-                      {pct.toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${isOver ? "bg-destructive" : "bg-primary"}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{formatBRL(b.spent_amount)}</span>
-                    <span>{formatBRL(b.limit_amount)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      {/* Quick links */}
       <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
         {[
           { labelKey: "seeReports", href: "/annual-report", primary: true },
           { labelKey: "transactions", href: "/transactions" },
           { labelKey: "budgets", href: "/budgets" },
-          { labelKey: "billings", href: "/billings" },
-          { labelKey: "investments", href: "/investments" },
-          { labelKey: "goals", href: "/goals" },
-          { labelKey: "recurring", href: "/recurring" },
         ].map((link) => (
           <Link
             key={link.href}

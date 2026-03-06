@@ -48,25 +48,24 @@ interface NavItem {
   icon: typeof LayoutDashboard;
 }
 
-const OVERVIEW_ITEM: NavItem = { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard };
-
-// 🟢 Operações
-const OPERATIONS_ITEMS: NavItem[] = [
+// 🔵 Main nav — only 3 core items
+const MAIN_ITEMS: NavItem[] = [
+  { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard },
   { labelKey: "transactions", href: "/transactions", icon: ArrowLeftRight },
-  { labelKey: "investments", href: "/investments", icon: TrendingUp },
-  { labelKey: "goals", href: "/goals", icon: Target },
+  { labelKey: "lumy", href: "/lumy", icon: Bot },
 ];
 
-// 🔵 Recursos Pro (inclui Análises)
-const PRO_ITEMS: NavItem[] = [
-  { labelKey: "lumy", href: "/lumy", icon: Bot },
+// 🧰 Mais Ferramentas (collapsed by default)
+const MORE_TOOLS_ITEMS: NavItem[] = [
+  { labelKey: "investments", href: "/investments", icon: TrendingUp },
+  { labelKey: "goals", href: "/goals", icon: Target },
+  { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
+  { labelKey: "recurring", href: "/recurring", icon: Repeat },
+  { labelKey: "cobrancas", href: "/billings", icon: Receipt },
   { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
   { labelKey: "projection", href: "/projection", icon: LineChart },
   { labelKey: "crypto", href: "/crypto", icon: Bitcoin },
   { labelKey: "calculators", href: "/calculators", icon: Calculator },
-  { labelKey: "cobrancas", href: "/billings", icon: Receipt },
-  { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
-  { labelKey: "recurring", href: "/recurring", icon: Repeat },
 ];
 
 // ⚙️ Sistema
@@ -179,31 +178,34 @@ export function AppLayout() {
       </div>
 
       {/* Nav sections */}
-      <div className="flex-1 overflow-y-auto px-3 space-y-3">
-        {/* Overview (always visible) */}
-        <div>
-          <Link
-            to={OVERVIEW_ITEM.href}
-            onClick={closeSidebar}
-            title={t(OVERVIEW_ITEM.labelKey)}
-            className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-              isActive(OVERVIEW_ITEM.href)
-                ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:translate-x-0.5 hover:shadow-sm"
-            }`}
-          >
-            <OVERVIEW_ITEM.icon className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
-              isActive(OVERVIEW_ITEM.href) ? "text-primary scale-110" : "group-hover:text-foreground group-hover:scale-105"
-            }`} />
-            <span className="truncate">{t(OVERVIEW_ITEM.labelKey)}</span>
-            {isActive(OVERVIEW_ITEM.href) && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
-            )}
-          </Link>
+      <div className="flex-1 overflow-y-auto px-3 space-y-1">
+        {/* Main 3 items — always visible */}
+        <div className="space-y-0.5">
+          {MAIN_ITEMS.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={closeSidebar}
+              title={t(item.labelKey)}
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                isActive(item.href)
+                  ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:translate-x-0.5 hover:shadow-sm"
+              }`}
+            >
+              <item.icon className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
+                isActive(item.href) ? "text-primary scale-110" : "group-hover:text-foreground group-hover:scale-105"
+              }`} />
+              <span className="truncate">{t(item.labelKey)}</span>
+              {isActive(item.href) && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+              )}
+            </Link>
+          ))}
         </div>
 
         {/* CTA — Nova Transação */}
-        <div className="px-1">
+        <div className="px-1 pt-2">
           <Link
             to="/transactions?new=1"
             onClick={closeSidebar}
@@ -214,20 +216,10 @@ export function AppLayout() {
           </Link>
         </div>
 
-        {/* 🟢 Operações */}
+        {/* 🧰 Mais Ferramentas */}
         <CollapsibleGroup
-          label={t("operations")}
-          items={OPERATIONS_ITEMS}
-          t={t}
-          isActive={isActive}
-          onNavigate={closeSidebar}
-          defaultOpen
-        />
-
-        {/* 🔵 Recursos Pro */}
-        <CollapsibleGroup
-          label={t("pro")}
-          items={PRO_ITEMS}
+          label={t("moreTools")}
+          items={MORE_TOOLS_ITEMS}
           t={t}
           isActive={isActive}
           onNavigate={closeSidebar}
