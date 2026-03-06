@@ -40,6 +40,7 @@ export function SettingsPage() {
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
+  const { currency: baseCurrency, setCurrency: setBaseCurrency } = useBaseCurrency();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
