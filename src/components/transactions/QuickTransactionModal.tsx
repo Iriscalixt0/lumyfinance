@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Zap, ChevronDown } from "lucide-react";
+import { X, Zap, Mic, MicOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useTranslations } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { parseVoiceTransaction } from "@/lib/utils/voice-parser";
 
 /**
  * Simple category prediction based on description keywords.
@@ -49,6 +51,23 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
   const [type, setType] = useState<"expense" | "income">("expense");
   const [saving, setSaving] = useState(false);
   const [predictedCategory, setPredictedCategory] = useState<string | null>(null);
+
+  // Voice input
+  const voiceLang = fmt.currency === "BRL" ? "pt-BR" : fmt.currency === "EUR" ? "es-ES" : "en-US";
+  const { listening, supported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceInput({
+    lang: voiceLang,
+    onResult: (transcript) => {
+      const parsed = parseVoiceTransaction(transcript);
+      if (parsed.amount) setAmount(String(parsed.amount));
+      if (parsed.description) setDescription(parsed.description);
+      setType(parsed.type);
+      showToast(t("voiceRecognized"), "success");
+    },
+    onError: (err) => {
+      if (err === "not_supported") showToast(t("voiceNotSupported"), "error");
+      else showToast(t("voiceError"), "error");
+    },
+  });
 
   useEffect(() => {
     if (open) {
