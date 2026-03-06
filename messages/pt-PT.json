@@ -1450,5 +1450,28 @@
     "linkCreated": "Link criado! Copie e envie aos testadores.",
     "errorCreate": "Erro ao criar.",
     "errorDelete": "Erro ao excluir."
+  },
+  "onboarding": {
+    "continue": "Continuar",
+    "howToUse": "Como quer usar o Lumyf?",
+    "howToUseDesc": "Isto ajuda-nos a personalizar a sua experiência",
+    "intentPersonal": "Pessoal",
+    "intentPersonalDesc": "Controlo individual de finanças",
+    "intentFamily": "Família / Casal",
+    "intentFamilyDesc": "Finanças partilhadas em casa",
+    "intentBusiness": "Pequeno negócio",
+    "intentBusinessDesc": "Controlo financeiro empresarial",
+    "intentOther": "Outro",
+    "intentOtherDesc": "Explorar o que a plataforma oferece",
+    "nameWorkspace": "Dê um nome ao seu espaço",
+    "nameWorkspaceDesc": "Pode mudar depois nas configurações",
+    "allReady": "Tudo pronto!",
+    "allReadyDesc": "Vamos começar a organizar as suas finanças",
+    "language": "Idioma",
+    "usage": "Uso",
+    "settingUp": "A configurar...",
+    "start": "Começar!",
+    "welcome": "Bem-vindo ao Lumyf! 🎉",
+    "errorSetup": "Erro ao configurar workspace. Aceda a Configurações para tentar novamente."
   }
 }
