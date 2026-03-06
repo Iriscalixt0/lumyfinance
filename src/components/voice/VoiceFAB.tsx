@@ -90,10 +90,18 @@ export function VoiceFAB() {
 
   const handleError = useCallback((err: string) => {
     setInterimText("");
-    if (err === "no-speech") toast(t("noSpeech"), "error");
-    else if (err === "not_supported" || err === "start-failed") toast(t("notSupported"), "error");
-    else if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") toast(t("micDenied"), "error");
-    else toast(t("voiceError"), "error");
+    if (err === "no-speech") {
+      toast(t("noSpeech"), "error");
+    } else if (err === "not_supported" || err === "start-failed") {
+      toast(t("notSupported"), "error");
+    } else if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") {
+      toast(t("micDenied"), "error");
+    } else if (err === "network") {
+      toast(t("networkError"), "error");
+    } else {
+      console.warn("[VoiceFAB] Speech recognition error:", err);
+      toast(t("voiceError"), "error");
+    }
     setStage("idle");
   }, [t, toast]);
 
