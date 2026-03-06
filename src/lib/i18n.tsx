@@ -3,8 +3,10 @@ import ptBR from "../../messages/pt-BR.json";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
 import ptPT from "../../messages/pt-PT.json";
+import fr from "../../messages/fr.json";
+import de from "../../messages/de.json";
 
-export const LOCALES = ["pt-BR", "pt-PT", "en", "es"] as const;
+export const LOCALES = ["pt-BR", "pt-PT", "en", "es", "fr", "de"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 const MESSAGES: Record<Locale, Record<string, any>> = {
@@ -12,6 +14,8 @@ const MESSAGES: Record<Locale, Record<string, any>> = {
   "pt-PT": ptPT,
   en,
   es,
+  fr,
+  de,
 };
 
 const STORAGE_KEY = "lumyf-locale";
@@ -24,6 +28,8 @@ function getInitialLocale(): Locale {
   if (browserLang.startsWith("pt-PT")) return "pt-PT";
   if (browserLang.startsWith("pt")) return "pt-BR";
   if (browserLang.startsWith("es")) return "es";
+  if (browserLang.startsWith("fr")) return "fr";
+  if (browserLang.startsWith("de")) return "de";
   if (browserLang.startsWith("en")) return "en";
   return "pt-BR";
 }
