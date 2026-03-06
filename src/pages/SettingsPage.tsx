@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/components/theme-provider";
+import { useBaseCurrency } from "@/hooks/useBaseCurrency";
+import { SUPPORTED_CURRENCIES } from "@/lib/utils/exchange";
 import { Modal } from "@/components/ui/Modal";
 import {
   Settings,
