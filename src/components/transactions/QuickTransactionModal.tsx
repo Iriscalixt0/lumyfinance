@@ -65,7 +65,8 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
     },
     onError: (err) => {
       if (err === "not_supported") showToast(t("voiceNotSupported"), "error");
-      else showToast(t("voiceError"), "error");
+      else if (err === "not-allowed" || err === "audio-capture") showToast(t("voiceMicDenied"), "error");
+      else if (err !== "no-speech") showToast(t("voiceError"), "error");
     },
   });
 
