@@ -7,6 +7,7 @@ import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
 import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
+import { ShareableAchievementCard } from "@/components/gamification/ShareableAchievementCard";
 import { HealthScoreCard } from "@/components/dashboard/HealthScoreCard";
 import { InsightPhrase } from "@/components/dashboard/InsightPhrase";
 import { BalanceForecastCard } from "@/components/dashboard/BalanceForecastCard";
