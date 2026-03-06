@@ -138,5 +138,28 @@
     "errorNoData": "Daten konnten nicht extrahiert werden. Versuchen Sie ein schärferes Foto.",
     "errorProcessing": "Fehler bei der Bildverarbeitung. Bitte versuchen Sie es erneut.",
     "privacyNotice": "🔒 Lokal verarbeitet — Ihr Foto verlässt dieses Gerät nie"
+  },
+  "onboarding": {
+    "continue": "Weiter",
+    "howToUse": "Wie möchten Sie Lumyf verwenden?",
+    "howToUseDesc": "Dies hilft uns, Ihre Erfahrung zu personalisieren",
+    "intentPersonal": "Persönlich",
+    "intentPersonalDesc": "Individuelle Finanzverwaltung",
+    "intentFamily": "Familie / Paar",
+    "intentFamilyDesc": "Gemeinsame Finanzen zu Hause",
+    "intentBusiness": "Kleines Unternehmen",
+    "intentBusinessDesc": "Geschäftliche Finanzverwaltung",
+    "intentOther": "Andere",
+    "intentOtherDesc": "Erkunden, was die Plattform bietet",
+    "nameWorkspace": "Geben Sie Ihrem Bereich einen Namen",
+    "nameWorkspaceDesc": "Sie können es später in den Einstellungen ändern",
+    "allReady": "Alles bereit!",
+    "allReadyDesc": "Beginnen wir mit der Organisation Ihrer Finanzen",
+    "language": "Sprache",
+    "usage": "Verwendung",
+    "settingUp": "Einrichten...",
+    "start": "Los geht's!",
+    "welcome": "Willkommen bei Lumyf! 🎉",
+    "errorSetup": "Fehler beim Einrichten des Workspace. Gehen Sie zu Einstellungen, um es erneut zu versuchen."
   }
 }

@@ -138,5 +138,28 @@
     "errorNoData": "Impossible d'extraire les données. Essayez avec une photo plus nette.",
     "errorProcessing": "Erreur lors du traitement de l'image. Réessayez.",
     "privacyNotice": "🔒 Traité localement — votre photo ne quitte jamais cet appareil"
+  },
+  "onboarding": {
+    "continue": "Continuer",
+    "howToUse": "Comment souhaitez-vous utiliser Lumyf ?",
+    "howToUseDesc": "Cela nous aide à personnaliser votre expérience",
+    "intentPersonal": "Personnel",
+    "intentPersonalDesc": "Gestion financière individuelle",
+    "intentFamily": "Famille / Couple",
+    "intentFamilyDesc": "Finances partagées à la maison",
+    "intentBusiness": "Petite entreprise",
+    "intentBusinessDesc": "Gestion financière d'entreprise",
+    "intentOther": "Autre",
+    "intentOtherDesc": "Explorer ce que la plateforme offre",
+    "nameWorkspace": "Donnez un nom à votre espace",
+    "nameWorkspaceDesc": "Vous pouvez le changer plus tard dans les paramètres",
+    "allReady": "Tout est prêt !",
+    "allReadyDesc": "Commençons à organiser vos finances",
+    "language": "Langue",
+    "usage": "Utilisation",
+    "settingUp": "Configuration...",
+    "start": "Commencer !",
+    "welcome": "Bienvenue sur Lumyf ! 🎉",
+    "errorSetup": "Erreur lors de la configuration. Accédez aux Paramètres pour réessayer."
   }
 }

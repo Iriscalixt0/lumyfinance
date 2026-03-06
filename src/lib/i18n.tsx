@@ -1,107 +1,72 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
-import ptBR from "../../messages/pt-BR.json";
-import en from "../../messages/en.json";
-import es from "../../messages/es.json";
-import ptPT from "../../messages/pt-PT.json";
-import fr from "../../messages/fr.json";
-import de from "../../messages/de.json";
+/**
+ * i18n wrapper — delegates to i18next while keeping the same API
+ * so all existing components work without import changes.
+ */
+import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "./i18n-init";
 
-export const LOCALES = ["pt-BR", "pt-PT", "en", "es", "fr", "de"] as const;
-export type Locale = (typeof LOCALES)[number];
-
-const MESSAGES: Record<Locale, Record<string, any>> = {
-  "pt-BR": ptBR,
-  "pt-PT": ptPT,
-  en,
-  es,
-  fr,
-  de,
-};
-
-const STORAGE_KEY = "lumyf-locale";
-
-function getInitialLocale(): Locale {
-  if (typeof window === "undefined") return "pt-BR";
-  const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-  if (stored && LOCALES.includes(stored)) return stored;
-  const browserLang = navigator.language;
-  if (browserLang.startsWith("pt-PT")) return "pt-PT";
-  if (browserLang.startsWith("pt")) return "pt-BR";
-  if (browserLang.startsWith("es")) return "es";
-  if (browserLang.startsWith("fr")) return "fr";
-  if (browserLang.startsWith("de")) return "de";
-  if (browserLang.startsWith("en")) return "en";
-  return "pt-BR";
-}
-
-/** Get nested value from object using dot-separated path */
-function getNestedValue(obj: any, path: string): string | undefined {
-  return path.split(".").reduce((acc, key) => acc?.[key], obj);
-}
+// Re-export types and constants
+export { LOCALES, type Locale } from "./i18n-init";
 
 interface I18nContextType {
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
+  locale: string;
+  setLocale: (locale: string) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
 }
 
-const I18nContext = createContext<I18nContextType | null>(null);
-
+/**
+ * I18nProvider — now a thin passthrough since i18next manages state globally.
+ * Kept for backward compatibility with main.tsx tree.
+ */
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
-
-  const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
-    localStorage.setItem(STORAGE_KEY, next);
-    document.documentElement.lang = next;
-  }, []);
-
-  const t = useCallback(
-    (key: string, params?: Record<string, string | number>): string => {
-      let value = getNestedValue(MESSAGES[locale], key);
-      if (value === undefined) {
-        // Fallback to pt-BR
-        value = getNestedValue(MESSAGES["pt-BR"], key);
-      }
-      if (value === undefined) return key;
-      if (params) {
-        Object.entries(params).forEach(([k, v]) => {
-          value = value!.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
-        });
-      }
-      return value;
-    },
-    [locale]
-  );
-
-  const ctx = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
-
-  return <I18nContext.Provider value={ctx}>{children}</I18nContext.Provider>;
+  return <>{children}</>;
 }
 
+/**
+ * useTranslations — drop-in replacement using i18next.
+ * Accepts optional prefix like "dashboard" to scope keys.
+ */
 export function useTranslations(prefix?: string) {
-  const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useTranslations must be inside I18nProvider");
+  const { t } = useTranslation();
 
-  const tPrefixed = useCallback(
+  return useCallback(
     (key: string, params?: Record<string, string | number>): string => {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      return ctx.t(fullKey, params);
+      return t(fullKey, params as any) as string;
     },
-    [ctx.t, prefix]
+    [t, prefix]
+  );
+}
+
+/**
+ * useLocale — returns current i18next language.
+ */
+export function useLocale() {
+  const { i18n: instance } = useTranslation();
+  return instance.language as import("./i18n-init").Locale;
+}
+
+/**
+ * useI18n — returns locale, setLocale, and t function.
+ */
+export function useI18n(): I18nContextType {
+  const { t, i18n: instance } = useTranslation();
+
+  const setLocale = useCallback((lng: string) => {
+    instance.changeLanguage(lng);
+  }, [instance]);
+
+  const translate = useCallback(
+    (key: string, params?: Record<string, string | number>): string => {
+      return t(key, params as any) as string;
+    },
+    [t]
   );
 
-  return tPrefixed;
-}
-
-export function useLocale(): Locale {
-  const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useLocale must be inside I18nProvider");
-  return ctx.locale;
-}
-
-export function useI18n() {
-  const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useI18n must be inside I18nProvider");
-  return ctx;
+  return {
+    locale: instance.language,
+    setLocale,
+    t: translate,
+  };
 }
