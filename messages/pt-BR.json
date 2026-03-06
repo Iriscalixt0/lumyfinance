@@ -356,6 +356,7 @@
     "voiceStop": "Parar gravação",
     "voiceRecognized": "Voz reconhecida!",
     "voiceNotSupported": "Seu navegador não suporta entrada de voz",
+    "voiceMicDenied": "Permissão do microfone negada. Ative o microfone no navegador.",
     "voiceError": "Erro ao reconhecer voz",
     "voiceHint": "Diga: 'Gastei 50 reais no supermercado'"
   },
