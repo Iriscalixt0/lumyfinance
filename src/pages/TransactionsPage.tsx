@@ -25,6 +25,7 @@ import {
   FileText,
   Upload,
   Camera,
+  Sparkles,
 } from "lucide-react";
 import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
