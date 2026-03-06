@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
 import { useHybridVoice } from "@/hooks/useHybridVoice";
 import { useVoiceInput, speak } from "@/hooks/useVoiceInput";
+import { buildVoiceResponse } from "@/lib/utils/voice-response";
 import {
   parseVoiceTransaction,
   predictCategory,
@@ -236,6 +237,57 @@ export function VoiceFAB() {
     }
 
     await recordActivity();
+
+    // Voice budget feedback (non-blocking)
+    try {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      let monthlyTotal = 0;
+      let budgetLimit: number | null = null;
+
+      if (categoryId) {
+        const { data: monthTx } = await supabase
+          .from("transactions")
+          .select("amount")
+          .eq("workspace_id", activeWorkspace.id)
+          .eq("category_id", categoryId)
+          .gte("date", `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`)
+          .lte("date", `${currentYear}-${String(currentMonth).padStart(2, "0")}-31`);
+        if (monthTx) {
+          monthlyTotal = monthTx.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+        }
+
+        const { data: budget } = await supabase
+          .from("budgets")
+          .select("limit_amount")
+          .eq("workspace_id", activeWorkspace.id)
+          .eq("category_id", categoryId)
+          .eq("year", currentYear)
+          .eq("month", currentMonth)
+          .maybeSingle();
+        if (budget) {
+          const raw = budget.limit_amount;
+          budgetLimit = raw > 10000 ? raw / 100 : raw;
+        }
+      }
+
+      const voiceResponse = buildVoiceResponse({
+        lang: voiceLang,
+        amount,
+        category: editCategory,
+        monthlyTotal,
+        budgetLimit,
+        fmt,
+      });
+      if (voiceResponse) {
+        speak(voiceResponse, voiceLang); // fire-and-forget
+      }
+    } catch {
+      // Silent fail — just speak "Anotado!"
+      try { speak(buildVoiceResponse({ lang: voiceLang, amount, category: null, monthlyTotal: 0, budgetLimit: null, fmt }), voiceLang); } catch {}
+    }
+
     setStage("done");
     toast(
       `✅ ${parsed?.type === "income" ? "+" : "-"}${fmt.money(Math.round(amount * 100))} • ${editDesc}`,
