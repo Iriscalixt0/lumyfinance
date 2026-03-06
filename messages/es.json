@@ -6,7 +6,9 @@
       "pt-BR": "Portugués (Brasil)",
       "pt-PT": "Portugués (Portugal)",
       "en": "Inglés",
-      "es": "Español"
+      "es": "Español",
+      "fr": "Francés",
+      "de": "Alemán"
     },
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -338,10 +340,17 @@
     "lumyInsight": "Insight del día",
     "askLumy": "Preguntar a Lumy",
     "healthScore": "Salud Financiera",
+    "scorePhraseLow": "Atención: tus gastos superan tus ingresos disponibles",
+    "scorePhraseMid": "Vas por buen camino. Pequeños ajustes harán la diferencia",
+    "scorePhraseHigh": "¡Excelente! Sigue así y tu meta está asegurada",
     "balanceForecast": "Previsión de Saldo",
     "forecastDesc": "Saldo estimado a fin de mes según ingresos y gastos recurrentes.",
     "recIncome": "Ingreso recurrente",
     "recExpenses": "Gasto recurrente",
+    "upcomingRecurring": "Próximos vencimientos",
+    "whatIfBuy": "¿Y si compro algo hoy?",
+    "whatIfPlaceholder": "Monto...",
+    "whatIfResult": "Nuevo saldo proyectado",
     "insightOverAvg": "Atención: tus gastos este mes ya están {pct}% por encima del promedio.",
     "insightDailyBudget": "Puedes gastar {amount} por día para mantenerte en tu meta.",
     "insightOnTrack": "¡Genial! Tus gastos están bajo control este mes. 🎯",
@@ -350,7 +359,15 @@
   },
   "gamification": {
     "achievements": "Logros",
-    "unlocked": "desbloqueados"
+    "unlocked": "desbloqueados",
+    "shareAchievement": "Compartir logro",
+    "share": "Compartir",
+    "streakDays": "días consecutivos",
+    "savedThisMonth": "Ahorré este mes con ayuda de Lumy IA 🚀",
+    "streakAchieved": "¡Racha lograda!",
+    "shareTagline": "Logré esta meta con ayuda de Lumy IA 🚀",
+    "shareGoalText": "¡Ahorré {value} este mes con Lumyf! 🚀 lumyf.app",
+    "shareStreakText": "¡{value} días consecutivos de seguimiento financiero con Lumyf! 🔥 lumyf.app"
   },
   "quickTransaction": {
     "title": "Transacción Relámpago",

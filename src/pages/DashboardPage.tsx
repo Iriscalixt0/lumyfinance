@@ -7,6 +7,7 @@ import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
 import { StreakCard } from "@/components/gamification/StreakCard";
 import { AchievementsPanel } from "@/components/gamification/AchievementsPanel";
+import { ShareableAchievementCard } from "@/components/gamification/ShareableAchievementCard";
 import { HealthScoreCard } from "@/components/dashboard/HealthScoreCard";
 import { InsightPhrase } from "@/components/dashboard/InsightPhrase";
 import { BalanceForecastCard } from "@/components/dashboard/BalanceForecastCard";
@@ -263,6 +264,19 @@ export function DashboardPage() {
 
       {!gamLoading && <AchievementsPanel unlockedKeys={unlockedKeys} />}
 
+      {/* Shareable achievement card — show when streak >= 30 or significant savings */}
+      {!gamLoading && streak.current_streak >= 30 && (
+        <ShareableAchievementCard
+          type="streak"
+          value={streak.current_streak}
+        />
+      )}
+      {!gamLoading && metrics.totalIncome > 0 && metrics.totalIncome > metrics.totalExpenses && (
+        <ShareableAchievementCard
+          type="goal"
+          value={metrics.totalIncome - metrics.totalExpenses}
+        />
+      )}
       {/* Quick Transaction FAB */}
       <button
         onClick={() => setQuickTxOpen(true)}

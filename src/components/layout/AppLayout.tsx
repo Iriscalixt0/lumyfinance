@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { VoiceFAB } from "@/components/voice/VoiceFAB";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -416,10 +417,13 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <main className="p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 max-w-7xl mx-auto">
           <Outlet />
         </main>
       </div>
+
+      {/* Bottom navigation — mobile only */}
+      <BottomNav />
 
       {/* Voice FAB — always-on voice input */}
       <VoiceFAB />

@@ -6,6 +6,8 @@ const CURRENCY_MAP: Record<Locale, string> = {
   "pt-PT": "EUR",
   en: "USD",
   es: "EUR",
+  fr: "EUR",
+  de: "EUR",
 };
 
 const DATE_LOCALE_MAP: Record<Locale, string> = {
@@ -13,6 +15,8 @@ const DATE_LOCALE_MAP: Record<Locale, string> = {
   "pt-PT": "pt-PT",
   en: "en-US",
   es: "es-ES",
+  fr: "fr-FR",
+  de: "de-DE",
 };
 
 /**
