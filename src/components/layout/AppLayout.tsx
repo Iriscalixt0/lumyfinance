@@ -41,6 +41,7 @@ import {
   LineChart,
   Bot,
   Bitcoin,
+  Plane,
 } from "lucide-react";
 
 interface NavItem {
@@ -67,6 +68,7 @@ const MORE_TOOLS_ITEMS: NavItem[] = [
   { labelKey: "projection", href: "/projection", icon: LineChart },
   { labelKey: "crypto", href: "/crypto", icon: Bitcoin },
   { labelKey: "calculators", href: "/calculators", icon: Calculator },
+  { labelKey: "travelMode", href: "/travel", icon: Plane },
 ];
 
 // ⚙️ Sistema
