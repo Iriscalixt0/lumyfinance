@@ -351,7 +351,13 @@
     "predicted": "Suggested category",
     "save": "Save in 1 tap",
     "saved": "Saved!",
-    "error": "Error saving"
+    "error": "Error saving",
+    "voiceStart": "Speak transaction",
+    "voiceStop": "Stop recording",
+    "voiceRecognized": "Voice recognized!",
+    "voiceNotSupported": "Your browser does not support voice input",
+    "voiceError": "Voice recognition error",
+    "voiceHint": "Say: 'I spent 50 dollars at the grocery store'"
   },
   "forms": {
     "transaction": {

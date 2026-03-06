@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Zap, ChevronDown } from "lucide-react";
+import { X, Zap, Mic, MicOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useTranslations } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { parseVoiceTransaction } from "@/lib/utils/voice-parser";
 
 /**
  * Simple category prediction based on description keywords.
@@ -49,6 +51,23 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
   const [type, setType] = useState<"expense" | "income">("expense");
   const [saving, setSaving] = useState(false);
   const [predictedCategory, setPredictedCategory] = useState<string | null>(null);
+
+  // Voice input
+  const voiceLang = fmt.currency === "BRL" ? "pt-BR" : fmt.currency === "EUR" ? "es-ES" : "en-US";
+  const { listening, supported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceInput({
+    lang: voiceLang,
+    onResult: (transcript) => {
+      const parsed = parseVoiceTransaction(transcript);
+      if (parsed.amount) setAmount(String(parsed.amount));
+      if (parsed.description) setDescription(parsed.description);
+      setType(parsed.type);
+      showToast(t("voiceRecognized"), "success");
+    },
+    onError: (err) => {
+      if (err === "not_supported") showToast(t("voiceNotSupported"), "error");
+      else showToast(t("voiceError"), "error");
+    },
+  });
 
   useEffect(() => {
     if (open) {
@@ -125,9 +144,25 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
             </div>
             <h2 className="text-base font-bold text-foreground">{t("title")}</h2>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {voiceSupported && (
+              <button
+                type="button"
+                onClick={listening ? stopVoice : startVoice}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all ${
+                  listening
+                    ? "bg-destructive/10 text-destructive animate-pulse"
+                    : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                }`}
+                title={listening ? t("voiceStop") : t("voiceStart")}
+              >
+                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            )}
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -190,7 +225,14 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
             />
           </div>
 
-          {/* AI Category Prediction */}
+          {/* Voice hint */}
+          {voiceSupported && !amount && !description && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Mic className="h-3 w-3" />
+              {t("voiceHint")}
+            </p>
+          )}
+
           {predictedCategory && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
               <span className="text-xs text-primary font-medium">🤖 {t("predicted")}:</span>

@@ -351,7 +351,13 @@
     "predicted": "Categoria sugerida",
     "save": "Guardar num toque",
     "saved": "Guardado!",
-    "error": "Erro ao guardar"
+    "error": "Erro ao guardar",
+    "voiceStart": "Falar transação",
+    "voiceStop": "Parar gravação",
+    "voiceRecognized": "Voz reconhecida!",
+    "voiceNotSupported": "O seu navegador não suporta entrada de voz",
+    "voiceError": "Erro ao reconhecer voz",
+    "voiceHint": "Diga: 'Gastei 50 euros no supermercado'"
   },
   "forms": {
     "transaction": {
