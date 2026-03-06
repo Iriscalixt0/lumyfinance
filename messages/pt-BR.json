@@ -256,6 +256,7 @@
   },
   "nav": {
     "main": "Principal",
+    "moreTools": "Mais Ferramentas",
     "system": "Sistema",
     "financial": "Financeiro",
     "operations": "Operações",
@@ -335,7 +336,17 @@
     "step3Title": "Convide alguém",
     "step3Desc": "Compartilhe com parceiro ou familiar.",
     "lumyInsight": "Insight do dia",
-    "askLumy": "Perguntar à Lumy"
+    "askLumy": "Perguntar à Lumy",
+    "healthScore": "Saúde Financeira",
+    "balanceForecast": "Previsão de Saldo",
+    "forecastDesc": "Saldo estimado no fim do mês com base em receitas e despesas recorrentes.",
+    "recIncome": "Receita recorrente",
+    "recExpenses": "Despesa recorrente",
+    "insightOverAvg": "Atenção: seus gastos este mês já estão {pct}% acima da média.",
+    "insightDailyBudget": "Você pode gastar {amount} por dia para manter sua meta.",
+    "insightOnTrack": "Parabéns! Seus gastos estão sob controle este mês. 🎯",
+    "insightPositive": "Seu saldo está positivo — continue assim!",
+    "insightNegative": "Seus gastos superaram suas receitas. Hora de revisar o orçamento."
   },
   "gamification": {
     "achievements": "Conquistas",
