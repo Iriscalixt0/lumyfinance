@@ -152,3 +152,27 @@ body {
 .blog-content ol li { list-style-type: decimal; }
 .blog-content a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
 .blog-content blockquote { border-left: 3px solid hsl(var(--primary)); padding-left: 1.25rem; margin: 1.5rem 0; color: hsl(var(--muted-foreground)); font-style: italic; }
+
+/* Voice FAB — Ripple rings */
+@keyframes voice-ripple {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes voice-ripple-delay {
+  0% { transform: scale(1); opacity: 0.35; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Voice FAB — Soundwave bars */
+@keyframes voice-bar-1 { 0%, 100% { height: 20%; } 50% { height: 80%; } }
+@keyframes voice-bar-2 { 0%, 100% { height: 40%; } 50% { height: 100%; } }
+@keyframes voice-bar-3 { 0%, 100% { height: 60%; } 50% { height: 30%; } }
+@keyframes voice-bar-4 { 0%, 100% { height: 30%; } 50% { height: 90%; } }
+@keyframes voice-bar-5 { 0%, 100% { height: 50%; } 50% { height: 20%; } }
+
+.voice-bar { border-radius: 9999px; background: currentColor; }
+.voice-bar-1 { animation: voice-bar-1 0.8s ease-in-out infinite; }
+.voice-bar-2 { animation: voice-bar-2 0.7s ease-in-out infinite 0.1s; }
+.voice-bar-3 { animation: voice-bar-3 0.9s ease-in-out infinite 0.15s; }
+.voice-bar-4 { animation: voice-bar-4 0.75s ease-in-out infinite 0.2s; }
+.voice-bar-5 { animation: voice-bar-5 0.85s ease-in-out infinite 0.05s; }

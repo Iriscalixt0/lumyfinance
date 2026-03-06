@@ -255,36 +255,57 @@ export function VoiceFAB() {
 
   // Main FAB button
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Hint tooltip */}
-      {stage === "idle" && (
-        <div className="absolute -top-10 right-0 bg-card border border-border text-foreground text-[10px] font-medium px-2.5 py-1 rounded-lg shadow-sm whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity pointer-events-none group-hover:opacity-100">
-          {t("hint")}
-        </div>
+    <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
+      {/* Ripple rings — only during listening */}
+      {stage === "listening" && (
+        <>
+          <span
+            className="absolute h-14 w-14 rounded-full border-2 border-destructive pointer-events-none"
+            style={{ animation: "voice-ripple 1.5s ease-out infinite" }}
+          />
+          <span
+            className="absolute h-14 w-14 rounded-full border-2 border-destructive pointer-events-none"
+            style={{ animation: "voice-ripple-delay 1.5s ease-out infinite 0.5s" }}
+          />
+        </>
       )}
 
       <button
         onClick={stage === "listening" ? handleCancel : handleStartListening}
-        className={`group h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+        className={`relative group h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
           stage === "listening"
-            ? "bg-destructive text-destructive-foreground animate-pulse scale-110 ring-4 ring-destructive/30"
+            ? "bg-destructive text-destructive-foreground scale-110"
             : "bg-primary text-primary-foreground hover:scale-105 active:scale-95 hover:shadow-xl"
         }`}
         aria-label={stage === "listening" ? t("stopListening") : t("startListening")}
         title={stage === "listening" ? t("stopListening") : t("startListening")}
       >
         {stage === "listening" ? (
-          <MicOff className="h-6 w-6" />
+          /* Soundwave bars inside button */
+          <div className="flex items-center justify-center gap-[3px] h-6 w-6 text-destructive-foreground">
+            <span className="voice-bar voice-bar-1 w-[3px]" />
+            <span className="voice-bar voice-bar-2 w-[3px]" />
+            <span className="voice-bar voice-bar-3 w-[3px]" />
+            <span className="voice-bar voice-bar-4 w-[3px]" />
+            <span className="voice-bar voice-bar-5 w-[3px]" />
+          </div>
         ) : (
           <Mic className="h-6 w-6" />
         )}
       </button>
 
-      {/* Listening indicator */}
+      {/* Listening label */}
       {stage === "listening" && (
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap animate-fade">
-          <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse mr-1.5" />
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap animate-fade">
+          <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse mr-1.5 align-middle" />
           {t("listening")}
+        </div>
+      )}
+
+      {/* Idle hint on hover */}
+      {stage === "idle" && (
+        <div className="absolute -top-10 right-0 bg-card border border-border text-foreground text-[10px] font-medium px-2.5 py-1 rounded-lg shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          {t("hint")}
         </div>
       )}
     </div>
