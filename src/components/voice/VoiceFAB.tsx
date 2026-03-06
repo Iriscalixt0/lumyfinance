@@ -6,8 +6,8 @@ import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
-import { useHybridVoice, speak } from "@/hooks/useHybridVoice";
-import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useHybridVoice } from "@/hooks/useHybridVoice";
+import { useVoiceInput, speak } from "@/hooks/useVoiceInput";
 import {
   parseVoiceTransaction,
   predictCategory,
@@ -26,7 +26,7 @@ const LOCALE_TO_VOICE: Record<string, string> = {
   de: "de-DE",
 };
 
-type Stage = "idle" | "loading-model" | "listening" | "transcribing" | "confirm" | "voice-confirm" | "saving" | "done" | "error";
+type Stage = "idle" | "listening" | "confirm" | "voice-confirm" | "saving" | "done" | "error";
 
 export function VoiceFAB() {
   const t = useTranslations("voiceFAB");
@@ -40,7 +40,6 @@ export function VoiceFAB() {
   const [parsed, setParsed] = useState<VoiceParsedTransaction | null>(null);
   const [countdown, setCountdown] = useState(5);
   const [interimText, setInterimText] = useState("");
-  const [modelProgress, setModelProgress] = useState(0);
 
   // Editable fields
   const [editAmount, setEditAmount] = useState("");
@@ -53,13 +52,17 @@ export function VoiceFAB() {
 
   const autoSaveRef = useRef<number | null>(null);
 
+  // Stable refs for handleSave/handleCancel (used in voice confirm)
+  const handleSaveRef = useRef<() => void>(() => {});
+  const handleCancelRef = useRef<() => void>(() => {});
+
   const voiceLang = LOCALE_TO_VOICE[locale] || "en-US";
 
   // ========== Voice input handlers ==========
 
   const handleResult = useCallback((transcript: string) => {
     setInterimText("");
-    const result = parseVoiceTransaction(transcript);
+    const result = parseVoiceTransaction(transcript, voiceLang);
     setParsed(result);
 
     const hasAmount = result.amount !== null && result.amount > 0;
@@ -84,7 +87,7 @@ export function VoiceFAB() {
       setStage("confirm");
       setCountdown(0); // no auto-save
     }
-  }, [fmt]);
+  }, [fmt, voiceLang]);
 
   const handleInterim = useCallback((transcript: string) => {
     setInterimText(transcript);
@@ -107,13 +110,11 @@ export function VoiceFAB() {
     setStage("idle");
   }, [t, toast]);
 
-  const { status: hybridStatus, activeEngine, modelProgress: hybridModelProgress, supported, start: startVoice, stop: stopVoice } = useHybridVoice({
+  const { listening, supported, start: startVoice, stop: stopVoice } = useHybridVoice({
     lang: voiceLang,
     onResult: handleResult,
     onInterim: handleInterim,
     onError: handleError,
-    onEngineChange: (engine) => console.log("[VoiceFAB] Engine:", engine),
-    onModelProgress: (p) => setModelProgress(p),
   });
 
   // ========== Voice confirmation listener ==========
@@ -121,9 +122,9 @@ export function VoiceFAB() {
   const handleVoiceConfirm = useCallback((transcript: string) => {
     const lower = transcript.toLowerCase().trim();
     if (YES_WORDS.some(w => lower.includes(w))) {
-      handleSave();
+      handleSaveRef.current();
     } else if (NO_WORDS.some(w => lower.includes(w))) {
-      handleCancel();
+      handleCancelRef.current();
     }
   }, []);
 
@@ -139,7 +140,7 @@ export function VoiceFAB() {
       const timeout = setTimeout(() => confirmVoice.start(), 500);
       return () => clearTimeout(timeout);
     }
-  }, [stage]);
+  }, [stage, confirmVoice]);
 
   // ========== Auto-save countdown ==========
 
@@ -153,7 +154,7 @@ export function VoiceFAB() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          handleSave();
+          handleSaveRef.current();
           return 0;
         }
         return prev - 1;
@@ -169,20 +170,20 @@ export function VoiceFAB() {
 
   const handleStartListening = async () => {
     if (!activeWorkspace) { toast(t("noWorkspace"), "error"); return; }
+    setStage("listening");
     setMissingAmount(false);
     setMissingDesc(false);
-    // Stage is driven by hybridStatus via useEffect below
     await startVoice();
   };
 
-  // Sync stage with hybrid voice status
+  // Sync stage when voice stops
   useEffect(() => {
-    if (hybridStatus === "loading-model") setStage("loading-model");
-    else if (hybridStatus === "listening") setStage("listening");
-    else if (hybridStatus === "transcribing") setStage("transcribing");
-  }, [hybridStatus]);
+    if (!listening && stage === "listening") {
+      // Voice stopped but no result came — stay listening briefly for late results
+    }
+  }, [listening, stage]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (autoSaveRef.current) clearInterval(autoSaveRef.current);
     stopVoice();
     confirmVoice.stop();
@@ -194,9 +195,9 @@ export function VoiceFAB() {
     setMissingAmount(false);
     setMissingDesc(false);
     setStage("idle");
-  };
+  }, [stopVoice, confirmVoice]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const amount = parseFloat(editAmount);
     if (!amount || amount <= 0) { setMissingAmount(true); return; }
     if (!editDesc.trim()) { setMissingDesc(true); return; }
@@ -247,7 +248,11 @@ export function VoiceFAB() {
       setEditDesc("");
       setEditCategory(null);
     }, 2000);
-  };
+  }, [editAmount, editDesc, editCategory, parsed, activeWorkspace, fmt, recordActivity, t, toast, confirmVoice]);
+
+  // Keep refs in sync
+  useEffect(() => { handleSaveRef.current = handleSave; }, [handleSave]);
+  useEffect(() => { handleCancelRef.current = handleCancel; }, [handleCancel]);
 
   if (!supported) return null;
 
@@ -390,44 +395,6 @@ export function VoiceFAB() {
     );
   }
 
-  // ========== Loading model state ==========
-  if (stage === "loading-model") {
-    return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-2">
-        <div className="bg-card border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-xl shadow-md animate-fade max-w-[220px] text-center">
-          <span>{t("loadingModel")}</span>
-          <div className="mt-1.5 h-1.5 bg-secondary rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-300"
-              style={{ width: `${modelProgress}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-muted-foreground mt-1 block">{modelProgress}%</span>
-        </div>
-        <button
-          onClick={handleCancel}
-          className="h-14 w-14 rounded-full bg-muted text-muted-foreground shadow-lg flex items-center justify-center animate-pulse"
-        >
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </button>
-      </div>
-    );
-  }
-
-  // ========== Transcribing state ==========
-  if (stage === "transcribing") {
-    return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-2">
-        <div className="bg-card border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-xl shadow-md animate-fade">
-          {t("transcribing")}
-        </div>
-        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-pulse">
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
   // ========== Main FAB ==========
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
@@ -445,7 +412,7 @@ export function VoiceFAB() {
       )}
 
       <button
-        onClick={stage === "listening" ? () => { stopVoice(); } : handleStartListening}
+        onClick={stage === "listening" ? handleCancel : handleStartListening}
         className={`relative group h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
           stage === "listening"
             ? "bg-destructive text-destructive-foreground scale-110"
