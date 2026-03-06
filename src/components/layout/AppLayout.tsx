@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { VoiceFAB } from "@/components/voice/VoiceFAB";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
