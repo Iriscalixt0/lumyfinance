@@ -3,26 +3,32 @@ import { useState, useCallback, useRef, useEffect } from "react";
 interface UseVoiceInputOptions {
   lang?: string;
   onResult?: (transcript: string) => void;
+  onInterim?: (transcript: string) => void;
   onError?: (error: string) => void;
 }
 
 /**
  * Hook for browser-native speech recognition (Web Speech API).
- * Uses refs for stable callbacks to avoid stale closure issues.
- * Handles auto-restart on silence timeout and permission errors.
+ * - Uses refs for stable callbacks (no stale closures)
+ * - Waits for isFinal results for better accuracy
+ * - Auto-restarts on silence timeout
+ * - Handles permission and browser errors
  */
-export function useVoiceInput({ lang = "pt-BR", onResult, onError }: UseVoiceInputOptions = {}) {
+export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: UseVoiceInputOptions = {}) {
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
   const isListeningRef = useRef(false);
 
-  // Keep callbacks in refs to avoid stale closures
+  // Stable callback refs
   const onResultRef = useRef(onResult);
+  const onInterimRef = useRef(onInterim);
   const onErrorRef = useRef(onError);
   useEffect(() => { onResultRef.current = onResult; }, [onResult]);
+  useEffect(() => { onInterimRef.current = onInterim; }, [onInterim]);
   useEffect(() => { onErrorRef.current = onError; }, [onError]);
 
+  // Check support on mount
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     setSupported(!!SR);
@@ -39,43 +45,61 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onError }: UseVoiceInp
       return;
     }
 
-    // Stop any existing recognition
+    // Stop any existing instance
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch {}
     }
 
     const recognition = new SR();
     recognition.lang = lang;
-    recognition.interimResults = false;
+    recognition.continuous = true;        // Keep listening until stopped
+    recognition.interimResults = true;    // Get partial results for feedback
     recognition.maxAlternatives = 1;
-    recognition.continuous = false;
 
     recognition.onresult = (event: any) => {
-      const results = event.results;
-      if (results && results.length > 0 && results[0].length > 0) {
-        const transcript = results[0][0].transcript;
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        const text = result[0].transcript;
+
+        if (result.isFinal) {
+          finalTranscript += text;
+        } else {
+          interimTranscript += text;
+        }
+      }
+
+      // Show interim feedback (partial text while user speaks)
+      if (interimTranscript && !finalTranscript) {
+        onInterimRef.current?.(interimTranscript);
+      }
+
+      // Only process final (accurate) transcripts
+      if (finalTranscript) {
         isListeningRef.current = false;
         setListening(false);
-        onResultRef.current?.(transcript);
+        try { recognition.stop(); } catch {}
+        onResultRef.current?.(finalTranscript.trim());
       }
     };
 
     recognition.onerror = (event: any) => {
       const error = event.error;
-      console.warn("[VoiceInput] SpeechRecognition error:", error);
+      console.warn("[VoiceInput] error:", error);
 
       if (error === "no-speech") {
-        // Silence timeout — auto-restart if still listening
-        if (isListeningRef.current) {
-          try { recognition.start(); } catch {}
-          return;
-        }
+        // Silence timeout — auto-restart handled by onend
+        return;
       }
 
       if (error === "not-allowed" || error === "service-not-allowed") {
         onErrorRef.current?.("not-allowed");
       } else if (error === "aborted") {
-        // User cancelled — no error needed
+        // User or system cancelled — no error needed
+      } else if (error === "network") {
+        onErrorRef.current?.("network");
       } else {
         onErrorRef.current?.(error);
       }
@@ -85,9 +109,11 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onError }: UseVoiceInp
     };
 
     recognition.onend = () => {
-      // Auto-restart on silence if still intending to listen
+      // Auto-restart if still intending to listen (e.g. silence timeout)
       if (isListeningRef.current) {
-        try { recognition.start(); } catch {
+        try {
+          recognition.start();
+        } catch {
           isListeningRef.current = false;
           setListening(false);
         }
