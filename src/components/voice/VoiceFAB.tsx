@@ -43,10 +43,12 @@ export function VoiceFAB() {
   const [parsed, setParsed] = useState<VoiceParsedTransaction | null>(null);
   const [autoSaveTimer, setAutoSaveTimer] = useState<number | null>(null);
   const [countdown, setCountdown] = useState(5);
+  const [interimText, setInterimText] = useState("");
 
   const voiceLang = fmt.currency === "BRL" ? "pt-BR" : fmt.currency === "EUR" ? "es-ES" : "en-US";
 
   const handleResult = useCallback((transcript: string) => {
+    setInterimText("");
     const result = parseVoiceTransaction(transcript);
     setParsed(result);
     if (result.amount && result.description) {
@@ -58,13 +60,20 @@ export function VoiceFAB() {
     }
   }, [t, toast]);
 
+  const handleInterim = useCallback((transcript: string) => {
+    setInterimText(transcript);
+  }, []);
+
   const handleError = useCallback((err: string) => {
+    setInterimText("");
     if (err === "no-speech") {
       toast(t("noSpeech"), "error");
     } else if (err === "not_supported" || err === "start-failed") {
       toast(t("notSupported"), "error");
     } else if (err === "not-allowed" || err === "service-not-allowed") {
       toast(t("micDenied"), "error");
+    } else if (err === "network") {
+      toast(t("voiceError"), "error");
     } else {
       toast(t("voiceError"), "error");
     }
@@ -74,6 +83,7 @@ export function VoiceFAB() {
   const { listening, supported, start: startVoice, stop: stopVoice } = useVoiceInput({
     lang: voiceLang,
     onResult: handleResult,
+    onInterim: handleInterim,
     onError: handleError,
   });
 
@@ -113,6 +123,7 @@ export function VoiceFAB() {
     if (autoSaveTimer) clearInterval(autoSaveTimer);
     stopVoice();
     setParsed(null);
+    setInterimText("");
     setStage("idle");
   };
 
@@ -296,11 +307,17 @@ export function VoiceFAB() {
         )}
       </button>
 
-      {/* Listening label */}
+      {/* Listening label + live transcript */}
       {stage === "listening" && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded-xl shadow-md whitespace-nowrap animate-fade">
-          <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse mr-1.5 align-middle" />
-          {t("listening")}
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded-xl shadow-md animate-fade max-w-[250px]">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse shrink-0" />
+            {interimText ? (
+              <span className="truncate text-primary italic font-normal">{interimText}</span>
+            ) : (
+              t("listening")
+            )}
+          </div>
         </div>
       )}
 
