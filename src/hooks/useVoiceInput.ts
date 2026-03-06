@@ -9,10 +9,7 @@ interface UseVoiceInputOptions {
 
 /**
  * Hook for browser-native speech recognition (Web Speech API).
- * - Uses refs for stable callbacks (no stale closures)
- * - Waits for isFinal results for better accuracy
- * - Auto-restarts on silence timeout
- * - Handles permission and browser errors
+ * Supports auto-detect language mode and TTS feedback.
  */
 export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: UseVoiceInputOptions = {}) {
   const [listening, setListening] = useState(false);
@@ -20,7 +17,6 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
   const recognitionRef = useRef<any>(null);
   const isListeningRef = useRef(false);
 
-  // Stable callback refs
   const onResultRef = useRef(onResult);
   const onInterimRef = useRef(onInterim);
   const onErrorRef = useRef(onError);
@@ -28,7 +24,6 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
   useEffect(() => { onInterimRef.current = onInterim; }, [onInterim]);
   useEffect(() => { onErrorRef.current = onError; }, [onError]);
 
-  // Check support on mount
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     setSupported(!!SR);
@@ -40,20 +35,16 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
 
   const start = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      onErrorRef.current?.("not_supported");
-      return;
-    }
+    if (!SR) { onErrorRef.current?.("not_supported"); return; }
 
-    // Stop any existing instance
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch {}
     }
 
     const recognition = new SR();
     recognition.lang = lang;
-    recognition.continuous = true;        // Keep listening until stopped
-    recognition.interimResults = true;    // Get partial results for feedback
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event: any) => {
@@ -63,20 +54,12 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         const text = result[0].transcript;
-
-        if (result.isFinal) {
-          finalTranscript += text;
-        } else {
-          interimTranscript += text;
-        }
+        if (result.isFinal) { finalTranscript += text; }
+        else { interimTranscript += text; }
       }
 
-      // Show interim feedback (partial text while user speaks)
-      if (interimTranscript) {
-        onInterimRef.current?.(interimTranscript.trim());
-      }
+      if (interimTranscript) onInterimRef.current?.(interimTranscript.trim());
 
-      // Process only final transcript (better accuracy)
       if (finalTranscript.trim()) {
         isListeningRef.current = false;
         setListening(false);
@@ -87,38 +70,19 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
 
     recognition.onerror = (event: any) => {
       const error = event.error;
-      console.warn("[VoiceInput] error:", error);
-
-      if (error === "no-speech") {
-        // Silence timeout — auto-restart handled by onend
-        return;
-      }
-
-      if (error === "not-allowed" || error === "service-not-allowed") {
-        onErrorRef.current?.("not-allowed");
-      } else if (error === "audio-capture") {
-        onErrorRef.current?.("audio-capture");
-      } else if (error === "aborted") {
-        // User or system cancelled — no error needed
-      } else if (error === "network") {
-        onErrorRef.current?.("network");
-      } else {
-        onErrorRef.current?.(error);
-      }
-
+      if (error === "no-speech") return;
+      if (error === "not-allowed" || error === "service-not-allowed") onErrorRef.current?.("not-allowed");
+      else if (error === "audio-capture") onErrorRef.current?.("audio-capture");
+      else if (error === "aborted") { /* noop */ }
+      else if (error === "network") onErrorRef.current?.("network");
+      else onErrorRef.current?.(error);
       isListeningRef.current = false;
       setListening(false);
     };
 
     recognition.onend = () => {
-      // Auto-restart if still intending to listen (e.g. silence timeout)
       if (isListeningRef.current) {
-        try {
-          recognition.start();
-        } catch {
-          isListeningRef.current = false;
-          setListening(false);
-        }
+        try { recognition.start(); } catch { isListeningRef.current = false; setListening(false); }
         return;
       }
       setListening(false);
@@ -128,10 +92,8 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
     isListeningRef.current = true;
     setListening(true);
 
-    try {
-      recognition.start();
-    } catch (e: any) {
-      console.error("[VoiceInput] Failed to start:", e);
+    try { recognition.start(); }
+    catch {
       isListeningRef.current = false;
       setListening(false);
       onErrorRef.current?.("start-failed");
@@ -145,4 +107,20 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
   }, []);
 
   return { listening, supported, start, stop };
+}
+
+// ===================== TTS =====================
+
+export function speak(text: string, lang: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (!("speechSynthesis" in window)) { resolve(); return; }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.rate = 1.05;
+    utterance.pitch = 1;
+    utterance.onend = () => resolve();
+    utterance.onerror = () => resolve();
+    window.speechSynthesis.speak(utterance);
+  });
 }
