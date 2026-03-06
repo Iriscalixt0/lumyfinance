@@ -115,5 +115,28 @@
     "converting": "Währung wird umgerechnet...",
     "ruleLearnedTitle": "Regel gelernt!",
     "ruleLearnedDesc": "'{term}' wird immer als {category} kategorisiert."
+  },
+  "receiptScanner": {
+    "description": "Machen Sie ein Foto des Belegs. Die lokale OCR extrahiert Betrag, Datum und Kategorie automatisch.",
+    "takePhoto": "Foto aufnehmen",
+    "camera": "Handy-Kamera",
+    "chooseFile": "Datei wählen",
+    "gallery": "Aus der Galerie",
+    "analyzing": "Bon analysieren...",
+    "extracting": "Daten extrahieren...",
+    "finishing": "Abschließen...",
+    "dataExtracted": "Daten extrahiert",
+    "confidence": "Vertrauen",
+    "establishment": "Geschäft",
+    "amount": "Betrag",
+    "date": "Datum",
+    "category": "Kategorie",
+    "tryAnother": "Anderes Foto versuchen",
+    "useData": "Daten verwenden",
+    "errorNotImage": "Bitte wählen Sie ein Bild (Belegfoto).",
+    "errorTooLarge": "Bild zu groß. Maximal 10 MB.",
+    "errorNoData": "Daten konnten nicht extrahiert werden. Versuchen Sie ein schärferes Foto.",
+    "errorProcessing": "Fehler bei der Bildverarbeitung. Bitte versuchen Sie es erneut.",
+    "privacyNotice": "🔒 Lokal verarbeitet — Ihr Foto verlässt dieses Gerät nie"
   }
 }

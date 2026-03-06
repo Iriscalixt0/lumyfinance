@@ -424,6 +424,29 @@
     "ruleLearnedTitle": "¡Regla aprendida!",
     "ruleLearnedDesc": "'{term}' siempre se categorizará como {category}."
   },
+  "receiptScanner": {
+    "description": "Toma una foto del recibo. El OCR local extraerá monto, fecha y categoría automáticamente.",
+    "takePhoto": "Tomar foto",
+    "camera": "Cámara del celular",
+    "chooseFile": "Elegir archivo",
+    "gallery": "De la galería",
+    "analyzing": "Analizando recibo...",
+    "extracting": "Extrayendo datos...",
+    "finishing": "Finalizando...",
+    "dataExtracted": "Datos extraídos",
+    "confidence": "Confianza",
+    "establishment": "Establecimiento",
+    "amount": "Monto",
+    "date": "Fecha",
+    "category": "Categoría",
+    "tryAnother": "Intentar otra foto",
+    "useData": "Usar datos",
+    "errorNotImage": "Seleccione una imagen (foto del recibo).",
+    "errorTooLarge": "Imagen demasiado grande. Máximo 10MB.",
+    "errorNoData": "No se pudieron extraer datos. Intente con una foto más nítida.",
+    "errorProcessing": "Error al procesar la imagen. Inténtelo de nuevo.",
+    "privacyNotice": "🔒 Procesado localmente — tu foto nunca sale de este dispositivo"
+  },
   "forms": {
     "transaction": {
       "edit": "Edit transaction",
