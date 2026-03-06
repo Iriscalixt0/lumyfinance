@@ -53,9 +53,9 @@ interface NavItem {
 const MAIN_ITEMS: NavItem[] = [
   { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard },
   { labelKey: "transactions", href: "/transactions", icon: ArrowLeftRight },
-  { labelKey: "investments", href: "/investments", icon: TrendingUp },
-  { labelKey: "goals", href: "/goals", icon: Target },
   { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
+  { labelKey: "goals", href: "/goals", icon: Target },
+  { labelKey: "investments", href: "/investments", icon: TrendingUp },
   { labelKey: "recurring", href: "/recurring", icon: Repeat },
   { labelKey: "lumy", href: "/lumy", icon: Bot },
 ];
