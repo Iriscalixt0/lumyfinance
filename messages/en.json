@@ -356,6 +356,7 @@
     "voiceStop": "Stop recording",
     "voiceRecognized": "Voice recognized!",
     "voiceNotSupported": "Your browser does not support voice input",
+    "voiceMicDenied": "Microphone permission denied. Enable microphone access in your browser.",
     "voiceError": "Voice recognition error",
     "voiceHint": "Say: 'I spent 50 dollars at the grocery store'"
   },

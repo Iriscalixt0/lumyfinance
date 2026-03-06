@@ -356,6 +356,7 @@
     "voiceStop": "Detener grabación",
     "voiceRecognized": "¡Voz reconocida!",
     "voiceNotSupported": "Tu navegador no soporta entrada de voz",
+    "voiceMicDenied": "Permiso de micrófono denegado. Actívalo en el navegador.",
     "voiceError": "Error al reconocer voz",
     "voiceHint": "Di: 'Gasté 50 dólares en el supermercado'"
   },

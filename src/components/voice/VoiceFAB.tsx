@@ -3,7 +3,7 @@ import { Mic, Check, X, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
-import { useTranslations } from "@/lib/i18n";
+import { useTranslations, useLocale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
@@ -34,6 +34,7 @@ type Stage = "idle" | "listening" | "confirm" | "saving" | "done" | "error";
 
 export function VoiceFAB() {
   const t = useTranslations("voiceFAB");
+  const locale = useLocale();
   const fmt = useIntlFormat();
   const { activeWorkspace } = useWorkspace();
   const { recordActivity } = useGamification(activeWorkspace?.id ?? null);
@@ -45,7 +46,7 @@ export function VoiceFAB() {
   const [countdown, setCountdown] = useState(5);
   const [interimText, setInterimText] = useState("");
 
-  const voiceLang = fmt.currency === "BRL" ? "pt-BR" : fmt.currency === "EUR" ? "es-ES" : "en-US";
+  const voiceLang = locale === "pt-BR" ? "pt-BR" : locale === "pt-PT" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US";
 
   const handleResult = useCallback((transcript: string) => {
     setInterimText("");
@@ -70,7 +71,7 @@ export function VoiceFAB() {
       toast(t("noSpeech"), "error");
     } else if (err === "not_supported" || err === "start-failed") {
       toast(t("notSupported"), "error");
-    } else if (err === "not-allowed" || err === "service-not-allowed") {
+    } else if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") {
       toast(t("micDenied"), "error");
     } else if (err === "network") {
       toast(t("voiceError"), "error");

@@ -60,7 +60,7 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
       let finalTranscript = "";
       let interimTranscript = "";
 
-      for (let i = 0; i < event.results.length; i++) {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         const text = result[0].transcript;
 
@@ -72,12 +72,12 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
       }
 
       // Show interim feedback (partial text while user speaks)
-      if (interimTranscript && !finalTranscript) {
-        onInterimRef.current?.(interimTranscript);
+      if (interimTranscript) {
+        onInterimRef.current?.(interimTranscript.trim());
       }
 
-      // Only process final (accurate) transcripts
-      if (finalTranscript) {
+      // Process only final transcript (better accuracy)
+      if (finalTranscript.trim()) {
         isListeningRef.current = false;
         setListening(false);
         try { recognition.stop(); } catch {}
@@ -96,6 +96,8 @@ export function useVoiceInput({ lang = "pt-BR", onResult, onInterim, onError }: 
 
       if (error === "not-allowed" || error === "service-not-allowed") {
         onErrorRef.current?.("not-allowed");
+      } else if (error === "audio-capture") {
+        onErrorRef.current?.("audio-capture");
       } else if (error === "aborted") {
         // User or system cancelled — no error needed
       } else if (error === "network") {
