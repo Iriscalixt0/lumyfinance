@@ -23,6 +23,7 @@ import { CalculatorsPage } from "@/pages/CalculatorsPage";
 import { ProjectionPage } from "@/pages/ProjectionPage";
 import { LumyPage } from "@/pages/LumyPage";
 import { CryptoPage } from "@/pages/CryptoPage";
+import { TravelModePage } from "@/pages/TravelModePage";
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
         <Route path="/projection" element={<ProjectionPage />} />
         <Route path="/lumy" element={<LumyPage />} />
         <Route path="/crypto" element={<CryptoPage />} />
+        <Route path="/travel" element={<TravelModePage />} />
         <Route path="/plan" element={<PlanPage />} />
         <Route path="/workspace" element={<WorkspacePage />} />
         <Route path="/support" element={<SupportPage />} />
