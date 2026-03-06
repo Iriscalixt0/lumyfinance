@@ -123,6 +123,7 @@ export function VoiceFAB() {
     if (autoSaveTimer) clearInterval(autoSaveTimer);
     stopVoice();
     setParsed(null);
+    setInterimText("");
     setStage("idle");
   };
 
