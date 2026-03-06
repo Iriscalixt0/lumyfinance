@@ -7,27 +7,12 @@ import { useTranslations, useLocale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/Toast";
 import { useGamification } from "@/hooks/useGamification";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { parseVoiceTransaction } from "@/lib/utils/voice-parser";
+import { parseVoiceTransaction, predictCategory } from "@/lib/utils/voice-parser";
 
-/**
- * Simple category prediction based on description keywords.
- * Runs client-side using the Lumy engine logic.
- */
-const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  "Alimentação": ["mercado", "supermercado", "restaurante", "lanche", "ifood", "padaria", "pizza", "burger", "café", "almoço", "jantar", "comida"],
-  "Transporte": ["uber", "99", "gasolina", "combustível", "estacionamento", "pedágio", "ônibus", "metrô", "taxi"],
-  "Moradia": ["aluguel", "condomínio", "iptu", "luz", "água", "gás", "internet", "energia"],
-  "Saúde": ["farmácia", "médico", "dentista", "hospital", "plano de saúde", "remédio", "consulta"],
-  "Educação": ["curso", "escola", "faculdade", "livro", "material", "mensalidade"],
-  "Lazer": ["cinema", "show", "viagem", "netflix", "spotify", "jogo", "bar", "festa", "parque"],
-  "Vestuário": ["roupa", "calçado", "tênis", "camisa", "vestido", "sapato"],
-  "Salário": ["salário", "pagamento", "freelance", "renda", "dividendo", "pix recebido"],
-};
-
-function predictCategory(description: string): string | null {
-  const lower = description.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) return category;
+// predictCategory is now imported from voice-parser (multilingual)
+// Keeping local reference for backward compat
+function predictCategoryLocal(description: string): string | null {
+  return predictCategory(description);
   }
   return null;
 }
