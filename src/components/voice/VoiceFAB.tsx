@@ -314,17 +314,32 @@ export function VoiceFAB() {
 
     return (
       <div className="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-50 animate-fade">
-        <div className="bg-card border border-border rounded-2xl shadow-xl p-4 w-full sm:w-80 mx-auto sm:mx-0">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("confirm")}</span>
+        <div className="bg-card/95 backdrop-blur-xl border border-border/60 rounded-3xl shadow-2xl p-5 w-full sm:w-[340px] mx-auto sm:mx-0 ring-1 ring-primary/10">
+          {/* Header with icon */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <Mic className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("confirm")}</span>
+            </div>
             {countdown > 0 && (
-              <span className="text-xs font-medium text-primary tabular-nums">{countdown}s</span>
+              <span className="text-xs font-semibold text-primary tabular-nums bg-primary/10 px-2 py-0.5 rounded-full">{countdown}s</span>
             )}
           </div>
 
+          {/* Progress bar at top */}
+          {countdown > 0 && (
+            <div className="mb-4 h-1 bg-secondary rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear"
+                style={{ width: `${(countdown / 5) * 100}%` }}
+              />
+            </div>
+          )}
+
           {/* Editable fields */}
-          <div className="space-y-2.5 mb-4">
+          <div className="space-y-3 mb-4">
             {/* Amount */}
             <div>
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("amount")}</label>
@@ -333,16 +348,16 @@ export function VoiceFAB() {
                 inputMode="decimal"
                 value={editAmount}
                 onChange={(e) => { setEditAmount(e.target.value); setMissingAmount(false); }}
-                className={`w-full mt-0.5 px-3 py-2 rounded-lg text-lg font-bold tabular-nums bg-secondary border transition-colors outline-none ${
+                className={`w-full mt-1 px-3.5 py-2.5 rounded-xl text-xl font-extrabold tabular-nums bg-secondary/60 border-2 transition-all outline-none ${
                   missingAmount
-                    ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 ring-1 ring-orange-400/50"
-                    : "border-border text-foreground focus:border-primary"
+                    ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 ring-2 ring-orange-400/30"
+                    : "border-transparent text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
                 }`}
                 placeholder="0.00"
                 autoFocus={missingAmount}
               />
               {missingAmount && (
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center gap-1 mt-1.5">
                   <AlertCircle className="h-3 w-3 text-orange-500" />
                   <span className="text-[10px] text-orange-500 font-medium">{t("missingAmount")}</span>
                 </div>
@@ -356,71 +371,58 @@ export function VoiceFAB() {
                 type="text"
                 value={editDesc}
                 onChange={(e) => { setEditDesc(e.target.value); setMissingDesc(false); }}
-                className={`w-full mt-0.5 px-3 py-2 rounded-lg text-sm font-semibold bg-secondary border transition-colors outline-none ${
+                className={`w-full mt-1 px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-secondary/60 border-2 transition-all outline-none ${
                   missingDesc
-                    ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 ring-1 ring-orange-400/50"
-                    : "border-border text-foreground focus:border-primary"
+                    ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 ring-2 ring-orange-400/30"
+                    : "border-transparent text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
                 }`}
                 placeholder={t("whatFor")}
                 autoFocus={missingDesc && !missingAmount}
               />
               {missingDesc && (
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center gap-1 mt-1.5">
                   <AlertCircle className="h-3 w-3 text-orange-500" />
                   <span className="text-[10px] text-orange-500 font-medium">{t("missingDesc")}</span>
                 </div>
               )}
             </div>
 
-            {/* Category + Currency (read-only display) */}
-            <div className="flex items-center gap-2">
+            {/* Category + Currency tags */}
+            <div className="flex items-center gap-2 flex-wrap">
               {editCategory && (
-                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
                   {editCategory}
                 </span>
               )}
               {parsed.currency && (
-                <span className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-medium text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
                   {parsed.currency}
                 </span>
               )}
-              <span className="text-xs text-muted-foreground ml-auto">
-                {parsed.detectedLang}
-              </span>
             </div>
           </div>
 
           {/* Raw transcript */}
-          <p className="text-[10px] text-muted-foreground italic mb-3 line-clamp-2">"{parsed.raw}"</p>
+          <p className="text-[10px] text-muted-foreground/70 italic mb-4 line-clamp-2 leading-relaxed">"{parsed.raw}"</p>
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <button
               onClick={handleCancel}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 border-border/80 text-sm font-medium text-muted-foreground hover:bg-secondary/80 hover:border-border transition-all active:scale-[0.98]"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
               {t("cancel")}
             </button>
             <button
               onClick={handleSave}
               disabled={hasMissing && (!editAmount || !editDesc)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:brightness-110 transition-all active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
             >
-              <Check className="h-3.5 w-3.5" />
+              <Check className="h-4 w-4" />
               {t("saveNow")}
             </button>
           </div>
-
-          {/* Progress bar */}
-          {countdown > 0 && (
-            <div className="mt-3 h-1 bg-secondary rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear"
-                style={{ width: `${(countdown / 5) * 100}%` }}
-              />
-            </div>
-          )}
         </div>
       </div>
     );
@@ -430,7 +432,7 @@ export function VoiceFAB() {
   if (stage === "saving") {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-pulse">
+        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/30 flex items-center justify-center animate-pulse">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       </div>
@@ -440,8 +442,8 @@ export function VoiceFAB() {
   if (stage === "done") {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-fade">
-          <Check className="h-6 w-6" />
+        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/30 flex items-center justify-center animate-fade">
+          <Check className="h-7 w-7 stroke-[3]" />
         </div>
       </div>
     );
@@ -453,11 +455,11 @@ export function VoiceFAB() {
       {stage === "listening" && (
         <>
           <span
-            className="absolute h-14 w-14 rounded-full border-2 border-destructive pointer-events-none"
+            className="absolute h-16 w-16 rounded-full border-2 border-destructive/60 pointer-events-none"
             style={{ animation: "voice-ripple 1.5s ease-out infinite" }}
           />
           <span
-            className="absolute h-14 w-14 rounded-full border-2 border-destructive pointer-events-none"
+            className="absolute h-16 w-16 rounded-full border border-destructive/40 pointer-events-none"
             style={{ animation: "voice-ripple-delay 1.5s ease-out infinite 0.5s" }}
           />
         </>
@@ -465,14 +467,19 @@ export function VoiceFAB() {
 
       <button
         onClick={stage === "listening" ? handleCancel : handleStartListening}
-        className={`relative group h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+        className={`relative group h-[60px] w-[60px] rounded-2xl flex items-center justify-center transition-all duration-300 ${
           stage === "listening"
-            ? "bg-destructive text-destructive-foreground scale-110"
-            : "bg-primary text-primary-foreground hover:scale-105 active:scale-95 hover:shadow-xl"
+            ? "bg-destructive text-destructive-foreground scale-110 shadow-xl shadow-destructive/30 rounded-full"
+            : "bg-primary text-primary-foreground shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-primary/40"
         }`}
         aria-label={stage === "listening" ? t("stopListening") : t("startListening")}
         title={stage === "listening" ? t("stopListening") : t("startListening")}
       >
+        {/* Subtle inner glow */}
+        {stage === "idle" && (
+          <span className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+        )}
+
         {stage === "listening" ? (
           <div className="flex items-center justify-center gap-[3px] h-6 w-6 text-destructive-foreground">
             <span className="voice-bar voice-bar-1 w-[3px]" />
@@ -482,19 +489,19 @@ export function VoiceFAB() {
             <span className="voice-bar voice-bar-5 w-[3px]" />
           </div>
         ) : (
-          <Mic className="h-6 w-6" />
+          <Mic className="h-6 w-6 relative z-10" />
         )}
       </button>
 
       {/* Live transcript bubble */}
       {stage === "listening" && (
-        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-xl shadow-md animate-fade max-w-[280px]">
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-destructive animate-pulse shrink-0" />
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-lg border border-border/60 text-foreground text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl animate-fade max-w-[300px] ring-1 ring-destructive/10">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-destructive animate-pulse shrink-0" />
             {interimText ? (
               <span className="text-primary italic font-normal truncate">{interimText}</span>
             ) : (
-              <span>{t("listening")}</span>
+              <span className="text-muted-foreground">{t("listening")}</span>
             )}
           </div>
         </div>
@@ -502,7 +509,7 @@ export function VoiceFAB() {
 
       {/* Idle hint */}
       {stage === "idle" && (
-        <div className="absolute -top-10 right-0 bg-card border border-border text-foreground text-[10px] font-medium px-2.5 py-1 rounded-lg shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute -top-11 right-0 bg-card/95 backdrop-blur-md border border-border/60 text-foreground text-[11px] font-medium px-3 py-1.5 rounded-xl shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           {t("hint")}
         </div>
       )}
