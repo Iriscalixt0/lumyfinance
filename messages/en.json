@@ -6,7 +6,9 @@
       "pt-BR": "Portuguese (Brazil)",
       "pt-PT": "Portuguese (Portugal)",
       "en": "English",
-      "es": "Spanish"
+      "es": "Spanish",
+      "fr": "French",
+      "de": "German"
     },
     "save": "Save",
     "cancel": "Cancel",
