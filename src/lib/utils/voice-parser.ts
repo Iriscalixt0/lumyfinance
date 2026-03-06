@@ -389,8 +389,11 @@ export function predictCategory(description: string): string | null {
 
 // ===================== MAIN PARSER =====================
 
-export function parseVoiceTransaction(transcript: string): VoiceParsedTransaction {
-  const lang = detectLanguage(transcript);
+export function parseVoiceTransaction(transcript: string, hintLang?: string): VoiceParsedTransaction {
+  const detected = detectLanguage(transcript);
+  // If hintLang provided and detection defaulted to en-US, prefer hintLang
+  const lang = hintLang && detected === "en-US" ? hintLang : detected;
+
   const type = detectType(transcript, lang);
   const currency = detectCurrency(transcript, lang);
   const { date, cleanedText: afterDate } = parseDate(transcript, lang);
