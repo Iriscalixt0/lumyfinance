@@ -19,6 +19,7 @@ import {
   Check,
   LogOut,
   Trash2,
+  Coins,
 } from "lucide-react";
 
 const COLOR_THEMES = [
