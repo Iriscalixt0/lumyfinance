@@ -277,10 +277,10 @@ export function DashboardPage() {
           value={metrics.totalIncome - metrics.totalExpenses}
         />
       )}
-      {/* Quick Transaction FAB */}
+      {/* Quick Transaction FAB — positioned left of the VoiceFAB */}
       <button
         onClick={() => setQuickTxOpen(true)}
-        className="fixed bottom-20 right-6 z-40 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center justify-center"
+        className="fixed bottom-6 right-[88px] z-40 h-[52px] w-[52px] rounded-2xl bg-secondary text-foreground border border-border/60 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
         aria-label={t("firstTransaction")}
         title={t("firstTransaction")}
       >
