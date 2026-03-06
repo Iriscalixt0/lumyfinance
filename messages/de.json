@@ -101,7 +101,9 @@
     "noWorkspace": "Wählen Sie zuerst einen Bereich",
     "micDenied": "Mikrofonberechtigung verweigert.",
     "missingAmount": "Betrag eingeben",
-    "missingDesc": "Beschreibung eingeben"
+    "missingDesc": "Beschreibung eingeben",
+    "loadingModel": "Sprachmodell wird geladen...",
+    "transcribing": "Transkription läuft..."
   },
   "magicInput": {
     "placeholder": "Eingabe: Uber 25.50, Netflix 15 USD, Miete 1200...",
