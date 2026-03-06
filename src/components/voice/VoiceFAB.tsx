@@ -246,7 +246,7 @@ export function VoiceFAB() {
   if (stage === "done") {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <div className="h-14 w-14 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center animate-fade">
+        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-fade">
           <Check className="h-6 w-6" />
         </div>
       </div>
