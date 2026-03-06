@@ -409,7 +409,9 @@
     "noWorkspace": "Selecciona un workspace primero",
     "micDenied": "Permiso de micrófono denegado. Permite el acceso en la configuración del navegador.",
     "missingAmount": "Ingresa el monto",
-    "missingDesc": "Ingresa la descripción"
+    "missingDesc": "Ingresa la descripción",
+    "loadingModel": "Descargando modelo de voz...",
+    "transcribing": "Transcribiendo..."
   },
   "magicInput": {
     "placeholder": "Escribe: Uber 25.50, Netflix 15 USD, Alquiler 1200...",

@@ -409,7 +409,9 @@
     "noWorkspace": "Select a workspace first",
     "micDenied": "Microphone permission denied. Please allow access in your browser settings.",
     "missingAmount": "Enter the amount",
-    "missingDesc": "Enter the description"
+    "missingDesc": "Enter the description",
+    "loadingModel": "Downloading voice model...",
+    "transcribing": "Transcribing..."
   },
   "magicInput": {
     "placeholder": "Type: Uber 25.50, Netflix 15 USD, Rent 1200...",

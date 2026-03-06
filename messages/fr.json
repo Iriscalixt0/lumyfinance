@@ -101,7 +101,9 @@
     "noWorkspace": "Sélectionnez d'abord un espace",
     "micDenied": "Permission micro refusée.",
     "missingAmount": "Saisissez le montant",
-    "missingDesc": "Saisissez la description"
+    "missingDesc": "Saisissez la description",
+    "loadingModel": "Téléchargement du modèle vocal...",
+    "transcribing": "Transcription en cours..."
   },
   "magicInput": {
     "placeholder": "Tapez : Uber 25.50, Netflix 15 USD, Loyer 1200...",
