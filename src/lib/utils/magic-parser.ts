@@ -22,19 +22,48 @@ export interface MagicParsed {
 // Currency symbol → code
 const SYMBOL_MAP: Record<string, CurrencyCode> = {
   "R$": "BRL",
+  "C$": "CAD",
+  "A$": "AUD",
   "$": "USD",
   "€": "EUR",
   "£": "GBP",
   "¥": "JPY",
+  "₹": "INR",
+  "₩": "KRW",
 };
 
-// Currency word → code
+// Currency word → code (all supported currencies)
 const CURRENCY_WORDS: Record<string, CurrencyCode> = {
-  usd: "USD", dollars: "USD", dollar: "USD", bucks: "USD",
+  // USD
+  usd: "USD", dollars: "USD", dollar: "USD", dólar: "USD", dolares: "USD", bucks: "USD",
+  // EUR
   eur: "EUR", euros: "EUR", euro: "EUR",
+  // BRL
   brl: "BRL", reais: "BRL", real: "BRL",
-  gbp: "GBP", pounds: "GBP", pound: "GBP",
-  jpy: "JPY", yen: "JPY",
+  // GBP
+  gbp: "GBP", pounds: "GBP", pound: "GBP", libras: "GBP", libra: "GBP",
+  // JPY
+  jpy: "JPY", yen: "JPY", iene: "JPY", ienes: "JPY",
+  // CHF
+  chf: "CHF", francos: "CHF", franco: "CHF",
+  // CAD
+  cad: "CAD",
+  // AUD
+  aud: "AUD",
+  // CNY
+  cny: "CNY", yuan: "CNY", yuanes: "CNY",
+  // INR
+  inr: "INR", rupias: "INR", rupia: "INR", rupees: "INR", rupee: "INR",
+  // KRW
+  krw: "KRW", won: "KRW",
+  // MXN
+  mxn: "MXN", pesos: "MXN",
+  // ARS
+  ars: "ARS",
+  // CLP
+  clp: "CLP",
+  // COP
+  cop: "COP",
 };
 
 const INCOME_WORDS = [
@@ -68,7 +97,7 @@ export function parseMagicInput(input: string, baseCurrency: CurrencyCode = "BRL
 
   // 2. Detect amount + currency word: "15 USD", "100 euros", "50 reais"
   if (amount === null) {
-    const wordRegex = /([\d.,]+)\s*(usd|eur|brl|gbp|jpy|dollars?|euros?|reais|real|pounds?|bucks?|yen)/i;
+    const wordRegex = /([\d.,]+)\s*(usd|eur|brl|gbp|jpy|chf|cad|aud|cny|inr|krw|mxn|ars|clp|cop|dollars?|dólar|dolares|euros?|reais|real|pounds?|libras?|bucks?|yen|ienes?|francos?|yuan|yuanes|rupias?|rupees?|won|pesos?)/i;
     const wordMatch = text.match(wordRegex);
     if (wordMatch) {
       amount = parseNum(wordMatch[1]);
