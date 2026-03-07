@@ -68,10 +68,8 @@ interface Budget {
   spent_amount: number;
 }
 
-const MONTH_NAMES = [
-  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
-];
+// Month names are now from i18n
+
 
 const CURRENCY_CHART_COLORS = [
   "#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#8b5cf6",
