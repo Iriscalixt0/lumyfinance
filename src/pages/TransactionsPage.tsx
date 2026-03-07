@@ -6,6 +6,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { MagicInput } from "@/components/transactions/MagicInput";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslations } from "@/lib/i18n";
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, convertCurrency, formatAmount, type CurrencyCode } from "@/lib/utils/exchange";
 import {
   Plus,
