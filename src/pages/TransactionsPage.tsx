@@ -573,9 +573,22 @@ export function TransactionsPage() {
                 <Sparkles className="h-4 w-4 text-primary" />
                 <h3 className="font-semibold text-foreground">Magic Input</h3>
               </div>
-              <p className="text-xs text-muted-foreground mb-4">
+              <p className="text-xs text-muted-foreground mb-1">
                 Digite naturalmente: "Uber 25.50", "Aluguel 1200"
               </p>
+              {(() => {
+                const travelActive = localStorage.getItem("lmyf_travel_mode") === "true";
+                const travelCurrency = localStorage.getItem("lmyf_travel_currency") || "USD";
+                return travelActive ? (
+                  <p className="text-xs text-primary/80 mb-4 flex items-center gap-1">
+                    ✈️ Modo Viagem ativo — para converter, digite: "Netflix 15 {travelCurrency}"
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground/70 mb-4">
+                    💡 Ative o <span className="font-medium text-muted-foreground">Modo Viagem</span> para converter gastos em moeda estrangeira automaticamente
+                  </p>
+                );
+              })()}
               <MagicInput
                 baseCurrency={localeCurrency}
                 disabled={!permissions.canEdit}
