@@ -228,7 +228,7 @@ export function TransactionsPage() {
 
     const rawAmount = Math.round(parseFloat(form.amount.replace(",", ".")) * 100);
     if (isNaN(rawAmount) || rawAmount <= 0) {
-      setFormError("Valor inválido.");
+      setFormError(t("invalidAmount"));
       setSaving(false);
       return;
     }
@@ -245,7 +245,7 @@ export function TransactionsPage() {
         originalAmount = rawAmount;
         exchangeRate = result.rate;
       } catch {
-        setFormError("Erro ao converter moeda. Tente novamente.");
+        setFormError(t("conversionError"));
         setSaving(false);
         return;
       }
@@ -264,7 +264,7 @@ export function TransactionsPage() {
     };
 
     if (!payload.description) {
-      setFormError("Descrição obrigatória.");
+      setFormError(t("requiredDesc"));
       setSaving(false);
       return;
     }
@@ -288,7 +288,7 @@ export function TransactionsPage() {
     setForm(emptyForm);
     setShowAdvanced(false);
     setSaving(false);
-    toast(isEdit ? "Transação atualizada!" : "Transação criada!");
+    toast(isEdit ? t("updated") : t("created"));
     triggerAlertCheck(wsId);
 
     // Gamification: record activity and show achievement toast
@@ -308,16 +308,16 @@ export function TransactionsPage() {
     setSaving(false);
     setDeleteModalOpen(false);
     setDeletingId(null);
-    toast("Transação excluída!");
+    toast(t("deleted"));
   }
 
   function copyWhatsApp() {
     const lines = filtered.map(
       (tx) => `• ${tx.description} — ${tx.type === "income" ? "+" : "-"}${formatBRL(tx.amount)} (${fmt.date(tx.date)})`
     );
-    const text = `Transações ${MONTH_NAMES[selectedMonth]} ${selectedYear}:\n${lines.join("\n")}\n\nSaldo: ${formatBRL(balance)}`;
+    const text = `${t("transactionsLabel")} ${MONTH_NAMES[selectedMonth]} ${selectedYear}:\n${lines.join("\n")}\n\n${t("balance")}: ${formatBRL(balance)}`;
     navigator.clipboard.writeText(text);
-    toast("Copiado para a área de transferência!");
+    toast(t("copied"));
   }
 
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i + 1);
@@ -340,11 +340,11 @@ export function TransactionsPage() {
           <h1 className="text-2xl font-bold text-foreground">
             {MONTH_NAMES[selectedMonth]} {selectedYear}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Transações do mês</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("pageSubtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Mês</span>
+            <span className="text-xs text-muted-foreground">{t("monthLabel")}</span>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
@@ -356,7 +356,7 @@ export function TransactionsPage() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Ano</span>
+            <span className="text-xs text-muted-foreground">{t("yearLabel")}</span>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
@@ -379,12 +379,12 @@ export function TransactionsPage() {
               const rows = filtered.map((tx) => [
                 fmt.date(tx.date),
                 tx.description,
-                tx.type === "income" ? "Receita" : "Despesa",
+                tx.type === "income" ? t("receipt") : t("expense"),
                 (tx.amount / 100).toFixed(2).replace(".", ","),
                 getCategoryName(tx.category_id),
                 tx.notes ?? "",
               ]);
-              downloadCSV("transacoes.csv", ["Data", "Descrição", "Tipo", "Valor", "Categoria", "Notas"], rows);
+              downloadCSV("transacoes.csv", [t("date"), t("description"), t("type"), t("value"), t("category"), "Notes"], rows);
             }}
             className="text-muted-foreground hover:text-foreground hover:bg-background font-medium px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
             title="Exportar CSV"
@@ -396,20 +396,20 @@ export function TransactionsPage() {
               const rows = filtered.map((tx) => [
                 fmt.date(tx.date),
                 tx.description,
-                tx.type === "income" ? "Receita" : "Despesa",
+                tx.type === "income" ? t("receipt") : t("expense"),
                 (tx.amount / 100).toFixed(2).replace(".", ","),
                 getCategoryName(tx.category_id),
               ]);
               downloadPDF(
                 "transacoes.pdf",
-                `Transações — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`,
-                ["Data", "Descrição", "Tipo", "Valor", "Categoria"],
+                `${t("transactionsLabel")} — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`,
+                [t("date"), t("description"), t("type"), t("value"), t("category")],
                 rows,
-                `Saldo: R$ ${(balance / 100).toFixed(2).replace(".", ",")}`
+                `${t("balance")}: ${formatBRL(balance)}`
               );
             }}
             className="text-muted-foreground hover:text-foreground hover:bg-background font-medium px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
-            title="Exportar PDF"
+            title={t("printPdf")}
           >
             <FileText className="h-3.5 w-3.5" /> PDF
           </button>
@@ -426,16 +426,16 @@ export function TransactionsPage() {
         <button
           onClick={() => setImportOpen(true)}
           className="border border-border text-muted-foreground hover:text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
-          title="Importar transações"
+          title={t("import")}
         >
-          <Upload className="h-4 w-4" /> Importar
+          <Upload className="h-4 w-4" /> {t("import")}
         </button>
         <button
           onClick={() => setScannerOpen(true)}
           className="border border-border text-muted-foreground hover:text-foreground font-medium px-3 py-2 rounded-xl text-sm hover:bg-secondary transition-colors flex items-center gap-2"
-          title="Escanear recibo com OCR"
+          title={t("scanReceipt")}
         >
-          <Camera className="h-4 w-4" /> Escanear
+          <Camera className="h-4 w-4" /> {t("scan")}
         </button>
         <button
           onClick={() => setShowReceiptHistory((v) => !v)}
@@ -444,9 +444,9 @@ export function TransactionsPage() {
               ? "border-primary/30 bg-primary/10 text-primary"
               : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
           }`}
-          title="Ver histórico de recibos"
+          title={t("receipts")}
         >
-          <Receipt className="h-4 w-4" /> Recibos
+          <Receipt className="h-4 w-4" /> {t("receipts")}
         </button>
       </div>
 
@@ -455,28 +455,28 @@ export function TransactionsPage() {
         <div className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="h-4 w-4 text-emerald-500" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Receitas</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("income")}</span>
           </div>
           <p className="text-xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
         </div>
         <div className="bg-card border-2 border-destructive/30 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <TrendingDown className="h-4 w-4 text-destructive" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Despesas</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("expenses")}</span>
           </div>
           <p className="text-xl font-bold text-destructive">{formatBRL(totalExpense)}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <Wallet2 className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Investido</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("invested")}</span>
           </div>
           <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <Target className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Metas</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("goals")}</span>
           </div>
           <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
         </div>
@@ -485,7 +485,7 @@ export function TransactionsPage() {
       {/* Currency breakdown KPI */}
       {expenseByCurrency.length > 1 && (
         <div className="bg-card border border-border rounded-2xl p-4">
-          <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Despesas por moeda</h4>
+          <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("expenseByCurrency")}</h4>
           <div className="flex flex-wrap gap-4">
             {expenseByCurrency.map(({ code, total }) => {
               const info = SUPPORTED_CURRENCIES.find((c) => c.code === code);
@@ -506,7 +506,7 @@ export function TransactionsPage() {
       {/* Free balance */}
       <div className="flex justify-end">
         <p className="text-sm text-muted-foreground">
-          Saldo livre: <span className="font-bold text-foreground">{formatBRL(balance)}</span>
+          {t("freeBalance")}: <span className="font-bold text-foreground">{formatBRL(balance)}</span>
         </p>
       </div>
 
@@ -517,13 +517,13 @@ export function TransactionsPage() {
           {editingId ? (
             <>
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-semibold text-foreground">Editar transação</h3>
+                <h3 className="font-semibold text-foreground">{t("editTransaction")}</h3>
               </div>
               {formError && <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-4">{formError}</div>}
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Valor</label>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("amount")}</label>
                     <MiniCalculator
                       value={form.amount}
                       onChange={(v) => { setForm({ ...form, amount: v }); setConvertedPreview(null); }}
@@ -531,33 +531,33 @@ export function TransactionsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("type")}</label>
                     <select
                       value={form.type}
                       onChange={(e) => setForm({ ...form, type: e.target.value as "income" | "expense" })}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
-                      <option value="expense">Saída</option>
-                      <option value="income">Entrada</option>
+                      <option value="expense">{t("outflow")}</option>
+                      <option value="income">{t("inflow")}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Data</label>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("date")}</label>
                     <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Descrição</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("description")}</label>
                   <input type="text" required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Ex: Supermercado"
+                    placeholder={t("descPlaceholder")}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" maxLength={200} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("category")}</label>
                   <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
-                    <option value="">Selecione</option>
+                    <option value="">{t("selectCategory")}</option>
                     {categories.filter((c) => c.type === form.type).map((c) => (
                       <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                     ))}
@@ -566,13 +566,8 @@ export function TransactionsPage() {
                 <div className="flex gap-2 pt-1">
                   <button type="button" onClick={cancelEdit}
                     className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors">
-                    Cancelar
-                  </button>
-                  <button type="submit" disabled={saving}
-                    className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
-                    {saving ? "Salvando..." : "Salvar alterações"}
-                  </button>
-                </div>
+                    Cancelar → {t("cancel")}
+                  </button> is wrong, let me fix properly:
               </form>
             </>
           ) : (
