@@ -582,18 +582,18 @@ export function TransactionsPage() {
                 <h3 className="font-semibold text-foreground">Magic Input</h3>
               </div>
               <p className="text-xs text-muted-foreground mb-1">
-                Digite naturalmente: "Uber 25.50", "Aluguel 1200"
+                {t("magicInputHint")}
               </p>
               {(() => {
                 const travelActive = localStorage.getItem("lmyf_travel_mode") === "true";
                 const travelCurrency = localStorage.getItem("lmyf_travel_currency") || "USD";
                 return travelActive ? (
                   <p className="text-xs text-primary/80 mb-4 flex items-center gap-1">
-                    ✈️ Modo Viagem ativo — para converter, digite: "Netflix 15 {travelCurrency}"
+                    ✈️ {t("travelModeActive", { currency: travelCurrency })}
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground/70 mb-4">
-                    💡 Ative o <span className="font-medium text-muted-foreground">Modo Viagem</span> para converter gastos em moeda estrangeira automaticamente
+                    💡 {t("travelModeHint")}
                   </p>
                 );
               })()}
@@ -625,12 +625,12 @@ export function TransactionsPage() {
                   };
 
                   const { error } = await supabase.from("transactions").insert(payload);
-                  if (error) { toast("Erro ao salvar"); setSaving(false); return; }
+                  if (error) { toast(t("saveError")); setSaving(false); return; }
 
                   const { data: txData } = await supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false });
                   setTransactions(txData ?? []);
                   setSaving(false);
-                  toast("Transação criada!");
+                  toast(t("created"));
                   triggerAlertCheck(wsId);
 
                   const newAchs = await recordActivity();
@@ -644,14 +644,14 @@ export function TransactionsPage() {
         {/* Right: History */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-semibold text-foreground">Histórico do mês</h3>
+            <h3 className="font-semibold text-foreground">{t("historyTitle")}</h3>
             <div className="flex items-center gap-2">
               <select
                 value={filterCurrency}
                 onChange={(e) => setFilterCurrency(e.target.value)}
                 className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none"
               >
-                <option value="">Todas moedas</option>
+                <option value="">{t("allCurrencies")}</option>
                 {usedCurrencies.map((c) => {
                   const info = SUPPORTED_CURRENCIES.find((s) => s.code === c);
                   return <option key={c} value={c}>{info?.flag ?? "💱"} {c}</option>;
@@ -662,7 +662,7 @@ export function TransactionsPage() {
                 onChange={(e) => setFilterCategoryId(e.target.value)}
                 className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none"
               >
-                <option value="">Todas categorias</option>
+                <option value="">{t("allCategories")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                 ))}
@@ -672,16 +672,16 @@ export function TransactionsPage() {
 
           {/* Table header */}
           <div className="px-6 py-2 border-b border-border grid grid-cols-3 gap-2">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Data</span>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Categoria / Descrição</span>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Valor</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("date")}</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("categoryDescription")}</span>
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">{t("value")}</span>
           </div>
 
           {filtered.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <Receipt className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="text-sm font-semibold text-foreground mb-1">Nenhuma transação neste mês</p>
-              <p className="text-xs text-muted-foreground">Use o formulário para registrar sua primeira receita ou despesa.</p>
+              <p className="text-sm font-semibold text-foreground mb-1">{t("emptyStateTitle")}</p>
+              <p className="text-xs text-muted-foreground">{t("emptyStateDesc")}</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
@@ -729,7 +729,7 @@ export function TransactionsPage() {
           <div className="px-5 py-4 border-b border-border">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               <Receipt className="h-4 w-4 text-primary" />
-              Histórico de recibos escaneados
+              {t("receiptHistory")}
             </h3>
           </div>
           <ReceiptHistory workspaceId={wsId} />
@@ -737,12 +737,12 @@ export function TransactionsPage() {
       )}
 
       {/* Delete modal */}
-      <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir transação">
-        <p className="text-muted-foreground mb-6">Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.</p>
+      <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title={t("deleteTitle")}>
+        <p className="text-muted-foreground mb-6">{t("deleteMessage")}</p>
         <div className="flex justify-end gap-3">
-          <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
+          <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">{t("cancel")}</button>
           <button onClick={handleDelete} disabled={saving} className="px-5 py-2.5 rounded-lg bg-destructive text-destructive-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
-            {saving ? "Excluindo..." : "Excluir"}
+            {saving ? t("deleting") : t("delete")}
           </button>
         </div>
       </Modal>
@@ -758,7 +758,7 @@ export function TransactionsPage() {
         }}
       />
 
-      <Modal open={scannerOpen} onClose={() => setScannerOpen(false)} title="Escanear recibo">
+      <Modal open={scannerOpen} onClose={() => setScannerOpen(false)} title={t("scanReceipt")}>
         <ReceiptScanner
           onExtracted={(data) => {
             setScannerOpen(false);
@@ -771,11 +771,11 @@ export function TransactionsPage() {
               type: data.type || "expense",
               date: data.date || new Date().toISOString().split("T")[0],
               category_id: matchedCat?.id || "",
-              notes: `Extraído via OCR local (confiança: ${data.confidence}%)`,
+              notes: t("ocrNote", { confidence: String(data.confidence) }),
               currency: localeCurrency,
             });
             setConvertedPreview(null);
-            toast("Dados do recibo extraídos! Revise e salve.");
+            toast(t("receiptExtracted"));
           }}
           onClose={() => setScannerOpen(false)}
         />
