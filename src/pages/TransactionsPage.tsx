@@ -86,6 +86,15 @@ export function TransactionsPage() {
   const wsId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
   const { recordActivity } = useGamification(wsId);
+  const t = useTranslations("transactions");
+  const tCommon = useTranslations("common");
+
+  const MONTH_NAMES = useMemo(() => [
+    tCommon("months.january"), tCommon("months.february"), tCommon("months.march"),
+    tCommon("months.april"), tCommon("months.may"), tCommon("months.june"),
+    tCommon("months.july"), tCommon("months.august"), tCommon("months.september"),
+    tCommon("months.october"), tCommon("months.november"), tCommon("months.december"),
+  ], [tCommon]);
   const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
