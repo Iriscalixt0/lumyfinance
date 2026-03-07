@@ -61,6 +61,13 @@ export function MagicInput({ baseCurrency = DEFAULT_CURRENCY, onSubmit, disabled
       const result = parseMagicInput(rawInput, baseCurrency);
       setParsed(result);
 
+      // If Travel Mode is active and no currency was explicitly typed, use travel currency
+      const travelActive = localStorage.getItem("lmyf_travel_mode") === "true";
+      const travelCurrency = localStorage.getItem("lmyf_travel_currency") as CurrencyCode | null;
+      if (travelActive && travelCurrency && !result.currency && travelCurrency !== baseCurrency) {
+        result.currency = travelCurrency;
+      }
+
       if (result.amount && result.description) {
         setEditDesc(result.description);
         setEditAmount(String(result.amount));
