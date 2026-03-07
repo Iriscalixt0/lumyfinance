@@ -9,18 +9,24 @@ interface RateCache {
 const cache = new Map<string, RateCache>();
 
 export const SUPPORTED_CURRENCIES = [
+  // Moedas dos idiomas suportados pelo Lumyf
   { code: "BRL", symbol: "R$", name: "Real Brasileiro", flag: "🇧🇷" },
   { code: "USD", symbol: "$", name: "Dólar Americano", flag: "🇺🇸" },
   { code: "EUR", symbol: "€", name: "Euro", flag: "🇪🇺" },
   { code: "GBP", symbol: "£", name: "Libra Esterlina", flag: "🇬🇧" },
-  { code: "JPY", symbol: "¥", name: "Iene Japonês", flag: "🇯🇵" },
-  { code: "ARS", symbol: "$", name: "Peso Argentino", flag: "🇦🇷" },
-  { code: "CLP", symbol: "$", name: "Peso Chileno", flag: "🇨🇱" },
   { code: "MXN", symbol: "$", name: "Peso Mexicano", flag: "🇲🇽" },
+  { code: "CHF", symbol: "CHF", name: "Franco Suíço", flag: "🇨🇭" },
+  // Moedas mais usadas no mundo
+  { code: "JPY", symbol: "¥", name: "Iene Japonês", flag: "🇯🇵" },
   { code: "CAD", symbol: "C$", name: "Dólar Canadense", flag: "🇨🇦" },
   { code: "AUD", symbol: "A$", name: "Dólar Australiano", flag: "🇦🇺" },
-  { code: "CHF", symbol: "CHF", name: "Franco Suíço", flag: "🇨🇭" },
   { code: "CNY", symbol: "¥", name: "Yuan Chinês", flag: "🇨🇳" },
+  { code: "INR", symbol: "₹", name: "Rupia Indiana", flag: "🇮🇳" },
+  { code: "KRW", symbol: "₩", name: "Won Sul-Coreano", flag: "🇰🇷" },
+  // América Latina
+  { code: "ARS", symbol: "$", name: "Peso Argentino", flag: "🇦🇷" },
+  { code: "CLP", symbol: "$", name: "Peso Chileno", flag: "🇨🇱" },
+  { code: "COP", symbol: "$", name: "Peso Colombiano", flag: "🇨🇴" },
 ] as const;
 
 export type CurrencyCode = typeof SUPPORTED_CURRENCIES[number]["code"];
