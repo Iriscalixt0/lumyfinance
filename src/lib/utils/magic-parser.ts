@@ -97,7 +97,7 @@ export function parseMagicInput(input: string, baseCurrency: CurrencyCode = "BRL
 
   // 2. Detect amount + currency word: "15 USD", "100 euros", "50 reais"
   if (amount === null) {
-    const wordRegex = /([\d.,]+)\s*(usd|eur|brl|gbp|jpy|dollars?|euros?|reais|real|pounds?|bucks?|yen)/i;
+    const wordRegex = /([\d.,]+)\s*(usd|eur|brl|gbp|jpy|chf|cad|aud|cny|inr|krw|mxn|ars|clp|cop|dollars?|dólar|dolares|euros?|reais|real|pounds?|libras?|bucks?|yen|ienes?|francos?|yuan|yuanes|rupias?|rupees?|won|pesos?)/i;
     const wordMatch = text.match(wordRegex);
     if (wordMatch) {
       amount = parseNum(wordMatch[1]);
