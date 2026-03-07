@@ -134,12 +134,12 @@ BEGIN
     (ws_id, 'Freelance', '💸', 'income', '#06b6d4', TRUE),
     (ws_id, 'Presente', '🎁', 'income', '#f59e0b', TRUE),
     (ws_id, 'Outros Recebimentos', '📥', 'income', '#8b5cf6', TRUE),
-    (ws_id, 'Supermercado', '🛒', 'expense', '#ef4444', TRUE),
-    (ws_id, 'Moradia', '🏠', 'expense', '#f97316', TRUE),
-    (ws_id, 'Transporte', '🚗', 'expense', '#eab308', TRUE),
-    (ws_id, 'Saúde', '🏥', 'expense', '#22c55e', TRUE),
-    (ws_id, 'Lazer', '🍔', 'expense', '#3b82f6', TRUE),
-    (ws_id, 'Compras', '🛍️', 'expense', '#a855f7', TRUE),
+    (ws_id, 'Alimentação', '🍽️', 'expense', '#ef4444', TRUE),
+    (ws_id, 'Casa & Moradia', '🏠', 'expense', '#f97316', TRUE),
+    (ws_id, 'Transporte & Auto', '🚗', 'expense', '#eab308', TRUE),
+    (ws_id, 'Saúde & Bem-estar', '💊', 'expense', '#22c55e', TRUE),
+    (ws_id, 'Lazer & Entretenimento', '🎮', 'expense', '#3b82f6', TRUE),
+    (ws_id, 'Compras & Shopping', '🛍️', 'expense', '#a855f7', TRUE),
     (ws_id, 'Outros Gastos', '📦', 'expense', '#64748b', TRUE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
