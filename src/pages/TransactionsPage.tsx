@@ -566,8 +566,13 @@ export function TransactionsPage() {
                 <div className="flex gap-2 pt-1">
                   <button type="button" onClick={cancelEdit}
                     className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors">
-                    Cancelar → {t("cancel")}
-                  </button> is wrong, let me fix properly:
+                    {t("cancel")}
+                  </button>
+                  <button type="submit" disabled={saving}
+                    className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
+                    {saving ? t("saving") : t("saveChanges")}
+                  </button>
+                </div>
               </form>
             </>
           ) : (
