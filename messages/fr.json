@@ -107,7 +107,7 @@
     "transcribing": "Transcription en cours..."
   },
   "magicInput": {
-    "placeholder": "Tapez : Uber 25.50, Netflix 15 USD, Loyer 1200...",
+    "placeholder": "Tapez : Uber 25.50, Loyer 1200...",
     "description": "Description",
     "category": "Catégorie",
     "categoryPlaceholder": "Auto-détectée",
