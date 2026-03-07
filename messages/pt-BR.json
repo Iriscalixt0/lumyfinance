@@ -415,7 +415,7 @@
     "transcribing": "Transcrevendo..."
   },
   "magicInput": {
-    "placeholder": "Digite: Uber 25.50, Netflix 15 USD, Aluguel 1200...",
+    "placeholder": "Digite: Uber 25.50, Aluguel 1200...",
     "description": "Descrição",
     "category": "Categoria",
     "categoryPlaceholder": "Auto-detectada",

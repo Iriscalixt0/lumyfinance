@@ -415,7 +415,7 @@
     "transcribing": "Transcribing..."
   },
   "magicInput": {
-    "placeholder": "Type: Uber 25.50, Netflix 15 USD, Rent 1200...",
+    "placeholder": "Type: Uber 25.50, Rent 1200...",
     "description": "Description",
     "category": "Category",
     "categoryPlaceholder": "Auto-detected",

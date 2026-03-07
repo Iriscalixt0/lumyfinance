@@ -415,7 +415,7 @@
     "transcribing": "Transcribiendo..."
   },
   "magicInput": {
-    "placeholder": "Escribe: Uber 25.50, Netflix 15 USD, Alquiler 1200...",
+    "placeholder": "Escribe: Uber 25.50, Alquiler 1200...",
     "description": "Descripción",
     "category": "Categoría",
     "categoryPlaceholder": "Auto-detectada",

@@ -415,7 +415,7 @@
     "transcribing": "A transcrever..."
   },
   "magicInput": {
-    "placeholder": "Escreva: Uber 25.50, Netflix 15 USD, Renda 1200...",
+    "placeholder": "Escreva: Uber 25.50, Renda 1200...",
     "description": "Descrição",
     "category": "Categoria",
     "categoryPlaceholder": "Auto-detetada",
