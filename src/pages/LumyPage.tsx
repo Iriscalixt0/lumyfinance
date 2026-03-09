@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { analyzeTransactions, answerQuestion, type LumyInsight } from "@/lib/lumy-engine";
-import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, Info } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, Info, ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface Transaction {
   id: string;
