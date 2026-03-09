@@ -26,7 +26,7 @@ export async function streamLumyChat({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iaWpvamVzc3F5emNrbHN5anJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NDQ4NTksImV4cCI6MjA4NjAyMDg1OX0.zY9W15Px1oRW7HHIRiKG5Jw8S0NDCkGg060aCf96wkU`,
       },
       body: JSON.stringify({ messages, financialContext }),
       signal,
