@@ -889,7 +889,6 @@ const ANSWER_HANDLERS: AnswerHandler[] = [
 
 // ─── Smart fallback ─────────────────────────────────
 function buildSmartFallback(ctx: QAContext): string {
-  // Try to detect if the question is finance-related
   const financeWords = [
     "dinheiro", "grana", "financ", "banco", "conta", "pagar", "cobrar",
     "preco", "valor", "custo", "barato", "caro", "comprar", "vender",
@@ -901,15 +900,14 @@ function buildSmartFallback(ctx: QAContext): string {
   const isFinanceRelated = financeWords.some((w) => ctx.q.includes(w));
 
   if (isFinanceRelated) {
-    // Give a contextual answer based on what data we have
     if (ctx.hasData) {
       const savingsRate = ctx.incomeNow > 0 ? ((ctx.incomeNow - ctx.expenseNow) / ctx.incomeNow * 100) : 0;
-      return `Não tenho uma resposta específica para isso, mas posso te dar um panorama:\n\n📊 **Seu mês atual:**\n- Receitas: ${formatBRL(ctx.incomeNow)}\n- Despesas: ${formatBRL(ctx.expenseNow)}\n- Saldo: ${formatBRL(ctx.balanceNow)}\n${ctx.incomeNow > 0 ? `- Poupança: ${savingsRate.toFixed(0)}%\n` : ""}\nTente perguntar algo mais específico como:\n- \"Resumo do mês\"\n- \"Comparar com mês passado\"\n- \"Dicas personalizadas\"`;
+      return `Não tenho uma resposta específica para isso, mas posso te dar um panorama:\n\n📊 **Seu mês atual:**\n- Receitas: ${formatBRL(ctx.incomeNow)}\n- Despesas: ${formatBRL(ctx.expenseNow)}\n- Saldo: ${formatBRL(ctx.balanceNow)}${ctx.incomeNow > 0 ? `\n- Poupança: ${savingsRate.toFixed(0)}%` : ""}\n\nTente perguntar algo mais específico:\n• \"Resumo do mês\"\n• \"Comparar com mês passado\"\n• \"Dicas personalizadas\"`;
     }
-    return "Boa pergunta! 🤔 Ainda não tenho dados suficientes para uma análise personalizada. Mas posso te ensinar sobre **vários temas financeiros**!\n\nExperimente:\n- \"Investimentos\" | \"Tesouro Direto\" | \"Ações\"\n- \"Reserva de emergência\" | \"Aposentadoria\"\n- \"Dívidas\" | \"Score de crédito\" | \"Golpes\"\n- \"Carro\" | \"Casa\" | \"Viagem\"\n- \"Juros compostos\" | \"Inflação\" | \"CDI\"";
+    return "Boa pergunta! 🤔\n\nAinda não tenho dados para uma análise personalizada, mas posso te ensinar sobre vários temas:\n\n• \"Investimentos\"\n• \"Tesouro Direto\"\n• \"Reserva de emergência\"\n• \"Dívidas\"\n• \"Juros compostos\"\n• \"Score de crédito\"";
   }
 
-  // Generic fallback with full menu
-  return `Posso te ajudar com muita coisa! 😊\n\n📊 **Análises dos seus dados:**\n- \"Resumo do mês\" | \"Comparar meses\" | \"Saúde financeira\"\n- \"Categorias\" | \"Maiores gastos\" | \"Média mensal\"\n- \"Dia da semana\" | \"Quanto gastei\" | \"Saldo\"\n\n💡 **Educação financeira:**\n- \"Investimentos\" | \"Tesouro Direto\" | \"Ações\" | \"FIIs\"\n- \"Reserva de emergência\" | \"Aposentadoria\" | \"CDI\"\n- \"Dívidas\" | \"Cartão de crédito\" | \"Score de crédito\"\n- \"Como economizar\" | \"Juros compostos\" | \"Inflação\"\n\n🏠 **Decisões de vida:**\n- \"Comprar casa\" | \"Comprar carro\" | \"Viagem\"\n- \"Finanças a dois\" | \"Filhos\" | \"MEI/Freelancer\"\n- \"Criptomoedas\" | \"Câmbio\" | \"ETFs\" | \"Dividendos\"`;
+  // Generic fallback — clean layout
+  return `Posso te ajudar com muita coisa! 😊\n\n📊 **Análises dos seus dados:**\n• Resumo do mês\n• Comparar meses\n• Saúde financeira\n• Categorias\n• Maiores gastos\n• Média mensal\n\n💡 **Educação financeira:**\n• Investimentos\n• Tesouro Direto\n• Reserva de emergência\n• Dívidas\n• Como economizar\n• Juros compostos\n\n🏠 **Decisões de vida:**\n• Comprar casa ou carro\n• Viagem\n• Finanças a dois\n• MEI / Freelancer\n• Criptomoedas\n• Dividendos e ETFs`;
 }
 
