@@ -442,7 +442,162 @@ export function analyzeTransactions(
   return insights;
 }
 
-// ─── Chat-style Q&A ─────────────────────────────────
+// ─── Fuzzy keyword matcher ──────────────────────────
+type AnswerHandler = (ctx: QAContext) => string | null;
+
+interface QAContext {
+  q: string;
+  raw: string;
+  hasData: boolean;
+  currentMonth: string;
+  currentTxs: Transaction[];
+  byMonth: Map<string, Transaction[]>;
+  categories: Category[];
+  transactions: Transaction[];
+  incomeNow: number;
+  expenseNow: number;
+  balanceNow: number;
+}
+
+function matchesAny(q: string, patterns: (string | RegExp)[]): boolean {
+  return patterns.some((p) => (typeof p === "string" ? q.includes(p) : p.test(q)));
+}
+
+// ─── Knowledge base for open-ended questions ────────
+const KNOWLEDGE_BASE: { keywords: (string | RegExp)[]; answer: string }[] = [
+  // ─── Financial education ──────────────────────────
+  {
+    keywords: ["reserva", "emergencia", "fundo emergenc"],
+    answer: "🛡️ **Reserva de emergência**\n\nÉ o dinheiro guardado para imprevistos (perda de emprego, saúde, reparos urgentes).\n\n**Quanto guardar:** 3 a 6 meses das suas despesas mensais.\n**Onde guardar:** CDB com liquidez diária, Tesouro Selic ou poupança.\n**Como começar:** Separe um valor fixo todo mês, mesmo que pequeno. O importante é a consistência!",
+  },
+  {
+    keywords: ["investir", "investimento", "onde aplicar", "aplicacao", "aplicar dinheiro", "renda fixa", "renda variavel"],
+    answer: "📊 **Começando a investir**\n\n1. **Primeiro:** Monte sua reserva de emergência\n2. **Renda fixa:** Tesouro Direto, CDB, LCI/LCA — seguro e previsível\n3. **Renda variável:** Ações, FIIs — maior risco, maior potencial\n4. **Diversifique:** Não coloque tudo no mesmo lugar\n\n💡 Comece pela renda fixa e vá diversificando conforme ganhar confiança.",
+  },
+  {
+    keywords: ["divida", "endividado", "devendo", "parcel", "emprestimo", "financiamento"],
+    answer: "🔥 **Saindo das dívidas**\n\n1. **Liste todas** as dívidas (valor, juros, parcelas)\n2. **Priorize** as com juros mais altos (cartão de crédito > empréstimo)\n3. **Negocie:** Bancos costumam dar desconto para quitação\n4. **Evite novas dívidas** enquanto paga as atuais\n5. **Bola de neve:** Pague o mínimo em todas, extra na maior\n\n💡 O cartão de crédito cobra até 400% ao ano — quite primeiro!",
+  },
+  {
+    keywords: ["cartao", "credito", "fatura", "limite"],
+    answer: "💳 **Usando o cartão com inteligência**\n\n- Use **no máximo 30%** do limite disponível\n- **Nunca** pague o mínimo da fatura — os juros são altíssimos\n- Concentre compras em um só cartão para controlar melhor\n- Aproveite cashback e milhas, mas **não gaste mais por causa deles**\n- Configure alertas de gastos no app do banco",
+  },
+  {
+    keywords: ["orcamento", "organizar", "planejar", "planejamento", "controlar gasto", "controle financeiro"],
+    answer: "📋 **Organizando seu orçamento**\n\n**Regra 50-30-20:**\n- 50% → Necessidades (moradia, alimentação, transporte)\n- 30% → Desejos (lazer, streaming, restaurantes)\n- 20% → Poupança e investimentos\n\n**Passos práticos:**\n1. Registre todos os gastos por 30 dias\n2. Categorize cada despesa\n3. Identifique cortes possíveis\n4. Defina limites por categoria\n5. Revise semanalmente",
+  },
+  {
+    keywords: [/como economizar/, /economizar dinheiro/, /gastar menos/, /reduzir gasto/, /cortar gasto/, /diminuir gasto/],
+    answer: "💰 **10 formas de economizar**\n\n1. Cancele assinaturas que não usa\n2. Leve marmita em vez de comer fora\n3. Compare preços antes de comprar\n4. Espere 48h antes de compras por impulso\n5. Use transporte público ou carona\n6. Negocie internet, seguro e celular anualmente\n7. Compre no atacado itens não-perecíveis\n8. Cozinhe em casa nos fins de semana\n9. Evite parcelamento — se não pode à vista, repense\n10. Automatize a poupança no início do mês",
+  },
+  {
+    keywords: ["imposto", /\bir\b/, "declarar", "irpf", "leao", "receita federal"],
+    answer: "🧾 **Dicas sobre Imposto de Renda**\n\n- Guarde comprovantes de despesas dedutíveis (saúde, educação)\n- Informe todos os rendimentos, mesmo isentos\n- Investimentos devem ser declarados (mesmo sem lucro)\n- Use a declaração pré-preenchida quando disponível\n- Entregue no prazo para evitar multa\n\n💡 Organize seus documentos ao longo do ano, não deixe para o último mês!",
+  },
+  {
+    keywords: ["meta", "objetivo", "sonho", "plano de vida"],
+    answer: "🎯 **Definindo metas financeiras**\n\n**Método SMART:**\n- **S**pecífica: \"Juntar R$ 10.000\", não \"economizar dinheiro\"\n- **M**ensurável: Acompanhe o progresso mensalmente\n- **A**lcançável: Seja realista com sua renda\n- **R**elevante: Algo que realmente importa para você\n- **T**emporal: Defina um prazo claro\n\n💡 Use a aba **Metas** do Lumyf para acompanhar seu progresso!",
+  },
+  // ─── New topics ────────────────────────────────────
+  {
+    keywords: ["tesouro", "selic", "tesouro direto", "titulo publico"],
+    answer: "🏦 **Tesouro Direto**\n\nÉ a forma mais segura de investir no Brasil — você empresta dinheiro ao governo.\n\n**Tipos principais:**\n- **Tesouro Selic:** Liquidez diária, ideal para reserva de emergência\n- **Tesouro IPCA+:** Protege contra inflação, bom para longo prazo\n- **Tesouro Prefixado:** Taxa fixa, bom quando juros vão cair\n\n**Mínimo:** Cerca de R$ 30\n**Como começar:** Abra conta em uma corretora (muitas são gratuitas) e compre direto pelo app.\n\n💡 Para reserva de emergência, vá de **Tesouro Selic**!",
+  },
+  {
+    keywords: ["cdb", "lci", "lca", "cri", "cra", "debenture"],
+    answer: "🏦 **Renda fixa privada**\n\n- **CDB:** Empréstimo a bancos. Procure CDBs que paguem 100%+ do CDI\n- **LCI/LCA:** Isentos de IR para pessoa física. Ótima opção!\n- **Debêntures:** Empréstimo a empresas. Maior risco, maior retorno\n\n**Dica:** Até R$ 250 mil por instituição é coberto pelo **FGC** (Fundo Garantidor de Créditos).\n\n💡 Compare taxas em diferentes bancos e corretoras — a diferença pode ser grande!",
+  },
+  {
+    keywords: ["acao", "acoes", "bolsa", "b3", "bovespa", "mercado de acoes"],
+    answer: "📈 **Investindo em ações**\n\n**O que é:** Comprar um pedacinho de uma empresa listada na bolsa.\n\n**Riscos:** Alta volatilidade — preços sobem e descem diariamente.\n\n**Dicas para iniciantes:**\n1. Nunca invista dinheiro que vai precisar em menos de 5 anos\n2. Comece com ETFs (ex: BOVA11) para diversificar automaticamente\n3. Estude os fundamentos da empresa antes de comprar\n4. Não tente \"acertar o momento\" — invista regularmente\n5. Máximo 5-10% do patrimônio quando iniciante\n\n💡 Dividendos são como um \"aluguel\" que a empresa paga a você!",
+  },
+  {
+    keywords: ["fii", "fundo imobiliario", "fundos imobiliarios", "imovel", "aluguel passivo"],
+    answer: "🏠 **Fundos Imobiliários (FIIs)**\n\nInvista em imóveis sem comprar um imóvel inteiro!\n\n**Vantagens:**\n- Receba \"aluguéis\" mensais (dividendos isentos de IR)\n- Diversificação (shoppings, galpões, escritórios)\n- Liquidez — compre e venda na bolsa\n- Comece com menos de R$ 100\n\n**Tipos:**\n- **Tijolo:** Imóveis físicos (shoppings, galpões)\n- **Papel:** Títulos de crédito imobiliário\n- **Fundos de fundos:** Diversificam em outros FIIs\n\n💡 Busque FIIs com dividend yield de 8-12% ao ano e vacância baixa.",
+  },
+  {
+    keywords: ["cripto", "bitcoin", "ethereum", "criptomoeda", "btc", "eth", "blockchain"],
+    answer: "🪙 **Criptomoedas**\n\n**O que são:** Moedas digitais descentralizadas.\n\n**Principais:**\n- **Bitcoin (BTC):** A mais conhecida, \"ouro digital\"\n- **Ethereum (ETH):** Plataforma para contratos inteligentes\n\n**Riscos:** Altíssima volatilidade — pode subir ou cair 20% em um dia.\n\n**Regras de ouro:**\n1. Invista apenas o que pode perder 100%\n2. Máximo 5% do patrimônio\n3. Use exchanges reguladas\n4. Nunca compartilhe suas chaves privadas\n5. Desconfie de promessas de retorno garantido\n\n⚠️ Cripto não é para reserva de emergência!",
+  },
+  {
+    keywords: ["inflacao", "ipca", "poder de compra", "preco subindo"],
+    answer: "📊 **Inflação**\n\nÉ o aumento geral dos preços, que corrói o poder de compra do seu dinheiro.\n\n**IPCA:** Principal índice de inflação no Brasil, medido pelo IBGE.\n\n**Como se proteger:**\n- Investimentos atrelados ao IPCA (Tesouro IPCA+)\n- Renda variável tende a superar a inflação no longo prazo\n- Evite deixar muito dinheiro na poupança (rende menos que a inflação)\n\n💡 Se a inflação é 5% ao ano e sua poupança rende 7%, seu ganho real é só 2%.",
+  },
+  {
+    keywords: ["juros compostos", "juros", "rendimento", "rentabilidade", "quanto rende"],
+    answer: "📈 **Juros compostos — a 8ª maravilha**\n\nÉ quando os juros incidem sobre o valor + juros anteriores.\n\n**Exemplo:**\nR$ 1.000 a 1% ao mês:\n- Mês 1: R$ 1.010\n- Mês 12: R$ 1.126,83\n- Mês 60: R$ 1.816,70\n- Mês 120: R$ 3.300,39\n\n**A mágica é o tempo!** Quanto antes começar, melhor.\n\n💡 A **Regra dos 72**: divida 72 pela taxa anual para saber em quantos anos seu dinheiro dobra. Ex: 12% ao ano → 72/12 = 6 anos.",
+  },
+  {
+    keywords: ["pix", "ted", "transferencia", "doc", "boleto"],
+    answer: "💸 **Meios de pagamento**\n\n- **PIX:** Instantâneo, gratuito, 24h. Use para tudo!\n- **TED:** Útil para valores altos, mesmo dia\n- **Boleto:** Pagamento de contas e compras\n\n**Dicas de segurança:**\n- Confira o destinatário antes de confirmar o PIX\n- Não clique em links suspeitos de pagamento\n- Use limites de PIX noturnos no app do banco\n- Cadastre chaves PIX apenas nos canais oficiais",
+  },
+  {
+    keywords: ["seguro", "seguro de vida", "seguro auto", "seguro saude", "plano de saude"],
+    answer: "🛡️ **Seguros essenciais**\n\n**Prioridade:**\n1. **Seguro de vida:** Se tem dependentes, é essencial\n2. **Plano de saúde:** Avalie custo-benefício vs SUS\n3. **Seguro auto:** Obrigatório se tem carro (além do DPVAT)\n4. **Seguro residencial:** Barato e cobre incêndio, roubo, etc.\n\n**Dicas:**\n- Compare preços em pelo menos 3 seguradoras\n- Renegocie anualmente\n- Leia as exclusões da apólice\n- Franquia mais alta = mensalidade mais baixa",
+  },
+  {
+    keywords: ["aposentadoria", "previdencia", "inss", "pgbl", "vgbl"],
+    answer: "👴 **Planejando a aposentadoria**\n\n**INSS:** Contribuição obrigatória. Garante aposentadoria mínima.\n\n**Previdência privada:**\n- **PGBL:** Deduz até 12% da renda bruta no IR (declaração completa)\n- **VGBL:** Melhor para quem faz declaração simplificada\n\n**Alternativas:**\n- Tesouro IPCA+ longo prazo\n- Fundos de investimento\n- Carteira diversificada de ações e FIIs\n\n💡 A previdência privada tem taxas altas em muitos bancos. Compare a **taxa de administração** (ideal < 1%) e a **taxa de carregamento** (ideal 0%).",
+  },
+  {
+    keywords: ["cdi", "taxa selic", "copom", "taxa de juros"],
+    answer: "📊 **CDI e Taxa Selic**\n\n- **Selic:** Taxa básica de juros definida pelo COPOM/Banco Central\n- **CDI:** Taxa interbancária, muito próxima da Selic\n\n**Por que importa?**\nA maioria dos investimentos de renda fixa rende um percentual do CDI.\n\n- 100% do CDI = CDI cheio\n- 120% do CDI = acima da média, ótimo!\n- 80% do CDI = abaixo, busque alternativas\n\n💡 Poupança rende 70% da Selic + TR quando Selic > 8,5%. Quase sempre perde para CDBs de 100% CDI.",
+  },
+  {
+    keywords: ["score", "score de credito", "serasa", "spc", "nome sujo", "nome limpo", "cpf"],
+    answer: "📋 **Score de crédito**\n\nÉ uma pontuação (0-1000) que indica o risco de você não pagar uma dívida.\n\n**Como melhorar:**\n1. Pague contas em dia\n2. Mantenha o cadastro atualizado\n3. Evite ter muitas consultas ao CPF\n4. Quite dívidas em aberto\n5. Use o Cadastro Positivo\n\n**Faixas:**\n- 0-300: Muito baixo\n- 301-500: Baixo\n- 501-700: Bom\n- 701-1000: Excelente\n\n💡 Consulte grátis no app da Serasa ou SPC.",
+  },
+  {
+    keywords: ["consorcio", "consórcio"],
+    answer: "🏠 **Consórcio**\n\nÉ uma poupança coletiva: um grupo de pessoas contribui mensalmente e, por sorteio ou lance, um participante é contemplado.\n\n**Vantagens:** Sem juros (só taxa de administração)\n**Desvantagens:** Não sabe quando será contemplado; dinheiro fica preso\n\n**Quando vale a pena:**\n- Você não tem pressa para comprar\n- Quer se forçar a poupar\n- A taxa de administração é baixa (< 15%)\n\n⚠️ Cuidado com consórcios de empresas desconhecidas. Verifique se é autorizado pelo Banco Central.",
+  },
+  {
+    keywords: ["freela", "freelancer", "autonomo", "mei", "microempreendedor", "pj", "cnpj"],
+    answer: "💼 **Finanças para autônomos/MEI**\n\n1. **Separe contas:** Pessoal e profissional, obrigatoriamente\n2. **Reserva maior:** 6-12 meses (renda variável precisa de mais segurança)\n3. **MEI:** Até R$ 81 mil/ano, impostos baixos (~R$ 70/mês)\n4. **DAS:** Pague em dia para manter benefícios (aposentadoria, auxílio-doença)\n5. **Nota fiscal:** Emita sempre para construir histórico\n\n💡 Guarde **30% do faturamento** para impostos e imprevistos.",
+  },
+  {
+    keywords: ["casal", "casamento", "financas a dois", "dividir conta", "juntar dinheiro", "namorad"],
+    answer: "💑 **Finanças a dois**\n\n**3 modelos comuns:**\n1. **Tudo junto:** Uma conta única. Simples, mas pode gerar conflitos\n2. **Proporcional:** Cada um contribui % da renda para despesas comuns\n3. **50/50 + individual:** Metade para casa, resto é livre\n\n**Dicas:**\n- Conversem sobre dinheiro regularmente (sem julgamento!)\n- Definam metas em comum\n- Mantenham transparência sobre dívidas\n- Cada um pode ter uma \"mesada\" livre\n\n💡 O modelo proporcional é o mais justo quando há diferença de renda.",
+  },
+  {
+    keywords: ["filho", "bebe", "crianca", "familia", "educacao dos filhos"],
+    answer: "👶 **Finanças com filhos**\n\n**Custos médios por mês:**\n- Fralda e higiene: R$ 200-400\n- Alimentação: R$ 300-600\n- Escola: R$ 500-3.000+\n- Saúde: R$ 200-500\n\n**Planejamento:**\n1. Monte a reserva antes do bebê nascer\n2. Revise o plano de saúde\n3. Comece a investir para a educação (Tesouro IPCA+ ou previdência)\n4. Atualize o seguro de vida\n\n💡 Investindo R$ 300/mês com 10% ao ano, em 18 anos você terá ~R$ 165 mil para a faculdade.",
+  },
+  {
+    keywords: ["viagem", "viajar", "ferias", "passagem", "milha"],
+    answer: "✈️ **Planejando viagens com inteligência**\n\n1. **Defina orçamento total** antes de escolher o destino\n2. **Compre passagens com antecedência** (3-6 meses)\n3. **Use milhas:** Concentre gastos em um cartão com bom programa\n4. **Hospedagem:** Compare Booking, Airbnb e hostels\n5. **Moeda local:** Leve cartão de débito internacional (Wise, C6)\n\n**Dica de ouro:** Crie uma **meta no Lumyf** com valor e prazo. Divida pelo número de meses e poupe esse valor automaticamente!\n\n💡 Viaje na baixa temporada — economia de 30-50%.",
+  },
+  {
+    keywords: ["carro", "automovel", "comprar carro", "financiar carro", "veiculo"],
+    answer: "🚗 **Comprar ou financiar carro?**\n\n**Custo real mensal de um carro:**\n- Combustível: R$ 400-800\n- Seguro: R$ 150-400\n- IPVA: ~3% do valor/ano\n- Manutenção: R$ 200-500\n- Estacionamento: R$ 200-500\n\n**Financiamento:** Juros médios de 1,5-2,5% ao mês. Um carro de R$ 50 mil pode custar R$ 80 mil+ no final.\n\n**Alternativas:**\n- Junte e compre à vista (negocie 10-15% de desconto)\n- Carro usado com 2-3 anos (menos depreciação)\n- Avalie se transporte público + táxi sai mais barato\n\n💡 Se o carro + custos passam de **20% da renda**, está pesado demais!",
+  },
+  {
+    keywords: ["casa", "imovel", "comprar casa", "apartamento", "aluguel vs compra", "financiar imovel"],
+    answer: "🏠 **Comprar ou alugar?**\n\n**Alugar é melhor quando:**\n- Você precisa de mobilidade\n- O aluguel é < 0,5% do valor do imóvel\n- Você pode investir a diferença\n\n**Comprar é melhor quando:**\n- Vai morar no local por 10+ anos\n- Consegue entrada de 20%+\n- Parcela < 30% da renda\n\n**Financiamento:**\n- SAC: Parcelas decrescentes (recomendado)\n- PRICE: Parcelas fixas\n- Use FGTS para entrada ou amortização\n\n💡 Amortizar com FGTS anualmente pode reduzir anos do financiamento!",
+  },
+  {
+    keywords: ["golpe", "fraude", "piramide", "esquema", "scam"],
+    answer: "🚨 **Cuidado com golpes financeiros**\n\n**Sinais de alerta:**\n- Promessas de retorno garantido acima de 2% ao mês\n- Pressão para investir rápido (\"só hoje!\")\n- Dificuldade para resgatar o dinheiro\n- Quem indica ganha (estrutura de pirâmide)\n- Falta de registro na CVM ou Banco Central\n\n**Golpes comuns:**\n- Pirâmides financeiras\n- Forex falso\n- Criptomoedas \"milagrosas\"\n- Robôs de investimento\n- PIX falso / clonagem de WhatsApp\n\n💡 Se parece bom demais para ser verdade, provavelmente é golpe!",
+  },
+  {
+    keywords: ["doacao", "caridade", "doar", "filantropia", "ong"],
+    answer: "❤️ **Doações inteligentes**\n\n- Defina um % fixo da renda para doações (ex: 1-5%)\n- Doe para ONGs com transparência financeira\n- Algumas doações são dedutíveis no IR (até 6%)\n- Doações via PIX são rastreáveis\n\n**Fontes confiáveis para verificar ONGs:**\n- Instituto Doar\n- Mapa das OSCs\n- Transparência nas demonstrações financeiras\n\n💡 Doar regularmente (mesmo pouco) tem mais impacto do que doar muito uma vez.",
+  },
+  {
+    keywords: ["etf", "indice", "ibovespa", "bova11", "ivvb11"],
+    answer: "📊 **ETFs (Exchange Traded Funds)**\n\nSão fundos que replicam índices e são negociados na bolsa como ações.\n\n**Populares no Brasil:**\n- **BOVA11:** Replica o Ibovespa\n- **IVVB11:** Replica o S&P 500 (EUA)\n- **HASH11:** Criptomoedas\n- **XFIX11:** Fundos imobiliários\n\n**Vantagens:**\n- Diversificação automática\n- Taxas baixas (0,2-0,5% ao ano)\n- Fácil de comprar/vender\n\n💡 ETFs são excelentes para quem está começando e quer diversificar sem escolher ações individuais.",
+  },
+  {
+    keywords: ["dividendo", "proventos", "yield", "renda passiva"],
+    answer: "💰 **Renda passiva com dividendos**\n\n**O que são:** Parte do lucro das empresas distribuído aos acionistas.\n\n**Como montar uma carteira:**\n1. Busque empresas com histórico consistente de dividendos\n2. Diversifique entre setores (energia, bancos, saneamento)\n3. Reinvista os dividendos para acelerar o crescimento\n4. Acompanhe o **Dividend Yield** (ideal > 6% ao ano)\n\n**FIIs** também pagam dividendos mensais (isentos de IR para pessoa física).\n\n💡 Para gerar R$ 1.000/mês de renda passiva com yield de 8%, você precisa de ~R$ 150 mil investidos.",
+  },
+  {
+    keywords: ["dolar", "euro", "cambio", "moeda estrangeira", "comprar dolar"],
+    answer: "💱 **Câmbio e moedas estrangeiras**\n\n**Quando comprar:**\n- Não tente acertar o melhor momento (é impossível)\n- Compre aos poucos (média de preço)\n- Compre com antecedência de viagens\n\n**Onde comprar:**\n- Casas de câmbio (compare preços)\n- Cartões internacionais (Wise, C6, Nomad)\n- Contas em dólar de corretoras\n\n**Para investir:**\n- ETFs internacionais (IVVB11)\n- BDRs de empresas americanas\n- Fundos cambiais\n\n💡 Ter 10-20% em ativos dolarizados protege contra desvalorização do real.",
+  },
+];
+
+// ─── Chat-style Q&A (enhanced) ──────────────────────
 export function answerQuestion(
   question: string,
   transactions: Transaction[],
@@ -459,86 +614,92 @@ export function answerQuestion(
   const balanceNow = incomeNow - expenseNow;
   const hasData = transactions.length > 0;
 
-  // ─── Greetings ────────────────────────────────────
-  if (q.match(/^(oi|ola|hey|hi|hello|bom dia|boa tarde|boa noite|e ai|eai|fala)/)) {
-    if (!hasData) {
+  const ctx: QAContext = {
+    q, raw: question, hasData, currentMonth, currentTxs, byMonth,
+    categories, transactions, incomeNow, expenseNow, balanceNow,
+  };
+
+  // Run through handlers in priority order
+  for (const handler of ANSWER_HANDLERS) {
+    const result = handler(ctx);
+    if (result !== null) return result;
+  }
+
+  // ─── Knowledge base lookup ────────────────────────
+  for (const entry of KNOWLEDGE_BASE) {
+    if (matchesAny(q, entry.keywords)) {
+      return entry.answer;
+    }
+  }
+
+  // ─── Fallback: try to be helpful ──────────────────
+  return buildSmartFallback(ctx);
+}
+
+// ─── Answer handlers (ordered by priority) ──────────
+const ANSWER_HANDLERS: AnswerHandler[] = [
+  // Greetings
+  (ctx) => {
+    if (!ctx.q.match(/^(oi|ola|hey|hi|hello|bom dia|boa tarde|boa noite|e ai|eai|fala|opa)/)) return null;
+    if (!ctx.hasData) {
       return "Olá! 👋 Sou a Lumy, sua assistente financeira!\n\nVi que você ainda não tem transações registradas. Que tal começar? Posso te dar **dicas de organização financeira** enquanto isso. Tente perguntar:\n- **\"Me dá uma dica\"**\n- **\"Como economizar?\"**\n- **\"O que é reserva de emergência?\"**";
     }
-    return `Olá! 👋 Como posso ajudar hoje?\n\nVocê tem **${currentTxs.length}** transações este mês. Posso analisar seu saldo, despesas, tendências e dar dicas personalizadas!`;
-  }
+    return `Olá! 👋 Como posso ajudar hoje?\n\nVocê tem **${ctx.currentTxs.length}** transações este mês. Posso analisar seu saldo, despesas, tendências e dar dicas personalizadas!`;
+  },
 
-  // ─── Educational content (always available) ───────
-  if (q.includes("reserva") || q.includes("emergencia")) {
-    return "🛡️ **Reserva de emergência**\n\nÉ o dinheiro guardado para imprevistos (perda de emprego, saúde, reparos urgentes).\n\n**Quanto guardar:** 3 a 6 meses das suas despesas mensais.\n**Onde guardar:** CDB com liquidez diária, Tesouro Selic ou poupança.\n**Como começar:** Separe um valor fixo todo mês, mesmo que pequeno. O importante é a consistência!";
-  }
+  // Thanks
+  (ctx) => {
+    if (!ctx.q.match(/(obrigad|valeu|brigad|thanks|thank you|agradec)/)) return null;
+    return "De nada! 😊 Estou sempre aqui para ajudar com suas finanças. Qualquer dúvida, é só perguntar!";
+  },
 
-  if (q.includes("investir") || q.includes("investimento") || q.includes("onde aplicar")) {
-    return "📊 **Começando a investir**\n\n1. **Primeiro:** Monte sua reserva de emergência\n2. **Renda fixa:** Tesouro Direto, CDB, LCI/LCA — seguro e previsível\n3. **Renda variável:** Ações, FIIs — maior risco, maior potencial\n4. **Diversifique:** Não coloque tudo no mesmo lugar\n\n💡 Comece pela renda fixa e vá diversificando conforme ganhar confiança.";
-  }
+  // Self-intro
+  (ctx) => {
+    if (!ctx.q.match(/(quem e voce|quem es tu|o que voce faz|se apresent|o que voce sabe|o que pode fazer|como funciona)/)) return null;
+    return "🤖 Sou a **Lumy**, sua assistente financeira!\n\nEu analiso suas transações e te ajudo a:\n- 📊 Entender para onde seu dinheiro vai\n- 💡 Encontrar formas de economizar\n- 🎯 Alcançar suas metas financeiras\n- 📈 Acompanhar tendências de gastos\n- 📚 Aprender sobre finanças pessoais\n\nExperimente perguntar sobre investimentos, dívidas, economia, metas, câmbio, aposentadoria e muito mais!";
+  },
 
-  if (q.includes("divida") || q.includes("endividado") || q.includes("devendo")) {
-    return "🔥 **Saindo das dívidas**\n\n1. **Liste todas** as dívidas (valor, juros, parcelas)\n2. **Priorize** as com juros mais altos (cartão de crédito > empréstimo)\n3. **Negocie:** Bancos costumam dar desconto para quitação\n4. **Evite novas dívidas** enquanto paga as atuais\n5. **Bola de neve:** Pague o mínimo em todas, extra na maior\n\n💡 O cartão de crédito cobra até 400% ao ano — quite primeiro!";
-  }
+  // ─── Data-dependent analysis ──────────────────────
 
-  if (q.includes("cartao") || q.includes("credito")) {
-    return "💳 **Usando o cartão com inteligência**\n\n- Use **no máximo 30%** do limite disponível\n- **Nunca** pague o mínimo da fatura — os juros são altíssimos\n- Concentre compras em um só cartão para controlar melhor\n- Aproveite cashback e milhas, mas **não gaste mais por causa deles**\n- Configure alertas de gastos no app do banco";
-  }
-
-  if (q.includes("orcamento") || q.includes("organizar") || q.includes("planejar") || q.includes("planejamento")) {
-    return "📋 **Organizando seu orçamento**\n\n**Regra 50-30-20:**\n- 50% → Necessidades (moradia, alimentação, transporte)\n- 30% → Desejos (lazer, streaming, restaurantes)\n- 20% → Poupança e investimentos\n\n**Passos práticos:**\n1. Registre todos os gastos por 30 dias\n2. Categorize cada despesa\n3. Identifique cortes possíveis\n4. Defina limites por categoria\n5. Revise semanalmente";
-  }
-
-  if (q.match(/(como economizar|economizar dinheiro|gastar menos|reduzir gasto)/)) {
-    return "💰 **10 formas de economizar**\n\n1. Cancele assinaturas que não usa\n2. Leve marmita em vez de comer fora\n3. Compare preços antes de comprar\n4. Espere 48h antes de compras por impulso\n5. Use transporte público ou carona\n6. Negocie internet, seguro e celular anualmente\n7. Compre no atacado itens não-perecíveis\n8. Cozinhe em casa nos fins de semana\n9. Evite parcelamento — se não pode à vista, repense\n10. Automatize a poupança no início do mês";
-  }
-
-  if (q.includes("imposto") || q.includes("ir ") || q.includes("declarar") || q.includes("irpf")) {
-    return "🧾 **Dicas sobre Imposto de Renda**\n\n- Guarde comprovantes de despesas dedutíveis (saúde, educação)\n- Informe todos os rendimentos, mesmo isentos\n- Investimentos devem ser declarados (mesmo sem lucro)\n- Use a declaração pré-preenchida quando disponível\n- Entregue no prazo para evitar multa\n\n💡 Organize seus documentos ao longo do ano, não deixe para o último mês!";
-  }
-
-  if (q.includes("meta") || q.includes("objetivo") || q.includes("sonho")) {
-    return "🎯 **Definindo metas financeiras**\n\n**Método SMART:**\n- **S**pecífica: \"Juntar R$ 10.000\", não \"economizar dinheiro\"\n- **M**ensurável: Acompanhe o progresso mensalmente\n- **A**lcançável: Seja realista com sua renda\n- **R**elevante: Algo que realmente importa para você\n- **T**emporal: Defina um prazo claro\n\n💡 Use a aba **Metas** do Lumyf para acompanhar seu progresso!";
-  }
-
-  // ─── Comparisons & Advanced Analysis ──────────────
-  if (q.match(/(compar|mes passado|mes anterior|versus|vs|evoluc|tendencia|historico)/)) {
-    if (!hasData) return "Sem dados históricos ainda. Registre transações por pelo menos 2 meses para que eu possa fazer comparações! 📊";
-    const prevMk = prevMonthKey(currentMonth);
-    const prevTxs = byMonth.get(prevMk) || [];
+  // Comparisons
+  (ctx) => {
+    if (!ctx.q.match(/(compar|mes passado|mes anterior|versus|vs|evoluc|tendencia|historico)/)) return null;
+    if (!ctx.hasData) return "Sem dados históricos ainda. Registre transações por pelo menos 2 meses para que eu possa fazer comparações! 📊";
+    const prevMk = prevMonthKey(ctx.currentMonth);
+    const prevTxs = ctx.byMonth.get(prevMk) || [];
     const incomePrev = sumByType(prevTxs, "income");
     const expensePrev = sumByType(prevTxs, "expense");
     const balancePrev = incomePrev - expensePrev;
 
     if (prevTxs.length === 0) return `Sem dados de ${monthLabel(prevMk)} para comparar. Continue registrando para análises futuras!`;
 
-    const expPct = expensePrev > 0 ? ((expenseNow - expensePrev) / expensePrev * 100) : 0;
-    const incPct = incomePrev > 0 ? ((incomeNow - incomePrev) / incomePrev * 100) : 0;
+    const expPct = expensePrev > 0 ? ((ctx.expenseNow - expensePrev) / expensePrev * 100) : 0;
+    const incPct = incomePrev > 0 ? ((ctx.incomeNow - incomePrev) / incomePrev * 100) : 0;
 
-    let lines = `📊 **Comparativo: ${monthLabel(currentMonth)} vs ${monthLabel(prevMk)}**\n\n`;
-    lines += `| | ${monthLabel(prevMk)} | ${monthLabel(currentMonth)} | Variação |\n`;
-    lines += `|---|---|---|---|\n`;
-    lines += `| Receitas | ${formatBRL(incomePrev)} | ${formatBRL(incomeNow)} | ${incPct >= 0 ? "+" : ""}${incPct.toFixed(0)}% |\n`;
-    lines += `| Despesas | ${formatBRL(expensePrev)} | ${formatBRL(expenseNow)} | ${expPct >= 0 ? "+" : ""}${expPct.toFixed(0)}% |\n`;
-    lines += `| Saldo | ${formatBRL(balancePrev)} | ${formatBRL(balanceNow)} | — |\n`;
+    let lines = `📊 **Comparativo: ${monthLabel(ctx.currentMonth)} vs ${monthLabel(prevMk)}**\n\n`;
+    lines += `💰 Receitas: ${formatBRL(incomePrev)} → ${formatBRL(ctx.incomeNow)} (${incPct >= 0 ? "+" : ""}${incPct.toFixed(0)}%)\n`;
+    lines += `💸 Despesas: ${formatBRL(expensePrev)} → ${formatBRL(ctx.expenseNow)} (${expPct >= 0 ? "+" : ""}${expPct.toFixed(0)}%)\n`;
+    lines += `📊 Saldo: ${formatBRL(balancePrev)} → ${formatBRL(ctx.balanceNow)}\n`;
 
     if (expPct > 15) lines += `\n⚠️ Despesas subiram ${expPct.toFixed(0)}%. Atenção!`;
     else if (expPct < -10) lines += `\n✅ Ótimo! Despesas caíram ${Math.abs(expPct).toFixed(0)}%.`;
-
     return lines;
-  }
+  },
 
-  if (q.match(/(resumo|relatorio|panorama|visao geral|como estou|situacao)/)) {
-    if (!hasData) return "Ainda não tenho dados para um resumo. Comece registrando suas transações e volte aqui! 📋";
-    const savingsRate = incomeNow > 0 ? ((incomeNow - expenseNow) / incomeNow * 100) : 0;
-    const topCats = topCategories(currentTxs, categories, 3);
-    const avg3 = avgExpenseLast(byMonth, 3);
+  // Summary
+  (ctx) => {
+    if (!ctx.q.match(/(resumo|relatorio|panorama|visao geral|como estou|situacao)/)) return null;
+    if (!ctx.hasData) return "Ainda não tenho dados para um resumo. Comece registrando suas transações e volte aqui! 📋";
+    const savingsRate = ctx.incomeNow > 0 ? ((ctx.incomeNow - ctx.expenseNow) / ctx.incomeNow * 100) : 0;
+    const topCats = topCategories(ctx.currentTxs, ctx.categories, 3);
+    const avg3 = avgExpenseLast(ctx.byMonth, 3);
 
-    let summary = `📋 **Resumo financeiro — ${monthLabel(currentMonth)}**\n\n`;
-    summary += `💰 Receitas: **${formatBRL(incomeNow)}**\n`;
-    summary += `💸 Despesas: **${formatBRL(expenseNow)}**\n`;
-    summary += `📊 Saldo: **${formatBRL(balanceNow)}**\n`;
-    if (incomeNow > 0) summary += `🎯 Taxa de poupança: **${savingsRate.toFixed(0)}%**\n`;
-    summary += `📝 Transações: **${currentTxs.length}**\n`;
+    let summary = `📋 **Resumo financeiro — ${monthLabel(ctx.currentMonth)}**\n\n`;
+    summary += `💰 Receitas: **${formatBRL(ctx.incomeNow)}**\n`;
+    summary += `💸 Despesas: **${formatBRL(ctx.expenseNow)}**\n`;
+    summary += `📊 Saldo: **${formatBRL(ctx.balanceNow)}**\n`;
+    if (ctx.incomeNow > 0) summary += `🎯 Taxa de poupança: **${savingsRate.toFixed(0)}%**\n`;
+    summary += `📝 Transações: **${ctx.currentTxs.length}**\n`;
 
     if (topCats.length > 0) {
       summary += `\n🏷️ **Top categorias:**\n`;
@@ -546,81 +707,39 @@ export function answerQuestion(
     }
 
     if (avg3 > 0) {
-      const diff = ((expenseNow - avg3) / avg3 * 100);
+      const diff = ((ctx.expenseNow - avg3) / avg3 * 100);
       summary += `\n📈 Média 3 meses: ${formatBRL(avg3)} (${diff >= 0 ? "+" : ""}${diff.toFixed(0)}% este mês)`;
     }
 
-    // Personalized suggestion
-    if (savingsRate < 10 && incomeNow > 0) {
-      summary += `\n\n💡 **Sugestão:** Sua poupança está baixa. Tente reduzir os gastos na sua maior categoria para aumentar a margem.`;
+    if (savingsRate < 10 && ctx.incomeNow > 0) {
+      summary += `\n\n💡 **Sugestão:** Sua poupança está baixa. Tente reduzir os gastos na sua maior categoria.`;
     } else if (savingsRate >= 20) {
-      summary += `\n\n🏆 **Parabéns!** Sua taxa de poupança está excelente. Considere investir o excedente.`;
+      summary += `\n\n🏆 **Parabéns!** Sua taxa de poupança está excelente.`;
     }
-
     return summary;
-  }
+  },
 
-  if (q.match(/(media|media mensal|media de gasto|quanto gasto por mes)/)) {
-    if (!hasData) return "Sem dados para calcular médias. Registre transações por alguns meses! 📊";
-    const keys = getLastNMonths(6);
-    const monthData: string[] = [];
-    for (const k of keys) {
-      const txs = byMonth.get(k);
-      if (txs && txs.length > 0) {
-        const exp = sumByType(txs, "expense");
-        const inc = sumByType(txs, "income");
-        monthData.push(`${monthLabel(k)}: despesas ${formatBRL(exp)} | receitas ${formatBRL(inc)}`);
-      }
-    }
-    if (monthData.length === 0) return "Sem dados suficientes para calcular médias.";
-    const avgExp = avgExpenseLast(byMonth, 6);
-    return `📊 **Médias dos últimos ${monthData.length} meses:**\n\n${monthData.join("\n")}\n\n📈 Média de despesas: **${formatBRL(avgExp)}**/mês`;
-  }
-
-  if (q.match(/(dia|dia da semana|quando gasto|dia que mais)/)) {
-    if (!hasData || currentTxs.filter((t) => t.type === "expense").length < 3) {
-      return "Preciso de mais despesas registradas para analisar seu padrão por dia da semana. Continue registrando! 📅";
-    }
-    const analysis = dayOfWeekAnalysis(currentTxs);
-    const dayLines = [...analysis.avgByDay.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([day, avg]) => `${day}: ${formatBRL(avg)} em média`);
-    return `📅 **Análise por dia da semana**\n\n${dayLines.join("\n")}\n\n🔴 Dia mais caro: **${analysis.worstDay}**\n🟢 Dia mais econômico: **${analysis.bestDay}**`;
-  }
-
-  if (q.match(/(categoria|onde gasto|distribuic|composic)/)) {
-    if (!hasData) return "Sem dados de categorias. Registre transações com categorias para essa análise! 🏷️";
-    const allCats = topCategories(currentTxs, categories, 10);
-    if (allCats.length === 0) return "Nenhuma despesa categorizada este mês. Categorize suas transações para ver a distribuição!";
-    const lines = allCats.map((c, i) => {
-      const pct = expenseNow > 0 ? (c.total / expenseNow * 100).toFixed(0) : "0";
-      return `${i + 1}. ${c.name} — ${formatBRL(c.total)} (**${pct}%**)`;
-    });
-    return `🏷️ **Distribuição de despesas por categoria**\n\n${lines.join("\n")}\n\nTotal: **${formatBRL(expenseNow)}**`;
-  }
-
-  if (q.match(/(nota|score|saude financeira|nota financeira|como estou indo)/)) {
-    if (!hasData || incomeNow === 0) return "Preciso de receitas e despesas para calcular sua saúde financeira. Continue registrando! 🏥";
-    let score = 50; // base
-    const savingsRate = (incomeNow - expenseNow) / incomeNow * 100;
+  // Health score
+  (ctx) => {
+    if (!ctx.q.match(/(nota|score|saude financeira|nota financeira|como estou indo)/)) return null;
+    if (!ctx.hasData || ctx.incomeNow === 0) return "Preciso de receitas e despesas para calcular sua saúde financeira. Continue registrando! 🏥";
+    let score = 50;
+    const savingsRate = (ctx.incomeNow - ctx.expenseNow) / ctx.incomeNow * 100;
     if (savingsRate >= 20) score += 20;
     else if (savingsRate >= 10) score += 10;
     else if (savingsRate < 0) score -= 20;
 
-    const avg3 = avgExpenseLast(byMonth, 3);
-    if (avg3 > 0 && expenseNow <= avg3) score += 10;
-    else if (avg3 > 0 && expenseNow > avg3 * 1.2) score -= 10;
+    const avg3 = avgExpenseLast(ctx.byMonth, 3);
+    if (avg3 > 0 && ctx.expenseNow <= avg3) score += 10;
+    else if (avg3 > 0 && ctx.expenseNow > avg3 * 1.2) score -= 10;
 
-    const uncatCount = currentTxs.filter((t) => t.type === "expense" && !t.category_id).length;
-    if (uncatCount === 0 && currentTxs.length > 0) score += 10;
+    const uncatCount = ctx.currentTxs.filter((t) => t.type === "expense" && !t.category_id).length;
+    if (uncatCount === 0 && ctx.currentTxs.length > 0) score += 10;
     else if (uncatCount > 5) score -= 5;
-
-    if (currentTxs.length >= 10) score += 10; // consistently tracking
+    if (ctx.currentTxs.length >= 10) score += 10;
 
     score = Math.max(0, Math.min(100, score));
-
-    let emoji = "😟";
-    let label = "Precisa melhorar";
+    let emoji = "😟", label = "Precisa melhorar";
     if (score >= 80) { emoji = "🌟"; label = "Excelente!"; }
     else if (score >= 60) { emoji = "😊"; label = "Bom"; }
     else if (score >= 40) { emoji = "😐"; label = "Regular"; }
@@ -628,102 +747,169 @@ export function answerQuestion(
     let tips = "";
     if (savingsRate < 20) tips += "\n- Aumente a taxa de poupança para 20%+";
     if (uncatCount > 3) tips += "\n- Categorize suas transações para melhor controle";
-    if (avg3 > 0 && expenseNow > avg3 * 1.1) tips += "\n- Reduza gastos para ficar dentro da sua média";
+    if (avg3 > 0 && ctx.expenseNow > avg3 * 1.1) tips += "\n- Reduza gastos para ficar dentro da sua média";
 
-    return `${emoji} **Saúde Financeira: ${score}/100 — ${label}**\n\n📊 Taxa de poupança: ${savingsRate.toFixed(0)}%\n📝 Transações: ${currentTxs.length}\n🏷️ Sem categoria: ${uncatCount}${tips ? `\n\n💡 **Para melhorar:**${tips}` : ""}`;
-  }
+    return `${emoji} **Saúde Financeira: ${score}/100 — ${label}**\n\n📊 Taxa de poupança: ${savingsRate.toFixed(0)}%\n📝 Transações: ${ctx.currentTxs.length}\n🏷️ Sem categoria: ${uncatCount}${tips ? `\n\n💡 **Para melhorar:**${tips}` : ""}`;
+  },
 
-  // ─── Data-dependent answers ───────────────────────
-  if (q.includes("saldo") || q.includes("sobr")) {
-    if (!hasData) return "Você ainda não tem transações registradas. Adicione suas receitas e despesas na aba Transações para que eu calcule seu saldo! 📝";
-    return `Seu saldo este mês é **${formatBRL(balanceNow)}** (receitas ${formatBRL(incomeNow)} - despesas ${formatBRL(expenseNow)}).`;
-  }
+  // Averages
+  (ctx) => {
+    if (!ctx.q.match(/(media|media mensal|media de gasto|quanto gasto por mes)/)) return null;
+    if (!ctx.hasData) return "Sem dados para calcular médias. Registre transações por alguns meses! 📊";
+    const keys = getLastNMonths(6);
+    const monthData: string[] = [];
+    for (const k of keys) {
+      const txs = ctx.byMonth.get(k);
+      if (txs && txs.length > 0) {
+        const exp = sumByType(txs, "expense");
+        const inc = sumByType(txs, "income");
+        monthData.push(`${monthLabel(k)}: despesas ${formatBRL(exp)} | receitas ${formatBRL(inc)}`);
+      }
+    }
+    if (monthData.length === 0) return "Sem dados suficientes para calcular médias.";
+    const avgExp = avgExpenseLast(ctx.byMonth, 6);
+    return `📊 **Médias dos últimos ${monthData.length} meses:**\n\n${monthData.join("\n")}\n\n📈 Média de despesas: **${formatBRL(avgExp)}**/mês`;
+  },
 
-  if (q.includes("despesa") || q.includes("gast")) {
-    if (!hasData) return "Sem despesas registradas ainda. Comece adicionando seus gastos na aba Transações — assim posso te mostrar onde seu dinheiro está indo! 💸";
-    const top = topCategories(currentTxs, categories, 5);
-    if (top.length === 0) return "Você não tem despesas registradas este mês.";
+  // Day of week analysis
+  (ctx) => {
+    if (!ctx.q.match(/(dia da semana|quando gasto|dia que mais)/)) return null;
+    if (!ctx.hasData || ctx.currentTxs.filter((t) => t.type === "expense").length < 3) {
+      return "Preciso de mais despesas para analisar seu padrão por dia da semana. Continue registrando! 📅";
+    }
+    const analysis = dayOfWeekAnalysis(ctx.currentTxs);
+    const dayLines = [...analysis.avgByDay.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([day, avg]) => `${day}: ${formatBRL(avg)} em média`);
+    return `📅 **Análise por dia da semana**\n\n${dayLines.join("\n")}\n\n🔴 Dia mais caro: **${analysis.worstDay}**\n🟢 Dia mais econômico: **${analysis.bestDay}**`;
+  },
+
+  // Categories breakdown
+  (ctx) => {
+    if (!ctx.q.match(/(categoria|onde gasto|distribuic|composic)/)) return null;
+    if (!ctx.hasData) return "Sem dados de categorias. Registre transações com categorias! 🏷️";
+    const allCats = topCategories(ctx.currentTxs, ctx.categories, 10);
+    if (allCats.length === 0) return "Nenhuma despesa categorizada este mês.";
+    const lines = allCats.map((c, i) => {
+      const pct = ctx.expenseNow > 0 ? (c.total / ctx.expenseNow * 100).toFixed(0) : "0";
+      return `${i + 1}. ${c.name} — ${formatBRL(c.total)} (**${pct}%**)`;
+    });
+    return `🏷️ **Distribuição de despesas**\n\n${lines.join("\n")}\n\nTotal: **${formatBRL(ctx.expenseNow)}**`;
+  },
+
+  // Balance
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["saldo", "sobr", "quanto tenho", "quanto falta", "quanto resta"])) return null;
+    if (!ctx.hasData) return "Você ainda não tem transações registradas. Adicione na aba Transações! 📝";
+    return `Seu saldo este mês é **${formatBRL(ctx.balanceNow)}** (receitas ${formatBRL(ctx.incomeNow)} - despesas ${formatBRL(ctx.expenseNow)}).`;
+  },
+
+  // Expenses
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["despesa", "gast", "quanto gastei"])) return null;
+    if (!ctx.hasData) return "Sem despesas registradas ainda. Comece adicionando seus gastos! 💸";
+    const top = topCategories(ctx.currentTxs, ctx.categories, 5);
+    if (top.length === 0) return "Sem despesas este mês.";
     const lines = top.map((c, i) => `${i + 1}. ${c.name} — ${formatBRL(c.total)}`).join("\n");
-    return `Suas despesas este mês totalizam **${formatBRL(expenseNow)}**.\n\nPor categoria:\n${lines}`;
-  }
+    return `Suas despesas este mês totalizam **${formatBRL(ctx.expenseNow)}**.\n\nPor categoria:\n${lines}`;
+  },
 
-  if (q.includes("receita") || q.includes("ganho") || q.includes("renda")) {
-    if (!hasData) return "Nenhuma receita registrada ainda. Adicione seus ganhos para que eu possa calcular sua taxa de poupança e dar dicas personalizadas! 💼";
-    return `Suas receitas este mês totalizam **${formatBRL(incomeNow)}**.`;
-  }
+  // Income
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["receita", "ganho", "renda", "quanto ganhei", "salario"])) return null;
+    if (!ctx.hasData) return "Nenhuma receita registrada ainda. Adicione seus ganhos! 💼";
+    return `Suas receitas este mês totalizam **${formatBRL(ctx.incomeNow)}**.`;
+  },
 
-  if (q.includes("economia") || q.includes("economiz") || q.includes("poupar") || q.includes("poupanca")) {
-    if (!hasData || incomeNow === 0) return "Sem receitas registradas, não consigo calcular sua taxa de poupança. Mas aqui vai uma dica: tente guardar **pelo menos 20%** da sua renda todo mês. Comece com qualquer valor — o hábito é mais importante que o montante! 🐷";
-    const rate = ((incomeNow - expenseNow) / incomeNow) * 100;
+  // Savings rate
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["economia", "economiz", "poupar", "poupanca", "taxa de poupanca", "quanto poupei"])) return null;
+    if (!ctx.hasData || ctx.incomeNow === 0) return "Sem receitas registradas, não consigo calcular sua taxa de poupança. Dica: guarde **pelo menos 20%** da renda! 🐷";
+    const rate = ((ctx.incomeNow - ctx.expenseNow) / ctx.incomeNow) * 100;
     const tip = rate < 20
-      ? " Tente cortar gastos variáveis e automatizar uma transferência para poupança no início do mês."
+      ? " Tente cortar gastos variáveis e automatizar a poupança no início do mês."
       : " Excelente taxa! Continue assim.";
-    return `Sua taxa de poupança é **${rate.toFixed(1)}%** (${formatBRL(balanceNow)} guardados).${tip}`;
-  }
+    return `Sua taxa de poupança é **${rate.toFixed(1)}%** (${formatBRL(ctx.balanceNow)} guardados).${tip}`;
+  },
 
-  if (q.includes("dica") || q.includes("sugest") || q.includes("ajuda")) {
-    // Personalized tips when data exists
-    if (hasData && expenseNow > 0) {
-      const topCat = topCategories(currentTxs, categories, 1);
-      const savingsRate = incomeNow > 0 ? ((incomeNow - expenseNow) / incomeNow * 100) : 0;
+  // Tips
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["dica", "sugest", "ajuda", "me ajud", "o que faco", "o que fazer"])) return null;
+    if (ctx.hasData && ctx.expenseNow > 0) {
+      const topCat = topCategories(ctx.currentTxs, ctx.categories, 1);
+      const savingsRate = ctx.incomeNow > 0 ? ((ctx.incomeNow - ctx.expenseNow) / ctx.incomeNow * 100) : 0;
       const personalTips: string[] = [];
 
       if (topCat.length > 0) {
-        const catPct = (topCat[0].total / expenseNow * 100).toFixed(0);
-        personalTips.push(`🎯 Sua maior categoria é ${topCat[0].name} (${catPct}% das despesas). Tente reduzir 10% aqui e economize **${formatBRL(Math.round(topCat[0].total * 0.1))}**/mês.`);
+        const catPct = (topCat[0].total / ctx.expenseNow * 100).toFixed(0);
+        personalTips.push(`🎯 Sua maior categoria é ${topCat[0].name} (${catPct}%). Reduzindo 10% aqui, você economiza **${formatBRL(Math.round(topCat[0].total * 0.1))}**/mês.`);
       }
-      if (savingsRate < 20 && incomeNow > 0) {
-        const target = Math.round(incomeNow * 0.2);
-        const extra = target - balanceNow;
-        if (extra > 0) personalTips.push(`💰 Para atingir 20% de poupança, você precisa economizar mais **${formatBRL(extra)}** este mês.`);
-      }
-
-      const avg3 = avgExpenseLast(byMonth, 3);
-      if (avg3 > 0 && expenseNow > avg3) {
-        personalTips.push(`📉 Suas despesas estão **${formatBRL(expenseNow - avg3)}** acima da média. Revise gastos variáveis.`);
+      if (savingsRate < 20 && ctx.incomeNow > 0) {
+        const target = Math.round(ctx.incomeNow * 0.2);
+        const extra = target - ctx.balanceNow;
+        if (extra > 0) personalTips.push(`💰 Para atingir 20% de poupança, economize mais **${formatBRL(extra)}** este mês.`);
       }
 
       if (personalTips.length > 0) {
-        return `💡 **Dicas personalizadas para você:**\n\n${personalTips.join("\n\n")}`;
+        return `💡 **Dicas personalizadas:**\n\n${personalTips.join("\n\n")}`;
       }
     }
 
     const tips = [
-      "💡 **Regra 50-30-20:** 50% necessidades, 30% desejos, 20% poupança. É simples e funciona!",
-      "💡 **Regra das 48h:** Antes de comprar algo não essencial, espere 48 horas. Se ainda quiser, compre.",
-      "💡 **Assinaturas fantasma:** Revise seus débitos automáticos mensalmente. Muita gente paga por serviços que não usa.",
-      "💡 **Pague-se primeiro:** Automatize a poupança no início do mês, não espere sobrar no final.",
-      "💡 **Negocie anualmente:** Internet, seguro, celular — ligue e peça desconto. Funciona mais do que você imagina!",
-      "💡 **Envelope digital:** Separe seu dinheiro em categorias no início do mês. Quando acabar aquela categoria, pare de gastar nela.",
-      "💡 **Compras no atacado:** Itens não-perecíveis saem muito mais baratos no atacado. Faça uma compra grande por mês.",
-      "💡 **Café de casa:** Um café de R$ 8/dia = R$ 240/mês = R$ 2.880/ano. Pequenos gastos somam rápido!",
+      "💡 **Regra 50-30-20:** 50% necessidades, 30% desejos, 20% poupança.",
+      "💡 **Regra das 48h:** Antes de comprar algo não essencial, espere 48 horas.",
+      "💡 **Assinaturas fantasma:** Revise seus débitos automáticos mensalmente.",
+      "💡 **Pague-se primeiro:** Automatize a poupança no início do mês.",
+      "💡 **Negocie anualmente:** Internet, seguro, celular — ligue e peça desconto.",
+      "💡 **Envelope digital:** Separe dinheiro por categorias no início do mês.",
+      "💡 **Café de casa:** R$ 8/dia = R$ 240/mês = R$ 2.880/ano!",
+      "💡 **Lista de compras:** Nunca vá ao mercado sem lista — gaste até 30% menos.",
     ];
     return tips[Math.floor(Math.random() * tips.length)];
-  }
+  },
 
-  if (q.includes("maior") || q.includes("grande")) {
-    if (!hasData) return "Sem transações registradas ainda. Quando você começar a lançar seus gastos, vou identificar automaticamente os maiores e te alertar! 🔍";
-    const expenses = currentTxs.filter((t) => t.type === "expense").sort((a, b) => b.amount - a.amount);
+  // Largest expenses
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["maior", "grande", "mais caro", "mais cara"])) return null;
+    if (!ctx.hasData) return "Sem transações ainda. Quando começar a registrar, vou identificar os maiores gastos! 🔍";
+    const expenses = ctx.currentTxs.filter((t) => t.type === "expense").sort((a, b) => b.amount - a.amount);
     if (expenses.length === 0) return "Sem despesas este mês.";
     const top5 = expenses.slice(0, 5);
     const lines = top5.map((t, i) => `${i + 1}. ${t.description} — ${formatBRL(t.amount)}`).join("\n");
     return `Seus maiores gastos este mês:\n${lines}`;
+  },
+
+  // Count
+  (ctx) => {
+    if (!matchesAny(ctx.q, ["quantas", "total de transac", "numero de", "quantos"])) return null;
+    if (!ctx.hasData) return "Você tem **0** transações registradas. Vá até Transações para começar! 📝";
+    return `Você tem **${ctx.currentTxs.length}** transações este mês (${ctx.currentTxs.filter((t) => t.type === "income").length} receitas, ${ctx.currentTxs.filter((t) => t.type === "expense").length} despesas).`;
+  },
+];
+
+// ─── Smart fallback ─────────────────────────────────
+function buildSmartFallback(ctx: QAContext): string {
+  // Try to detect if the question is finance-related
+  const financeWords = [
+    "dinheiro", "grana", "financ", "banco", "conta", "pagar", "cobrar",
+    "preco", "valor", "custo", "barato", "caro", "comprar", "vender",
+    "lucro", "prejuizo", "ganhar", "perder", "render", "aplicar",
+    "parcela", "juro", "taxa", "desconto", "promocao", "oferta",
+    "salario", "renda", "trabalho", "emprego", "negocio",
+  ];
+
+  const isFinanceRelated = financeWords.some((w) => ctx.q.includes(w));
+
+  if (isFinanceRelated) {
+    // Give a contextual answer based on what data we have
+    if (ctx.hasData) {
+      const savingsRate = ctx.incomeNow > 0 ? ((ctx.incomeNow - ctx.expenseNow) / ctx.incomeNow * 100) : 0;
+      return `Não tenho uma resposta específica para isso, mas posso te dar um panorama:\n\n📊 **Seu mês atual:**\n- Receitas: ${formatBRL(ctx.incomeNow)}\n- Despesas: ${formatBRL(ctx.expenseNow)}\n- Saldo: ${formatBRL(ctx.balanceNow)}\n${ctx.incomeNow > 0 ? `- Poupança: ${savingsRate.toFixed(0)}%\n` : ""}\nTente perguntar algo mais específico como:\n- \"Resumo do mês\"\n- \"Comparar com mês passado\"\n- \"Dicas personalizadas\"`;
+    }
+    return "Boa pergunta! 🤔 Ainda não tenho dados suficientes para uma análise personalizada. Mas posso te ensinar sobre **vários temas financeiros**!\n\nExperimente:\n- \"Investimentos\" | \"Tesouro Direto\" | \"Ações\"\n- \"Reserva de emergência\" | \"Aposentadoria\"\n- \"Dívidas\" | \"Score de crédito\" | \"Golpes\"\n- \"Carro\" | \"Casa\" | \"Viagem\"\n- \"Juros compostos\" | \"Inflação\" | \"CDI\"";
   }
 
-  if (q.includes("quantas") || q.includes("total") || q.includes("numero")) {
-    if (!hasData) return "Você tem **0** transações registradas. Vá até a aba Transações para começar! 📝";
-    return `Você tem **${currentTxs.length}** transações este mês (${currentTxs.filter((t) => t.type === "income").length} receitas, ${currentTxs.filter((t) => t.type === "expense").length} despesas).`;
-  }
-
-  // ─── Fun / personality ────────────────────────────
-  if (q.match(/(obrigad|valeu|brigad|thanks)/)) {
-    return "De nada! 😊 Estou sempre aqui para ajudar com suas finanças. Qualquer dúvida, é só perguntar!";
-  }
-
-  if (q.match(/(quem e voce|quem es tu|o que voce faz|se apresent)/)) {
-    return "🤖 Sou a **Lumy**, sua assistente financeira!\n\nEu analiso suas transações e te ajudo a:\n- 📊 Entender para onde seu dinheiro vai\n- 💡 Encontrar formas de economizar\n- 🎯 Alcançar suas metas financeiras\n- 📈 Acompanhar tendências de gastos\n\nAlém disso, posso te ensinar sobre finanças pessoais, investimentos e muito mais!";
-  }
-
-  // Default
-  return `Posso te ajudar com muita coisa! Experimente:\n\n📊 **Análises:**\n- \"Resumo do mês\" — panorama completo\n- \"Comparar com mês passado\" — evolução\n- \"Minha saúde financeira\" — score 0-100\n- \"Média mensal\" — tendência de gastos\n- \"Dia da semana\" — quando você mais gasta\n- \"Categorias\" — distribuição de despesas\n\n💰 **Dados:**\n- \"Qual meu saldo?\" | \"Minhas despesas\" | \"Maiores gastos\"\n\n💡 **Educação:**\n- \"Como economizar?\" | \"Reserva de emergência\" | \"Investimentos\"\n- \"Dívidas\" | \"Cartão de crédito\" | \"Metas\" | \"IR\"`;
+  // Generic fallback with full menu
+  return `Posso te ajudar com muita coisa! 😊\n\n📊 **Análises dos seus dados:**\n- \"Resumo do mês\" | \"Comparar meses\" | \"Saúde financeira\"\n- \"Categorias\" | \"Maiores gastos\" | \"Média mensal\"\n- \"Dia da semana\" | \"Quanto gastei\" | \"Saldo\"\n\n💡 **Educação financeira:**\n- \"Investimentos\" | \"Tesouro Direto\" | \"Ações\" | \"FIIs\"\n- \"Reserva de emergência\" | \"Aposentadoria\" | \"CDI\"\n- \"Dívidas\" | \"Cartão de crédito\" | \"Score de crédito\"\n- \"Como economizar\" | \"Juros compostos\" | \"Inflação\"\n\n🏠 **Decisões de vida:**\n- \"Comprar casa\" | \"Comprar carro\" | \"Viagem\"\n- \"Finanças a dois\" | \"Filhos\" | \"MEI/Freelancer\"\n- \"Criptomoedas\" | \"Câmbio\" | \"ETFs\" | \"Dividendos\"`;
 }
+
