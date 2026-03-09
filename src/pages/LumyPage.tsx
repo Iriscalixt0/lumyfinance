@@ -25,6 +25,7 @@ interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  feedback?: "up" | "down" | null;
 }
 
 const INSIGHT_STYLES: Record<string, { icon: typeof Sparkles; color: string }> = {
