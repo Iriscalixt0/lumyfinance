@@ -20,6 +20,3 @@ verify_jwt = false
 
 [functions.scan-receipt]
 verify_jwt = false
-
-[functions.lumy-chat]
-verify_jwt = false
