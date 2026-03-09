@@ -5,7 +5,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslations } from "@/lib/i18n";
-import { Plus, Target, Calendar } from "lucide-react";
+import { Plus, Target, Calendar, AlertTriangle } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
@@ -20,6 +20,7 @@ interface Goal {
   icon: string;
   color: string;
   status: string;
+  start_date: string | null;
   deadline: string | null;
   contributions_total: number;
 }
@@ -40,7 +41,13 @@ export function GoalsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [createForm, setCreateForm] = useState({ title: "", target_amount: "", deadline: "", icon: "🎯" });
+  const [createForm, setCreateForm] = useState({
+    title: "",
+    target_amount: "",
+    start_date: new Date().toISOString().split("T")[0],
+    deadline: "",
+    icon: "🎯",
+  });
 
   const [contribForm, setContribForm] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -63,7 +70,7 @@ export function GoalsPage() {
           .from("goal_contributions")
           .select("amount")
           .eq("goal_id", g.id);
-        const total = (contribs ?? []).reduce((s, c) => s + c.amount, 0);
+        const total = (contribs ?? []).reduce((s: number, c: { amount: number }) => s + c.amount, 0);
         return { ...g, contributions_total: total };
       })
     );
@@ -91,6 +98,7 @@ export function GoalsPage() {
       workspace_id: wsId,
       title: createForm.title,
       target_amount: targetCents,
+      start_date: createForm.start_date || null,
       deadline: createForm.deadline || null,
       icon: createForm.icon,
       created_by: user!.id,
@@ -98,7 +106,7 @@ export function GoalsPage() {
 
     await loadGoals(wsId);
     setShowCreateModal(false);
-    setCreateForm({ title: "", target_amount: "", deadline: "", icon: "🎯" });
+    setCreateForm({ title: "", target_amount: "", start_date: new Date().toISOString().split("T")[0], deadline: "", icon: "🎯" });
     setSaving(false);
     toast(t("goalCreated"));
     triggerAlertCheck(wsId);
@@ -137,6 +145,16 @@ export function GoalsPage() {
   const totalTarget = goals.reduce((s, g) => s + g.target_amount, 0);
   const avgProgress = totalTarget > 0 ? (totalAccumulated / totalTarget) * 100 : 0;
   const activeCount = goals.length;
+
+  /** Returns days remaining until deadline, or null if no deadline */
+  function daysUntilDeadline(deadline: string | null): number | null {
+    if (!deadline) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deadlineDate = new Date(deadline + "T00:00:00");
+    const diff = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return diff;
+  }
 
   if (loading) {
     return (
@@ -249,6 +267,9 @@ export function GoalsPage() {
             <div className="divide-y divide-border">
               {goals.map((goal) => {
                 const progress = goal.target_amount > 0 ? Math.min((goal.contributions_total / goal.target_amount) * 100, 100) : 0;
+                const daysLeft = daysUntilDeadline(goal.deadline);
+                const isUrgent = daysLeft !== null && daysLeft <= 1 && daysLeft >= 0;
+                const isOverdue = daysLeft !== null && daysLeft < 0;
                 return (
                   <div key={goal.id} className="px-6 py-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center justify-between mb-2">
@@ -256,9 +277,28 @@ export function GoalsPage() {
                         <span className="text-lg">{goal.icon}</span>
                         <div>
                           <p className="text-sm font-medium text-foreground">{goal.title}</p>
-                          {goal.deadline && (
-                            <p className="text-[10px] text-muted-foreground">
-                              {t("deadline")}: {fmt.date(goal.deadline)}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {goal.start_date && (
+                              <p className="text-[10px] text-muted-foreground">
+                                {t("startDate")}: {fmt.date(goal.start_date)}
+                              </p>
+                            )}
+                            {goal.deadline && (
+                              <p className={`text-[10px] ${isOverdue ? "text-destructive font-semibold" : isUrgent ? "text-amber-500 font-semibold" : "text-muted-foreground"}`}>
+                                {t("deadline")}: {fmt.date(goal.deadline)}
+                              </p>
+                            )}
+                          </div>
+                          {isUrgent && (
+                            <p className="text-[10px] text-amber-500 font-semibold flex items-center gap-1 mt-0.5">
+                              <AlertTriangle className="h-3 w-3" />
+                              {daysLeft === 0 ? t("expiringToday") : t("expiresTomorrow")}
+                            </p>
+                          )}
+                          {isOverdue && progress < 100 && (
+                            <p className="text-[10px] text-destructive font-semibold flex items-center gap-1 mt-0.5">
+                              <AlertTriangle className="h-3 w-3" />
+                              {t("overdue")}
                             </p>
                           )}
                         </div>
@@ -303,14 +343,25 @@ export function GoalsPage() {
               className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">{t("deadlineOptional")}</label>
-            <input
-              type="date"
-              value={createForm.deadline}
-              onChange={(e) => setCreateForm({ ...createForm, deadline: e.target.value })}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">{t("startDate")}</label>
+              <input
+                type="date"
+                value={createForm.start_date}
+                onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })}
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">{t("endDate")}</label>
+              <input
+                type="date"
+                value={createForm.deadline}
+                onChange={(e) => setCreateForm({ ...createForm, deadline: e.target.value })}
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">{t("cancel")}</button>
