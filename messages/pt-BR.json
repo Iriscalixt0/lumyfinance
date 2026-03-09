@@ -518,7 +518,7 @@
       "hint": "O sistema calcula o valor mensal necessário com base na data escolhida."
     },
     "investment": {
-      "new": "Novo Aporte",
+      "new": "Novo Investimento",
       "edit": "Editar investimento",
       "date": "Data",
       "assetName": "Nome do ativo",
@@ -526,7 +526,7 @@
       "value": "Valor (R$)",
       "placeholderName": "Ex: CDB Liquidez Diária",
       "placeholderAmount": "0,00",
-      "confirm": "Confirmar Aporte",
+      "confirm": "Confirmar Investimento",
       "updated": "Atualizado!",
       "registered": "Investimento registrado!",
       "types": {
@@ -1024,7 +1024,7 @@
     "cobrancasTitle": "Cobranças",
     "cobrancasDesc": "Divida despesas entre membros do workspace. Registre quem pagou o quê e acompanhe quem deve para quem.",
     "goalsTitle": "Metas financeiras",
-    "goalsDesc": "Defina objetivos como viagem, reserva de emergência ou compra. Acompanhe o progresso e os aportes mensais.",
+    "goalsDesc": "Defina objetivos como viagem, reserva de emergência ou compra. Acompanhe o progresso e os investimentos mensais.",
     "budgetsTitle": "Orçamentos",
     "budgetsDesc": "Defina limites por categoria (alimentação, lazer etc.) e receba alertas quando estiver perto de estourar o orçamento.",
     "recurringTitle": "Recorrentes",
@@ -1171,7 +1171,7 @@
       "toLabel": "Até"
     },
     "pageTitle": "Meus Investimentos",
-    "pageSubtitle": "Gerencie seus aportes e acompanhe seu patrimônio.",
+    "pageSubtitle": "Gerencie seus investimentos e acompanhe seu patrimônio.",
     "totalInvested": "Total investido ({period})",
     "assetsInPeriod": "Ativos no período",
     "asset": "Ativo",
@@ -1179,7 +1179,7 @@
     "lastContribution": "Último investimento",
     "none": "Nenhum",
     "evolutionTitle": "Evolução Patrimonial",
-    "evolutionDesc": "Acompanhe seus aportes e metas no relatório anual.",
+    "evolutionDesc": "Acompanhe seus investimentos e metas no relatório anual.",
     "seeCharts": "Ver Gráficos",
     "historyTitle": "Histórico de Lançamentos",
     "filterByCategory": "Filtrar por categoria",
@@ -1634,7 +1634,7 @@
   },
   "investmentsPage": {
     "title": "Meus Investimentos",
-    "subtitle": "Gerencie seus aportes e acompanhe seu patrimônio.",
+    "subtitle": "Gerencie seus investimentos e acompanhe seu patrimônio.",
     "exportCsv": "Exportar CSV",
     "period": "Período",
     "byYear": "Por ano",
@@ -1667,7 +1667,7 @@
     "wealthEvolutionDesc": "Acompanhe seus investimentos e metas no relatório anual.",
     "viewCharts": "Ver Gráficos",
     "deleteTitle": "Excluir investimento",
-    "deleteMessage": "Tem certeza que deseja excluir este aporte? Esta ação não pode ser desfeita.",
+    "deleteMessage": "Tem certeza que deseja excluir este investimento? Esta ação não pode ser desfeita.",
     "cancel": "Cancelar",
     "deleting": "Excluindo...",
     "delete": "Excluir",
