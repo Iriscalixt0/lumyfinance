@@ -467,135 +467,189 @@ function matchesAny(q: string, patterns: (string | RegExp)[]): boolean {
 const KNOWLEDGE_BASE: { keywords: (string | RegExp)[]; answer: string }[] = [
   // ─── Financial education ──────────────────────────
   {
-    keywords: ["reserva", "emergencia", "fundo emergenc"],
-    answer: "🛡️ **Reserva de emergência**\n\nÉ o dinheiro guardado para imprevistos (perda de emprego, saúde, reparos urgentes).\n\n**Quanto guardar:** 3 a 6 meses das suas despesas mensais.\n**Onde guardar:** CDB com liquidez diária, Tesouro Selic ou poupança.\n**Como começar:** Separe um valor fixo todo mês, mesmo que pequeno. O importante é a consistência!",
+    keywords: ["reserva", "emergencia", "fundo emergenc", "imprevisto", "guardar dinheiro para emergencia"],
+    answer: "🛡️ **Reserva de emergência**\n\nÉ o dinheiro guardado para imprevistos (perda de emprego, saúde, reparos urgentes).\n\n**Quanto guardar:** 3 a 6 meses das suas despesas mensais.\n**Onde guardar:** CDB com liquidez diária, Tesouro Selic ou poupança.\n**Como começar:** Separe um valor fixo todo mês, mesmo que pequeno. O importante é a consistência!\n\n💡 Comece com a meta de 1 mês de despesas. Depois vá aumentando.",
   },
   {
-    keywords: ["investir", "investimento", "onde aplicar", "aplicacao", "aplicar dinheiro", "renda fixa", "renda variavel"],
-    answer: "📊 **Começando a investir**\n\n1. **Primeiro:** Monte sua reserva de emergência\n2. **Renda fixa:** Tesouro Direto, CDB, LCI/LCA — seguro e previsível\n3. **Renda variável:** Ações, FIIs — maior risco, maior potencial\n4. **Diversifique:** Não coloque tudo no mesmo lugar\n\n💡 Comece pela renda fixa e vá diversificando conforme ganhar confiança.",
+    keywords: ["investir", "investimento", "onde aplicar", "aplicacao", "aplicar dinheiro", "renda fixa", "renda variavel", "comecar a investir", "quero investir", "como investir", "melhor investimento"],
+    answer: "📊 **Começando a investir**\n\n1. **Primeiro:** Monte sua reserva de emergência\n2. **Renda fixa:** Tesouro Direto, CDB, LCI/LCA — seguro e previsível\n3. **Renda variável:** Ações, FIIs — maior risco, maior potencial\n4. **Diversifique:** Não coloque tudo no mesmo lugar\n\n**Por perfil:**\n• **Conservador:** 80% renda fixa, 20% variável\n• **Moderado:** 60% fixa, 40% variável\n• **Arrojado:** 30% fixa, 70% variável\n\n💡 Comece pela renda fixa e vá diversificando conforme ganhar confiança.",
   },
   {
-    keywords: ["divida", "endividado", "devendo", "parcel", "emprestimo", "financiamento"],
-    answer: "🔥 **Saindo das dívidas**\n\n1. **Liste todas** as dívidas (valor, juros, parcelas)\n2. **Priorize** as com juros mais altos (cartão de crédito > empréstimo)\n3. **Negocie:** Bancos costumam dar desconto para quitação\n4. **Evite novas dívidas** enquanto paga as atuais\n5. **Bola de neve:** Pague o mínimo em todas, extra na maior\n\n💡 O cartão de crédito cobra até 400% ao ano — quite primeiro!",
+    keywords: ["divida", "endividado", "devendo", "parcel", "emprestimo", "financiamento", "quitar", "pagar divida", "sair da divida", "negativado", "nome sujo", "cobranca"],
+    answer: "🔥 **Saindo das dívidas**\n\n1. **Liste todas** as dívidas (valor, juros, parcelas)\n2. **Priorize** as com juros mais altos (cartão de crédito > empréstimo)\n3. **Negocie:** Bancos costumam dar desconto para quitação\n4. **Evite novas dívidas** enquanto paga as atuais\n5. **Bola de neve:** Pague o mínimo em todas, extra na maior\n\n**Ordem de prioridade de quitação:**\n• Cartão de crédito (até 400% ao ano!)\n• Cheque especial (até 300% ao ano)\n• Empréstimo pessoal\n• Financiamento\n\n💡 Feirões de renegociação (Serasa, bancos) podem dar até 90% de desconto!",
   },
   {
-    keywords: ["cartao", "credito", "fatura", "limite"],
-    answer: "💳 **Usando o cartão com inteligência**\n\n- Use **no máximo 30%** do limite disponível\n- **Nunca** pague o mínimo da fatura — os juros são altíssimos\n- Concentre compras em um só cartão para controlar melhor\n- Aproveite cashback e milhas, mas **não gaste mais por causa deles**\n- Configure alertas de gastos no app do banco",
+    keywords: ["cartao", "credito", "fatura", "limite", "cashback", "milha", "anuidade", "cartao de credito"],
+    answer: "💳 **Usando o cartão com inteligência**\n\n- Use **no máximo 30%** do limite disponível\n- **Nunca** pague o mínimo da fatura — os juros são altíssimos\n- Concentre compras em um só cartão para controlar melhor\n- Aproveite cashback e milhas, mas **não gaste mais por causa deles**\n- Configure alertas de gastos no app do banco\n- Negocie a anuidade — muitos bancos isentam\n\n**Armadilhas comuns:**\n• Rotativo do cartão: até 400% ao ano\n• Parcelamento da fatura: juros de 8-15% ao mês\n• Saques no cartão: taxa + juros altíssimos",
   },
   {
-    keywords: ["orcamento", "organizar", "planejar", "planejamento", "controlar gasto", "controle financeiro"],
-    answer: "📋 **Organizando seu orçamento**\n\n**Regra 50-30-20:**\n- 50% → Necessidades (moradia, alimentação, transporte)\n- 30% → Desejos (lazer, streaming, restaurantes)\n- 20% → Poupança e investimentos\n\n**Passos práticos:**\n1. Registre todos os gastos por 30 dias\n2. Categorize cada despesa\n3. Identifique cortes possíveis\n4. Defina limites por categoria\n5. Revise semanalmente",
+    keywords: ["orcamento", "organizar", "planejar", "planejamento", "controlar gasto", "controle financeiro", "planilha", "organizar financas", "como me organizar"],
+    answer: "📋 **Organizando seu orçamento**\n\n**Regra 50-30-20:**\n- 50% → Necessidades (moradia, alimentação, transporte)\n- 30% → Desejos (lazer, streaming, restaurantes)\n- 20% → Poupança e investimentos\n\n**Passos práticos:**\n1. Registre todos os gastos por 30 dias\n2. Categorize cada despesa\n3. Identifique cortes possíveis\n4. Defina limites por categoria\n5. Revise semanalmente\n\n💡 Use o **Lumyf** para registrar tudo automaticamente e acompanhar seu progresso!",
   },
   {
-    keywords: [/como economizar/, /economizar dinheiro/, /gastar menos/, /reduzir gasto/, /cortar gasto/, /diminuir gasto/],
-    answer: "💰 **10 formas de economizar**\n\n1. Cancele assinaturas que não usa\n2. Leve marmita em vez de comer fora\n3. Compare preços antes de comprar\n4. Espere 48h antes de compras por impulso\n5. Use transporte público ou carona\n6. Negocie internet, seguro e celular anualmente\n7. Compre no atacado itens não-perecíveis\n8. Cozinhe em casa nos fins de semana\n9. Evite parcelamento — se não pode à vista, repense\n10. Automatize a poupança no início do mês",
+    keywords: [/como economizar/, /economizar dinheiro/, /gastar menos/, /reduzir gasto/, /cortar gasto/, /diminuir gasto/, /dicas? de economia/, /formas? de economizar/, /maneiras? de economizar/],
+    answer: "💰 **10 formas de economizar**\n\n1. Cancele assinaturas que não usa\n2. Leve marmita em vez de comer fora\n3. Compare preços antes de comprar\n4. Espere 48h antes de compras por impulso\n5. Use transporte público ou carona\n6. Negocie internet, seguro e celular anualmente\n7. Compre no atacado itens não-perecíveis\n8. Cozinhe em casa nos fins de semana\n9. Evite parcelamento — se não pode à vista, repense\n10. Automatize a poupança no início do mês\n\n💡 Pequenos cortes somam: R$ 10/dia = R$ 300/mês = R$ 3.600/ano!",
   },
   {
-    keywords: ["imposto", /\bir\b/, "declarar", "irpf", "leao", "receita federal"],
-    answer: "🧾 **Dicas sobre Imposto de Renda**\n\n- Guarde comprovantes de despesas dedutíveis (saúde, educação)\n- Informe todos os rendimentos, mesmo isentos\n- Investimentos devem ser declarados (mesmo sem lucro)\n- Use a declaração pré-preenchida quando disponível\n- Entregue no prazo para evitar multa\n\n💡 Organize seus documentos ao longo do ano, não deixe para o último mês!",
+    keywords: ["imposto", /\bir\b/, "declarar", "irpf", "leao", "receita federal", "declaracao", "restituicao", "deducao", "isento", "tributacao"],
+    answer: "🧾 **Dicas sobre Imposto de Renda**\n\n- Guarde comprovantes de despesas dedutíveis (saúde, educação)\n- Informe todos os rendimentos, mesmo isentos\n- Investimentos devem ser declarados (mesmo sem lucro)\n- Use a declaração pré-preenchida quando disponível\n- Entregue no prazo para evitar multa\n\n**Deduções possíveis:**\n• Saúde: sem limite\n• Educação: até ~R$ 3.500/ano por pessoa\n• Previdência (PGBL): até 12% da renda bruta\n• Dependentes: ~R$ 2.275 por dependente\n\n💡 Compare sempre: declaração completa vs simplificada!",
   },
   {
-    keywords: ["meta", "objetivo", "sonho", "plano de vida"],
-    answer: "🎯 **Definindo metas financeiras**\n\n**Método SMART:**\n- **S**pecífica: \"Juntar R$ 10.000\", não \"economizar dinheiro\"\n- **M**ensurável: Acompanhe o progresso mensalmente\n- **A**lcançável: Seja realista com sua renda\n- **R**elevante: Algo que realmente importa para você\n- **T**emporal: Defina um prazo claro\n\n💡 Use a aba **Metas** do Lumyf para acompanhar seu progresso!",
+    keywords: ["meta", "objetivo", "sonho", "plano de vida", "quero juntar", "quero comprar", "como juntar"],
+    answer: "🎯 **Definindo metas financeiras**\n\n**Método SMART:**\n- **S**pecífica: \"Juntar R$ 10.000\", não \"economizar dinheiro\"\n- **M**ensurável: Acompanhe o progresso mensalmente\n- **A**lcançável: Seja realista com sua renda\n- **R**elevante: Algo que realmente importa para você\n- **T**emporal: Defina um prazo claro\n\n**Exemplo prático:**\nMeta: R$ 12.000 em 12 meses = R$ 1.000/mês\nInvestindo a 1% ao mês, em 12 meses terá ~R$ 12.680!\n\n💡 Use a aba **Metas** do Lumyf para acompanhar seu progresso!",
   },
-  // ─── New topics ────────────────────────────────────
+  // ─── Investment topics ────────────────────────────
   {
-    keywords: ["tesouro", "selic", "tesouro direto", "titulo publico"],
+    keywords: ["tesouro", "selic", "tesouro direto", "titulo publico", "tesouro ipca", "tesouro prefixado"],
     answer: "🏦 **Tesouro Direto**\n\nÉ a forma mais segura de investir no Brasil — você empresta dinheiro ao governo.\n\n**Tipos principais:**\n- **Tesouro Selic:** Liquidez diária, ideal para reserva de emergência\n- **Tesouro IPCA+:** Protege contra inflação, bom para longo prazo\n- **Tesouro Prefixado:** Taxa fixa, bom quando juros vão cair\n\n**Mínimo:** Cerca de R$ 30\n**Como começar:** Abra conta em uma corretora (muitas são gratuitas) e compre direto pelo app.\n\n💡 Para reserva de emergência, vá de **Tesouro Selic**!",
   },
   {
-    keywords: ["cdb", "lci", "lca", "cri", "cra", "debenture"],
-    answer: "🏦 **Renda fixa privada**\n\n- **CDB:** Empréstimo a bancos. Procure CDBs que paguem 100%+ do CDI\n- **LCI/LCA:** Isentos de IR para pessoa física. Ótima opção!\n- **Debêntures:** Empréstimo a empresas. Maior risco, maior retorno\n\n**Dica:** Até R$ 250 mil por instituição é coberto pelo **FGC** (Fundo Garantidor de Créditos).\n\n💡 Compare taxas em diferentes bancos e corretoras — a diferença pode ser grande!",
+    keywords: ["cdb", "lci", "lca", "cri", "cra", "debenture", "fgc", "fundo garantidor"],
+    answer: "🏦 **Renda fixa privada**\n\n- **CDB:** Empréstimo a bancos. Procure CDBs que paguem 100%+ do CDI\n- **LCI/LCA:** Isentos de IR para pessoa física. Ótima opção!\n- **Debêntures:** Empréstimo a empresas. Maior risco, maior retorno\n\n**FGC (Fundo Garantidor de Créditos):**\nProtege até R$ 250 mil por CPF por instituição em CDB, LCI, LCA e poupança.\n\n💡 Compare taxas em diferentes bancos e corretoras — a diferença pode ser grande!",
   },
   {
-    keywords: ["acao", "acoes", "bolsa", "b3", "bovespa", "mercado de acoes"],
-    answer: "📈 **Investindo em ações**\n\n**O que é:** Comprar um pedacinho de uma empresa listada na bolsa.\n\n**Riscos:** Alta volatilidade — preços sobem e descem diariamente.\n\n**Dicas para iniciantes:**\n1. Nunca invista dinheiro que vai precisar em menos de 5 anos\n2. Comece com ETFs (ex: BOVA11) para diversificar automaticamente\n3. Estude os fundamentos da empresa antes de comprar\n4. Não tente \"acertar o momento\" — invista regularmente\n5. Máximo 5-10% do patrimônio quando iniciante\n\n💡 Dividendos são como um \"aluguel\" que a empresa paga a você!",
+    keywords: ["acao", "acoes", "bolsa", "b3", "bovespa", "mercado de acoes", "comprar acoes", "operar na bolsa", "day trade", "swing trade"],
+    answer: "📈 **Investindo em ações**\n\n**O que é:** Comprar um pedacinho de uma empresa listada na bolsa.\n\n**Riscos:** Alta volatilidade — preços sobem e descem diariamente.\n\n**Dicas para iniciantes:**\n1. Nunca invista dinheiro que vai precisar em menos de 5 anos\n2. Comece com ETFs (ex: BOVA11) para diversificar automaticamente\n3. Estude os fundamentos da empresa antes de comprar\n4. Não tente \"acertar o momento\" — invista regularmente\n5. Máximo 5-10% do patrimônio quando iniciante\n\n⚠️ **Day trade** tem taxa de perda de ~95%. Evite se for iniciante!\n\n💡 Dividendos são como um \"aluguel\" que a empresa paga a você!",
   },
   {
-    keywords: ["fii", "fundo imobiliario", "fundos imobiliarios", "imovel", "aluguel passivo"],
-    answer: "🏠 **Fundos Imobiliários (FIIs)**\n\nInvista em imóveis sem comprar um imóvel inteiro!\n\n**Vantagens:**\n- Receba \"aluguéis\" mensais (dividendos isentos de IR)\n- Diversificação (shoppings, galpões, escritórios)\n- Liquidez — compre e venda na bolsa\n- Comece com menos de R$ 100\n\n**Tipos:**\n- **Tijolo:** Imóveis físicos (shoppings, galpões)\n- **Papel:** Títulos de crédito imobiliário\n- **Fundos de fundos:** Diversificam em outros FIIs\n\n💡 Busque FIIs com dividend yield de 8-12% ao ano e vacância baixa.",
+    keywords: ["fii", "fundo imobiliario", "fundos imobiliarios", "aluguel passivo", "investir em imovel"],
+    answer: "🏠 **Fundos Imobiliários (FIIs)**\n\nInvista em imóveis sem comprar um imóvel inteiro!\n\n**Vantagens:**\n- Receba \"aluguéis\" mensais (dividendos isentos de IR)\n- Diversificação (shoppings, galpões, escritórios)\n- Liquidez — compre e venda na bolsa\n- Comece com menos de R$ 100\n\n**Tipos:**\n- **Tijolo:** Imóveis físicos (shoppings, galpões)\n- **Papel:** Títulos de crédito imobiliário (CRI/CRA)\n- **Fundos de fundos:** Diversificam em outros FIIs\n\n💡 Busque FIIs com dividend yield de 8-12% ao ano e vacância baixa.",
   },
   {
-    keywords: ["cripto", "bitcoin", "ethereum", "criptomoeda", "btc", "eth", "blockchain"],
-    answer: "🪙 **Criptomoedas**\n\n**O que são:** Moedas digitais descentralizadas.\n\n**Principais:**\n- **Bitcoin (BTC):** A mais conhecida, \"ouro digital\"\n- **Ethereum (ETH):** Plataforma para contratos inteligentes\n\n**Riscos:** Altíssima volatilidade — pode subir ou cair 20% em um dia.\n\n**Regras de ouro:**\n1. Invista apenas o que pode perder 100%\n2. Máximo 5% do patrimônio\n3. Use exchanges reguladas\n4. Nunca compartilhe suas chaves privadas\n5. Desconfie de promessas de retorno garantido\n\n⚠️ Cripto não é para reserva de emergência!",
+    keywords: ["cripto", "bitcoin", "ethereum", "criptomoeda", "btc", "eth", "blockchain", "nft", "defi", "staking", "mineracao"],
+    answer: "🪙 **Criptomoedas**\n\n**O que são:** Moedas digitais descentralizadas.\n\n**Principais:**\n- **Bitcoin (BTC):** A mais conhecida, \"ouro digital\"\n- **Ethereum (ETH):** Plataforma para contratos inteligentes\n- **Stablecoins (USDT, USDC):** Pareadas ao dólar\n\n**Riscos:** Altíssima volatilidade — pode subir ou cair 20% em um dia.\n\n**Regras de ouro:**\n1. Invista apenas o que pode perder 100%\n2. Máximo 5% do patrimônio\n3. Use exchanges reguladas\n4. Nunca compartilhe suas chaves privadas\n5. Desconfie de promessas de retorno garantido\n\n⚠️ Cripto não é para reserva de emergência! Declare no IR.",
   },
   {
-    keywords: ["inflacao", "ipca", "poder de compra", "preco subindo"],
-    answer: "📊 **Inflação**\n\nÉ o aumento geral dos preços, que corrói o poder de compra do seu dinheiro.\n\n**IPCA:** Principal índice de inflação no Brasil, medido pelo IBGE.\n\n**Como se proteger:**\n- Investimentos atrelados ao IPCA (Tesouro IPCA+)\n- Renda variável tende a superar a inflação no longo prazo\n- Evite deixar muito dinheiro na poupança (rende menos que a inflação)\n\n💡 Se a inflação é 5% ao ano e sua poupança rende 7%, seu ganho real é só 2%.",
+    keywords: ["inflacao", "ipca", "poder de compra", "preco subindo", "custo de vida", "tudo caro", "preco aumentou"],
+    answer: "📊 **Inflação**\n\nÉ o aumento geral dos preços, que corrói o poder de compra do seu dinheiro.\n\n**IPCA:** Principal índice de inflação no Brasil, medido pelo IBGE.\n\n**Como se proteger:**\n- Investimentos atrelados ao IPCA (Tesouro IPCA+)\n- Renda variável tende a superar a inflação no longo prazo\n- Evite deixar muito dinheiro na poupança (rende menos que a inflação)\n- Negocie reajustes salariais acima da inflação\n\n💡 Se a inflação é 5% ao ano e sua poupança rende 7%, seu ganho real é só 2%.\n\n**Inflação pessoal:** Seus gastos podem subir mais que o IPCA oficial. Acompanhe no Lumyf!",
   },
   {
-    keywords: ["juros compostos", "juros", "rendimento", "rentabilidade", "quanto rende"],
-    answer: "📈 **Juros compostos — a 8ª maravilha**\n\nÉ quando os juros incidem sobre o valor + juros anteriores.\n\n**Exemplo:**\nR$ 1.000 a 1% ao mês:\n- Mês 1: R$ 1.010\n- Mês 12: R$ 1.126,83\n- Mês 60: R$ 1.816,70\n- Mês 120: R$ 3.300,39\n\n**A mágica é o tempo!** Quanto antes começar, melhor.\n\n💡 A **Regra dos 72**: divida 72 pela taxa anual para saber em quantos anos seu dinheiro dobra. Ex: 12% ao ano → 72/12 = 6 anos.",
+    keywords: ["juros compostos", "juros", "rendimento", "rentabilidade", "quanto rende", "como funciona juros", "calcular juros"],
+    answer: "📈 **Juros compostos — a 8ª maravilha**\n\nÉ quando os juros incidem sobre o valor + juros anteriores.\n\n**Exemplo:**\nR$ 1.000 a 1% ao mês:\n- Mês 1: R$ 1.010\n- Mês 12: R$ 1.126,83\n- Mês 60: R$ 1.816,70\n- Mês 120: R$ 3.300,39\n\n**A mágica é o tempo!** Quanto antes começar, melhor.\n\n💡 A **Regra dos 72**: divida 72 pela taxa anual para saber em quantos anos seu dinheiro dobra.\nEx: 12% ao ano → 72/12 = **6 anos** para dobrar.",
   },
   {
-    keywords: ["pix", "ted", "transferencia", "doc", "boleto"],
-    answer: "💸 **Meios de pagamento**\n\n- **PIX:** Instantâneo, gratuito, 24h. Use para tudo!\n- **TED:** Útil para valores altos, mesmo dia\n- **Boleto:** Pagamento de contas e compras\n\n**Dicas de segurança:**\n- Confira o destinatário antes de confirmar o PIX\n- Não clique em links suspeitos de pagamento\n- Use limites de PIX noturnos no app do banco\n- Cadastre chaves PIX apenas nos canais oficiais",
+    keywords: ["pix", "ted", "transferencia", "doc", "boleto", "pagamento", "forma de pagamento"],
+    answer: "💸 **Meios de pagamento**\n\n- **PIX:** Instantâneo, gratuito, 24h. Use para tudo!\n- **TED:** Útil para valores altos, mesmo dia\n- **Boleto:** Pagamento de contas e compras\n- **Débito automático:** Evita esquecimento, mas cuidado com valores errados\n\n**Dicas de segurança:**\n- Confira o destinatário antes de confirmar o PIX\n- Não clique em links suspeitos de pagamento\n- Use limites de PIX noturnos no app do banco\n- Cadastre chaves PIX apenas nos canais oficiais\n- Ative a verificação em 2 etapas no app do banco",
   },
   {
-    keywords: ["seguro", "seguro de vida", "seguro auto", "seguro saude", "plano de saude"],
-    answer: "🛡️ **Seguros essenciais**\n\n**Prioridade:**\n1. **Seguro de vida:** Se tem dependentes, é essencial\n2. **Plano de saúde:** Avalie custo-benefício vs SUS\n3. **Seguro auto:** Obrigatório se tem carro (além do DPVAT)\n4. **Seguro residencial:** Barato e cobre incêndio, roubo, etc.\n\n**Dicas:**\n- Compare preços em pelo menos 3 seguradoras\n- Renegocie anualmente\n- Leia as exclusões da apólice\n- Franquia mais alta = mensalidade mais baixa",
+    keywords: ["seguro", "seguro de vida", "seguro auto", "seguro saude", "plano de saude", "protecao"],
+    answer: "🛡️ **Seguros essenciais**\n\n**Prioridade:**\n1. **Seguro de vida:** Se tem dependentes, é essencial\n2. **Plano de saúde:** Avalie custo-benefício vs SUS\n3. **Seguro auto:** Obrigatório se tem carro\n4. **Seguro residencial:** Barato e cobre incêndio, roubo, etc.\n\n**Dicas:**\n- Compare preços em pelo menos 3 seguradoras\n- Renegocie anualmente\n- Leia as exclusões da apólice\n- Franquia mais alta = mensalidade mais baixa\n\n💡 Seguro residencial custa ~R$ 15-30/mês e pode salvar seu patrimônio!",
   },
   {
-    keywords: ["aposentadoria", "previdencia", "inss", "pgbl", "vgbl"],
-    answer: "👴 **Planejando a aposentadoria**\n\n**INSS:** Contribuição obrigatória. Garante aposentadoria mínima.\n\n**Previdência privada:**\n- **PGBL:** Deduz até 12% da renda bruta no IR (declaração completa)\n- **VGBL:** Melhor para quem faz declaração simplificada\n\n**Alternativas:**\n- Tesouro IPCA+ longo prazo\n- Fundos de investimento\n- Carteira diversificada de ações e FIIs\n\n💡 A previdência privada tem taxas altas em muitos bancos. Compare a **taxa de administração** (ideal < 1%) e a **taxa de carregamento** (ideal 0%).",
+    keywords: ["aposentadoria", "previdencia", "inss", "pgbl", "vgbl", "aposentar", "futuro", "longo prazo"],
+    answer: "👴 **Planejando a aposentadoria**\n\n**INSS:** Contribuição obrigatória. Garante aposentadoria mínima.\n\n**Previdência privada:**\n- **PGBL:** Deduz até 12% da renda bruta no IR (declaração completa)\n- **VGBL:** Melhor para quem faz declaração simplificada\n\n**Alternativas (geralmente melhores):**\n- Tesouro IPCA+ longo prazo\n- Carteira diversificada de ações e FIIs\n- ETFs internacionais\n\n**Quanto preciso para aposentar?**\nRegra dos 4%: multiplique a renda mensal desejada por 300.\nEx: R$ 5.000/mês × 300 = R$ 1.500.000\n\n💡 Compare a **taxa de administração** da previdência (ideal < 1%).",
   },
   {
-    keywords: ["cdi", "taxa selic", "copom", "taxa de juros"],
-    answer: "📊 **CDI e Taxa Selic**\n\n- **Selic:** Taxa básica de juros definida pelo COPOM/Banco Central\n- **CDI:** Taxa interbancária, muito próxima da Selic\n\n**Por que importa?**\nA maioria dos investimentos de renda fixa rende um percentual do CDI.\n\n- 100% do CDI = CDI cheio\n- 120% do CDI = acima da média, ótimo!\n- 80% do CDI = abaixo, busque alternativas\n\n💡 Poupança rende 70% da Selic + TR quando Selic > 8,5%. Quase sempre perde para CDBs de 100% CDI.",
+    keywords: ["cdi", "taxa selic", "copom", "taxa de juros", "taxa basica", "banco central"],
+    answer: "📊 **CDI e Taxa Selic**\n\n- **Selic:** Taxa básica de juros definida pelo COPOM/Banco Central\n- **CDI:** Taxa interbancária, muito próxima da Selic\n\n**Por que importa?**\nA maioria dos investimentos de renda fixa rende um percentual do CDI.\n\n- 100% do CDI = rendimento padrão\n- 120% do CDI = acima da média, ótimo!\n- 80% do CDI = abaixo, busque alternativas\n\n**Comparativo:**\n• Poupança: 70% da Selic + TR\n• CDB bom: 100-120% do CDI\n• Tesouro Selic: ~100% da Selic\n\n💡 Poupança quase sempre perde para CDBs de 100% CDI.",
   },
   {
-    keywords: ["score", "score de credito", "serasa", "spc", "nome sujo", "nome limpo", "cpf"],
-    answer: "📋 **Score de crédito**\n\nÉ uma pontuação (0-1000) que indica o risco de você não pagar uma dívida.\n\n**Como melhorar:**\n1. Pague contas em dia\n2. Mantenha o cadastro atualizado\n3. Evite ter muitas consultas ao CPF\n4. Quite dívidas em aberto\n5. Use o Cadastro Positivo\n\n**Faixas:**\n- 0-300: Muito baixo\n- 301-500: Baixo\n- 501-700: Bom\n- 701-1000: Excelente\n\n💡 Consulte grátis no app da Serasa ou SPC.",
+    keywords: ["score", "score de credito", "serasa", "spc", "nome limpo", "cpf", "cadastro positivo", "consultar cpf", "limpar nome"],
+    answer: "📋 **Score de crédito**\n\nÉ uma pontuação (0-1000) que indica o risco de você não pagar uma dívida.\n\n**Como melhorar:**\n1. Pague contas em dia\n2. Mantenha o cadastro atualizado\n3. Evite ter muitas consultas ao CPF\n4. Quite dívidas em aberto\n5. Use o Cadastro Positivo\n\n**Faixas:**\n• 0-300: Muito baixo\n• 301-500: Baixo\n• 501-700: Bom\n• 701-1000: Excelente\n\n💡 Consulte grátis no app da Serasa ou SPC Brasil.",
   },
   {
-    keywords: ["consorcio", "consórcio"],
-    answer: "🏠 **Consórcio**\n\nÉ uma poupança coletiva: um grupo de pessoas contribui mensalmente e, por sorteio ou lance, um participante é contemplado.\n\n**Vantagens:** Sem juros (só taxa de administração)\n**Desvantagens:** Não sabe quando será contemplado; dinheiro fica preso\n\n**Quando vale a pena:**\n- Você não tem pressa para comprar\n- Quer se forçar a poupar\n- A taxa de administração é baixa (< 15%)\n\n⚠️ Cuidado com consórcios de empresas desconhecidas. Verifique se é autorizado pelo Banco Central.",
+    keywords: ["consorcio"],
+    answer: "🏠 **Consórcio**\n\nÉ uma poupança coletiva: um grupo contribui mensalmente e, por sorteio ou lance, um participante é contemplado.\n\n**Vantagens:** Sem juros (só taxa de administração)\n**Desvantagens:** Não sabe quando será contemplado; dinheiro fica preso\n\n**Quando vale a pena:**\n- Você não tem pressa para comprar\n- Quer se forçar a poupar\n- A taxa de administração é baixa (< 15%)\n\n⚠️ Verifique se é autorizado pelo Banco Central!",
   },
   {
-    keywords: ["freela", "freelancer", "autonomo", "mei", "microempreendedor", "pj", "cnpj"],
-    answer: "💼 **Finanças para autônomos/MEI**\n\n1. **Separe contas:** Pessoal e profissional, obrigatoriamente\n2. **Reserva maior:** 6-12 meses (renda variável precisa de mais segurança)\n3. **MEI:** Até R$ 81 mil/ano, impostos baixos (~R$ 70/mês)\n4. **DAS:** Pague em dia para manter benefícios (aposentadoria, auxílio-doença)\n5. **Nota fiscal:** Emita sempre para construir histórico\n\n💡 Guarde **30% do faturamento** para impostos e imprevistos.",
+    keywords: ["freela", "freelancer", "autonomo", "mei", "microempreendedor", "pj", "cnpj", "abrir empresa", "trabalhar por conta"],
+    answer: "💼 **Finanças para autônomos/MEI**\n\n1. **Separe contas:** Pessoal e profissional, obrigatoriamente\n2. **Reserva maior:** 6-12 meses (renda variável precisa de mais segurança)\n3. **MEI:** Até R$ 81 mil/ano, impostos baixos (~R$ 70/mês)\n4. **DAS:** Pague em dia para manter benefícios (aposentadoria, auxílio-doença)\n5. **Nota fiscal:** Emita sempre para construir histórico\n\n**Cresceu além do MEI?**\n• ME (Simples Nacional): até R$ 360 mil/ano\n• Lucro presumido: para serviços com margem alta\n\n💡 Guarde **30% do faturamento** para impostos e imprevistos.",
   },
   {
-    keywords: ["casal", "casamento", "financas a dois", "dividir conta", "juntar dinheiro", "namorad"],
+    keywords: ["casal", "casamento", "financas a dois", "dividir conta", "juntar dinheiro", "namorad", "morar junto", "uniao"],
     answer: "💑 **Finanças a dois**\n\n**3 modelos comuns:**\n1. **Tudo junto:** Uma conta única. Simples, mas pode gerar conflitos\n2. **Proporcional:** Cada um contribui % da renda para despesas comuns\n3. **50/50 + individual:** Metade para casa, resto é livre\n\n**Dicas:**\n- Conversem sobre dinheiro regularmente (sem julgamento!)\n- Definam metas em comum\n- Mantenham transparência sobre dívidas\n- Cada um pode ter uma \"mesada\" livre\n\n💡 O modelo proporcional é o mais justo quando há diferença de renda.",
   },
   {
-    keywords: ["filho", "bebe", "crianca", "familia", "educacao dos filhos"],
-    answer: "👶 **Finanças com filhos**\n\n**Custos médios por mês:**\n- Fralda e higiene: R$ 200-400\n- Alimentação: R$ 300-600\n- Escola: R$ 500-3.000+\n- Saúde: R$ 200-500\n\n**Planejamento:**\n1. Monte a reserva antes do bebê nascer\n2. Revise o plano de saúde\n3. Comece a investir para a educação (Tesouro IPCA+ ou previdência)\n4. Atualize o seguro de vida\n\n💡 Investindo R$ 300/mês com 10% ao ano, em 18 anos você terá ~R$ 165 mil para a faculdade.",
+    keywords: ["filho", "bebe", "crianca", "familia", "educacao dos filhos", "faculdade", "escola"],
+    answer: "👶 **Finanças com filhos**\n\n**Custos médios por mês:**\n• Fralda e higiene: R$ 200-400\n• Alimentação: R$ 300-600\n• Escola: R$ 500-3.000+\n• Saúde: R$ 200-500\n\n**Planejamento:**\n1. Monte a reserva antes do bebê nascer\n2. Revise o plano de saúde\n3. Comece a investir para a educação (Tesouro IPCA+ ou previdência)\n4. Atualize o seguro de vida\n\n💡 Investindo R$ 300/mês com 10% ao ano, em 18 anos → ~R$ 165 mil para a faculdade.",
   },
   {
-    keywords: ["viagem", "viajar", "ferias", "passagem", "milha"],
-    answer: "✈️ **Planejando viagens com inteligência**\n\n1. **Defina orçamento total** antes de escolher o destino\n2. **Compre passagens com antecedência** (3-6 meses)\n3. **Use milhas:** Concentre gastos em um cartão com bom programa\n4. **Hospedagem:** Compare Booking, Airbnb e hostels\n5. **Moeda local:** Leve cartão de débito internacional (Wise, C6)\n\n**Dica de ouro:** Crie uma **meta no Lumyf** com valor e prazo. Divida pelo número de meses e poupe esse valor automaticamente!\n\n💡 Viaje na baixa temporada — economia de 30-50%.",
+    keywords: ["viagem", "viajar", "ferias", "passagem", "milha", "turismo", "mochilao"],
+    answer: "✈️ **Planejando viagens com inteligência**\n\n1. **Defina orçamento total** antes de escolher o destino\n2. **Compre passagens com antecedência** (3-6 meses)\n3. **Use milhas:** Concentre gastos em um cartão com bom programa\n4. **Hospedagem:** Compare Booking, Airbnb e hostels\n5. **Moeda local:** Leve cartão de débito internacional (Wise, C6)\n6. **Seguro viagem:** Obrigatório na Europa, recomendado sempre\n\n💡 Viaje na baixa temporada — economia de 30-50%.\n\nCrie uma **meta no Lumyf** com valor e prazo!",
   },
   {
-    keywords: ["carro", "automovel", "comprar carro", "financiar carro", "veiculo"],
-    answer: "🚗 **Comprar ou financiar carro?**\n\n**Custo real mensal de um carro:**\n- Combustível: R$ 400-800\n- Seguro: R$ 150-400\n- IPVA: ~3% do valor/ano\n- Manutenção: R$ 200-500\n- Estacionamento: R$ 200-500\n\n**Financiamento:** Juros médios de 1,5-2,5% ao mês. Um carro de R$ 50 mil pode custar R$ 80 mil+ no final.\n\n**Alternativas:**\n- Junte e compre à vista (negocie 10-15% de desconto)\n- Carro usado com 2-3 anos (menos depreciação)\n- Avalie se transporte público + táxi sai mais barato\n\n💡 Se o carro + custos passam de **20% da renda**, está pesado demais!",
+    keywords: ["carro", "automovel", "comprar carro", "financiar carro", "veiculo", "moto", "motocicleta"],
+    answer: "🚗 **Comprar ou financiar carro?**\n\n**Custo real mensal de um carro:**\n• Combustível: R$ 400-800\n• Seguro: R$ 150-400\n• IPVA: ~3% do valor/ano\n• Manutenção: R$ 200-500\n• Estacionamento: R$ 200-500\n\n**Financiamento:** Juros médios de 1,5-2,5% ao mês. Um carro de R$ 50 mil pode custar R$ 80 mil+.\n\n**Alternativas:**\n• Junte e compre à vista (desconto de 10-15%)\n• Carro usado com 2-3 anos (menos depreciação)\n• Avalie se transporte público + app sai mais barato\n\n💡 Carro + custos > **20% da renda** = pesado demais!",
   },
   {
-    keywords: ["casa", "imovel", "comprar casa", "apartamento", "aluguel vs compra", "financiar imovel"],
-    answer: "🏠 **Comprar ou alugar?**\n\n**Alugar é melhor quando:**\n- Você precisa de mobilidade\n- O aluguel é < 0,5% do valor do imóvel\n- Você pode investir a diferença\n\n**Comprar é melhor quando:**\n- Vai morar no local por 10+ anos\n- Consegue entrada de 20%+\n- Parcela < 30% da renda\n\n**Financiamento:**\n- SAC: Parcelas decrescentes (recomendado)\n- PRICE: Parcelas fixas\n- Use FGTS para entrada ou amortização\n\n💡 Amortizar com FGTS anualmente pode reduzir anos do financiamento!",
+    keywords: ["casa", "imovel", "comprar casa", "apartamento", "aluguel vs compra", "financiar imovel", "comprar apartamento", "financiamento imobiliario", "fgts"],
+    answer: "🏠 **Comprar ou alugar?**\n\n**Alugar é melhor quando:**\n- Precisa de mobilidade\n- Aluguel < 0,5% do valor do imóvel/mês\n- Pode investir a diferença\n\n**Comprar é melhor quando:**\n- Vai morar 10+ anos no local\n- Entrada de 20%+\n- Parcela < 30% da renda\n\n**Financiamento:**\n• **SAC:** Parcelas decrescentes (recomendado)\n• **PRICE:** Parcelas fixas\n• Use FGTS para entrada ou amortização\n• Amortize com FGTS anualmente!\n\n💡 Amortizar com FGTS pode reduzir anos do financiamento!",
   },
   {
-    keywords: ["golpe", "fraude", "piramide", "esquema", "scam"],
-    answer: "🚨 **Cuidado com golpes financeiros**\n\n**Sinais de alerta:**\n- Promessas de retorno garantido acima de 2% ao mês\n- Pressão para investir rápido (\"só hoje!\")\n- Dificuldade para resgatar o dinheiro\n- Quem indica ganha (estrutura de pirâmide)\n- Falta de registro na CVM ou Banco Central\n\n**Golpes comuns:**\n- Pirâmides financeiras\n- Forex falso\n- Criptomoedas \"milagrosas\"\n- Robôs de investimento\n- PIX falso / clonagem de WhatsApp\n\n💡 Se parece bom demais para ser verdade, provavelmente é golpe!",
+    keywords: ["golpe", "fraude", "piramide", "esquema", "scam", "fake", "enganado", "roubaram", "clonaram"],
+    answer: "🚨 **Cuidado com golpes financeiros**\n\n**Sinais de alerta:**\n- Promessas de retorno garantido acima de 2% ao mês\n- Pressão para investir rápido (\"só hoje!\")\n- Dificuldade para resgatar\n- Estrutura de pirâmide (quem indica ganha)\n\n**Golpes comuns:**\n• Pirâmides financeiras\n• Forex/cripto \"milagrosa\"\n• PIX falso / clonagem de WhatsApp\n• Links de phishing por SMS/email\n• Boletos adulterados\n\n**Se foi vítima:**\n1. Registre B.O. online\n2. Avise o banco imediatamente\n3. Conteste no Procon\n\n💡 Se parece bom demais, provavelmente é golpe!",
   },
   {
-    keywords: ["doacao", "caridade", "doar", "filantropia", "ong"],
-    answer: "❤️ **Doações inteligentes**\n\n- Defina um % fixo da renda para doações (ex: 1-5%)\n- Doe para ONGs com transparência financeira\n- Algumas doações são dedutíveis no IR (até 6%)\n- Doações via PIX são rastreáveis\n\n**Fontes confiáveis para verificar ONGs:**\n- Instituto Doar\n- Mapa das OSCs\n- Transparência nas demonstrações financeiras\n\n💡 Doar regularmente (mesmo pouco) tem mais impacto do que doar muito uma vez.",
+    keywords: ["doacao", "caridade", "doar", "filantropia", "ong", "ajudar"],
+    answer: "❤️ **Doações inteligentes**\n\n- Defina um % fixo da renda (ex: 1-5%)\n- Doe para ONGs com transparência financeira\n- Algumas doações são dedutíveis no IR (até 6%)\n- Doações via PIX são rastreáveis\n\n💡 Doar regularmente (mesmo pouco) tem mais impacto do que doar muito uma vez.",
   },
   {
-    keywords: ["etf", "indice", "ibovespa", "bova11", "ivvb11"],
-    answer: "📊 **ETFs (Exchange Traded Funds)**\n\nSão fundos que replicam índices e são negociados na bolsa como ações.\n\n**Populares no Brasil:**\n- **BOVA11:** Replica o Ibovespa\n- **IVVB11:** Replica o S&P 500 (EUA)\n- **HASH11:** Criptomoedas\n- **XFIX11:** Fundos imobiliários\n\n**Vantagens:**\n- Diversificação automática\n- Taxas baixas (0,2-0,5% ao ano)\n- Fácil de comprar/vender\n\n💡 ETFs são excelentes para quem está começando e quer diversificar sem escolher ações individuais.",
+    keywords: ["etf", "indice", "ibovespa", "bova11", "ivvb11", "fundo de indice"],
+    answer: "📊 **ETFs (Exchange Traded Funds)**\n\nSão fundos que replicam índices e são negociados como ações.\n\n**Populares no Brasil:**\n• **BOVA11:** Ibovespa\n• **IVVB11:** S&P 500 (EUA)\n• **HASH11:** Criptomoedas\n• **XFIX11:** Fundos imobiliários\n\n**Vantagens:**\n- Diversificação automática\n- Taxas baixas (0,2-0,5% ao ano)\n- Fácil de comprar/vender\n\n💡 ETFs são perfeitos para iniciantes que querem diversificar!",
   },
   {
-    keywords: ["dividendo", "proventos", "yield", "renda passiva"],
-    answer: "💰 **Renda passiva com dividendos**\n\n**O que são:** Parte do lucro das empresas distribuído aos acionistas.\n\n**Como montar uma carteira:**\n1. Busque empresas com histórico consistente de dividendos\n2. Diversifique entre setores (energia, bancos, saneamento)\n3. Reinvista os dividendos para acelerar o crescimento\n4. Acompanhe o **Dividend Yield** (ideal > 6% ao ano)\n\n**FIIs** também pagam dividendos mensais (isentos de IR para pessoa física).\n\n💡 Para gerar R$ 1.000/mês de renda passiva com yield de 8%, você precisa de ~R$ 150 mil investidos.",
+    keywords: ["dividendo", "proventos", "yield", "renda passiva", "viver de renda", "independencia financeira"],
+    answer: "💰 **Renda passiva com dividendos**\n\n**O que são:** Parte do lucro distribuído aos acionistas.\n\n**Como montar uma carteira:**\n1. Empresas com histórico consistente de dividendos\n2. Diversifique entre setores\n3. Reinvista os dividendos\n4. Acompanhe o **Dividend Yield** (ideal > 6% ao ano)\n\n**FIIs** pagam dividendos mensais (isentos de IR).\n\n**Quanto preciso para viver de renda?**\nRenda desejada × 300 = patrimônio necessário\nEx: R$ 5.000/mês × 300 = R$ 1.500.000\n\n💡 Para R$ 1.000/mês com yield de 8% → ~R$ 150 mil investidos.",
   },
   {
-    keywords: ["dolar", "euro", "cambio", "moeda estrangeira", "comprar dolar"],
-    answer: "💱 **Câmbio e moedas estrangeiras**\n\n**Quando comprar:**\n- Não tente acertar o melhor momento (é impossível)\n- Compre aos poucos (média de preço)\n- Compre com antecedência de viagens\n\n**Onde comprar:**\n- Casas de câmbio (compare preços)\n- Cartões internacionais (Wise, C6, Nomad)\n- Contas em dólar de corretoras\n\n**Para investir:**\n- ETFs internacionais (IVVB11)\n- BDRs de empresas americanas\n- Fundos cambiais\n\n💡 Ter 10-20% em ativos dolarizados protege contra desvalorização do real.",
+    keywords: ["dolar", "euro", "cambio", "moeda estrangeira", "comprar dolar", "remessa", "enviar dinheiro exterior"],
+    answer: "💱 **Câmbio e moedas estrangeiras**\n\n**Quando comprar:**\n- Não tente acertar o melhor momento\n- Compre aos poucos (média de preço)\n- Compre com antecedência de viagens\n\n**Onde comprar:**\n• Casas de câmbio (compare preços)\n• Cartões internacionais (Wise, C6, Nomad)\n• Contas em dólar de corretoras\n\n**Para investir:**\n• ETFs internacionais (IVVB11)\n• BDRs de empresas americanas\n• Fundos cambiais\n\n💡 Ter 10-20% em ativos dolarizados protege contra desvalorização do real.",
+  },
+  // ─── Additional topics ────────────────────────────
+  {
+    keywords: ["poupanca", "caderneta", "poupanca vale a pena", "poupanca rende"],
+    answer: "🐷 **Poupança: vale a pena?**\n\n**Rendimento atual:**\n• Selic > 8,5%: rende 70% da Selic + TR (~0,5% ao mês)\n• Selic ≤ 8,5%: rende 70% da Selic + TR\n\n**Vantagens:** Isenção de IR, liquidez imediata, sem risco\n**Desvantagem:** Quase sempre perde para CDB 100% CDI\n\n**Alternativas melhores:**\n• CDB com liquidez diária (100%+ CDI)\n• Tesouro Selic\n• LCI/LCA (isentas de IR!)\n\n💡 A poupança é melhor que nada, mas existem opções tão seguras que rendem mais!",
+  },
+  {
+    keywords: ["cheque especial", "limite da conta", "conta negativa", "saldo negativo banco"],
+    answer: "🚨 **Cheque especial — cuidado!**\n\nÉ um dos créditos mais caros do mercado (até 300% ao ano!).\n\n**Como sair:**\n1. Troque por empréstimo pessoal (juros menores)\n2. Peça portabilidade de dívida\n3. Reduza o limite para não cair na tentação\n\n**Prevenção:**\n• Mantenha uma reserva na conta\n• Configure alertas de saldo baixo\n• Peça ao banco para desativar o cheque especial\n\n💡 1 dia no cheque especial de R$ 1.000 pode custar R$ 0,80-1,50. Em 30 dias, R$ 25-45!",
+  },
+  {
+    keywords: ["corretora", "qual corretora", "abrir conta corretora", "banco digital", "nubank", "inter", "c6"],
+    answer: "🏦 **Escolhendo onde investir**\n\n**Corretoras populares:**\n• Rico, XP, Clear — boas para renda variável\n• Nubank, Inter, C6 — bancos digitais com investimentos\n• BTG Pactual — bom para renda fixa\n\n**O que comparar:**\n• Taxa de corretagem (muitas são zero)\n• Variedade de produtos\n• Qualidade do app/plataforma\n• Suporte ao cliente\n• Taxa de custódia\n\n💡 Você pode ter conta em mais de uma corretora! Diversificar ajuda a conseguir melhores taxas.",
+  },
+  {
+    keywords: ["fundo de investimento", "fundo multimercado", "fundo de renda fixa", "fundo de acoes", "cota"],
+    answer: "📦 **Fundos de investimento**\n\nUm gestor profissional investe seu dinheiro junto com outros cotistas.\n\n**Tipos:**\n• **Renda fixa:** Conservador, rende próximo ao CDI\n• **Multimercado:** Mix de ativos, risco moderado\n• **Ações:** Alto risco, alto potencial\n• **Cambial:** Acompanha moedas estrangeiras\n\n**Atenção às taxas:**\n• Taxa de administração: ideal < 1%/ano\n• Taxa de performance: ~20% sobre o que exceder o benchmark\n• Come-cotas: IR cobrado 2x ao ano automaticamente\n\n💡 Prefira ETFs para diversificação — taxas menores e mais transparência.",
+  },
+  {
+    keywords: ["aluguel", "inquilino", "proprietario", "contrato de aluguel", "reajuste", "igpm"],
+    answer: "🏘️ **Aluguel — dicas importantes**\n\n**Para inquilinos:**\n• Aluguel ideal: máximo 30% da renda\n• Negocie o índice de reajuste (IPCA é menor que IGP-M)\n• Leia todo o contrato antes de assinar\n• Faça vistoria detalhada com fotos\n\n**Para proprietários:**\n• Diversifique — FIIs podem ser mais rentáveis que 1 imóvel\n• Considere seguro fiança vs fiador\n• Mantenha reserva para manutenção\n\n💡 Regra geral: se o aluguel anual é < 5% do valor do imóvel, alugar é mais vantajoso que comprar.",
+  },
+  {
+    keywords: ["heranca", "inventario", "sucessao", "testamento", "bens"],
+    answer: "⚖️ **Herança e planejamento sucessório**\n\n**ITCMD:** Imposto sobre herança — varia de 4-8% por estado\n\n**Formas de planejar:**\n• Testamento: defina como dividir os bens\n• Holding familiar: protege patrimônio\n• Doação em vida: pode ter benefícios fiscais\n• Previdência (VGBL): não entra em inventário\n• Seguro de vida: vai direto ao beneficiário\n\n**Inventário:**\n• Judicial: mais demorado e caro\n• Extrajudicial: mais rápido (quando todos concordam)\n\n💡 Planeje em vida para evitar conflitos e custos altos para a família.",
+  },
+  {
+    keywords: ["consignado", "emprestimo consignado", "margem consignavel"],
+    answer: "💰 **Empréstimo consignado**\n\nDescontado direto do salário/benefício. Juros menores que empréstimo pessoal.\n\n**Cuidados:**\n• Margem máxima: 35% do salário (30% + 5% cartão)\n• Compare taxas entre bancos (variação é grande)\n• Cuidado com portabilidade — confira se é realmente melhor\n• Não use para consumo supérfluo\n\n**Quando pode valer a pena:**\n• Trocar dívida cara (cartão, cheque especial)\n• Emergência real sem reserva\n\n⚠️ Aposentados: cuidado com golpes de consignado não autorizado!",
+  },
+  {
+    keywords: ["educacao financeira", "aprender financas", "livro financas", "curso financas", "onde aprender"],
+    answer: "📚 **Educação financeira — por onde começar?**\n\n**Livros recomendados:**\n• \"Pai Rico, Pai Pobre\" — Robert Kiyosaki\n• \"Me Poupe!\" — Nathalia Arcuri\n• \"O Homem Mais Rico da Babilônia\" — George Clason\n• \"Os Segredos da Mente Milionária\" — T. Harv Eker\n\n**Canais/Podcasts:**\n• Me Poupe!, Primo Rico, Nath Finanças\n• O Primo Rico (YouTube)\n• Finanças Femininas\n\n**Conceitos essenciais:**\n1. Gaste menos do que ganha\n2. Monte reserva de emergência\n3. Invista a diferença\n4. Aprenda sobre juros compostos\n\n💡 O melhor investimento é em conhecimento!",
+  },
+  {
+    keywords: ["salario", "quanto ganhar", "negociar salario", "aumento", "promocao", "ganhar mais"],
+    answer: "💼 **Ganhando mais dinheiro**\n\n**Negociando salário:**\n1. Pesquise a faixa salarial do cargo (Glassdoor, LinkedIn)\n2. Liste suas conquistas e resultados\n3. Escolha o momento certo (após entregas importantes)\n4. Peça um valor 10-20% acima do que espera\n\n**Renda extra:**\n• Freelance na sua área\n• Aulas particulares\n• Venda de produtos/serviços\n• Cashback e programas de pontos\n• Investimentos que pagam dividendos\n\n💡 Aumentar a renda tem efeito infinito. Cortar gastos tem limite.",
+  },
+  {
+    keywords: ["black friday", "promocao", "desconto", "compra impulsiva", "impulso", "comprar por impulso"],
+    answer: "🛍️ **Comprando com inteligência**\n\n**Regras anti-impulso:**\n1. Espere 48h antes de comprar\n2. Pergunte: \"Eu PRECISO ou QUERO?\"\n3. Calcule em horas de trabalho\n4. Compare em pelo menos 3 lojas\n\n**Black Friday:**\n• Monitore preços semanas antes (Zoom, Buscapé)\n• Desconfie de descontos \"de/por\"\n• Faça lista do que realmente precisa ANTES\n• Não compre parcelado só porque \"cabe\"\n\n💡 R$ 200 de \"economia\" em algo que não precisava = R$ 200 de prejuízo!",
+  },
+  {
+    keywords: ["assinatura", "streaming", "netflix", "spotify", "servico", "mensalidade", "cancelar"],
+    answer: "📺 **Gerenciando assinaturas**\n\n**Faça uma auditoria:**\n1. Liste TODAS as assinaturas e mensalidades\n2. Marque quais realmente usa toda semana\n3. Cancele as que não usa há 30+ dias\n4. Considere planos família/compartilhados\n\n**Assinaturas comuns esquecidas:**\n• Streaming (Netflix, Spotify, Disney+...)\n• Apps premium\n• Academia que não frequenta\n• Revistas/jornais digitais\n• Nuvem/armazenamento extra\n\n💡 3 assinaturas de R$ 30 = R$ 90/mês = R$ 1.080/ano. Vale a pena?",
+  },
+  {
+    keywords: ["supermercado", "feira", "alimentacao", "comida", "mercado", "compras do mes"],
+    answer: "🛒 **Economizando no supermercado**\n\n1. **Sempre leve lista** — e siga ela!\n2. **Vá alimentado** — fome = compra por impulso\n3. **Compare preço/kg** — embalagem grande nem sempre é mais barata\n4. **Marcas próprias** — qualidade similar, preço menor\n5. **Dia de promoção** — cada mercado tem seu dia\n6. **Atacadão/atacado** — itens não-perecíveis\n7. **Frutas e verduras** — compre da estação (mais barato e fresco)\n8. **Congele** — cozinhe em lote e congele porções\n\n💡 Uma lista de compras pode reduzir seus gastos em até 30%!",
+  },
+  {
+    keywords: ["energia", "conta de luz", "agua", "conta de agua", "economia domestica", "conta alta"],
+    answer: "💡 **Economizando em contas de casa**\n\n**Energia elétrica:**\n• Bandeira vermelha? Reduza uso de ar-condicionado\n• Troque lâmpadas por LED\n• Desligue aparelhos da tomada\n• Chuveiro: 1 minuto a menos = economia no mês\n\n**Água:**\n• Banho de 5 minutos\n• Lave louça com torneira fechada\n• Reuse água da máquina para limpeza\n\n**Internet/Telefone:**\n• Negocie anualmente (ameaçe cancelar!)\n• Avalie se precisa do plano mais caro\n\n💡 Pequenas mudanças podem economizar R$ 50-100/mês em contas.",
   },
 ];
+
 
 // ─── Chat-style Q&A (enhanced) ──────────────────────
 export function answerQuestion(
