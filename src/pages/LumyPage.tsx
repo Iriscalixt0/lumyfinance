@@ -1,8 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { analyzeTransactions, answerQuestion, type LumyInsight } from "@/lib/lumy-engine";
-import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, Info } from "lucide-react";
+import { analyzeTransactions, type LumyInsight } from "@/lib/lumy-engine";
+import { streamLumyChat } from "@/lib/lumy-stream";
+import { formatBRL } from "@/lib/utils/currency";
+import { LumyInsights } from "@/components/lumy/LumyInsights";
+import { LumyChat } from "@/components/lumy/LumyChat";
 
 interface Transaction {
   id: string;
@@ -21,18 +24,74 @@ interface Category {
   type: string;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
 }
 
-const INSIGHT_STYLES: Record<string, { icon: typeof Sparkles; color: string }> = {
-  praise: { icon: TrendingUp, color: "text-emerald-500" },
-  alert: { icon: AlertTriangle, color: "text-amber-500" },
-  tip: { icon: Lightbulb, color: "text-primary" },
-  info: { icon: Info, color: "text-blue-500" },
-};
+function buildFinancialContext(txs: Transaction[], cats: Category[]): string {
+  if (txs.length === 0) return "O usuário não tem transações registradas ainda.";
+
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentTxs = txs.filter((t) => t.date.startsWith(currentMonth));
+
+  const income = currentTxs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const expense = currentTxs.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const balance = income - expense;
+
+  // Category breakdown
+  const catMap = new Map<string, number>();
+  for (const tx of currentTxs.filter((t) => t.type === "expense")) {
+    const cat = cats.find((c) => c.id === tx.category_id);
+    const name = cat ? `${cat.icon} ${cat.name}` : "Sem categoria";
+    catMap.set(name, (catMap.get(name) || 0) + tx.amount);
+  }
+  const topCats = [...catMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // Previous month
+  const prevMonth = now.getMonth() === 0
+    ? `${now.getFullYear() - 1}-12`
+    : `${now.getFullYear()}-${String(now.getMonth()).padStart(2, "0")}`;
+  const prevTxs = txs.filter((t) => t.date.startsWith(prevMonth));
+  const prevExpense = prevTxs.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const prevIncome = prevTxs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+
+  let ctx = `Mês atual (${currentMonth}):
+- Receitas: ${formatBRL(income)}
+- Despesas: ${formatBRL(expense)}
+- Saldo: ${formatBRL(balance)}
+- Transações: ${currentTxs.length}
+- Taxa de poupança: ${income > 0 ? ((income - expense) / income * 100).toFixed(0) : 0}%`;
+
+  if (topCats.length > 0) {
+    ctx += `\n\nTop categorias de despesa:`;
+    topCats.forEach(([name, total]) => {
+      ctx += `\n- ${name}: ${formatBRL(total)}`;
+    });
+  }
+
+  if (prevTxs.length > 0) {
+    ctx += `\n\nMês anterior (${prevMonth}):
+- Receitas: ${formatBRL(prevIncome)}
+- Despesas: ${formatBRL(prevExpense)}
+- Saldo: ${formatBRL(prevIncome - prevExpense)}`;
+  }
+
+  // Recent transactions (last 10)
+  const recent = currentTxs.slice(0, 10);
+  if (recent.length > 0) {
+    ctx += `\n\nÚltimas transações:`;
+    recent.forEach((t) => {
+      const cat = cats.find((c) => c.id === t.category_id);
+      ctx += `\n- ${t.date} | ${t.type === "income" ? "+" : "-"}${formatBRL(t.amount)} | ${t.description}${cat ? ` (${cat.name})` : ""}`;
+    });
+  }
+
+  ctx += `\n\nTotal de transações históricas: ${txs.length}`;
+  return ctx;
+}
 
 export function LumyPage() {
   const { activeWorkspace } = useWorkspace();
@@ -45,8 +104,8 @@ export function LumyPage() {
 
   // Chat
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -65,22 +124,60 @@ export function LumyPage() {
     load();
   }, [wsId]);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const handleSend = useCallback(async (question: string) => {
+    if (!question.trim() || isStreaming) return;
 
-  function handleSend(e: React.FormEvent) {
-    e.preventDefault();
-    const q = input.trim();
-    if (!q) return;
+    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content: question };
+    setMessages((prev) => [...prev, userMsg]);
+    setIsStreaming(true);
 
-    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content: q };
-    const answer = answerQuestion(q, transactions, categories);
-    const assistantMsg: ChatMessage = { id: crypto.randomUUID(), role: "assistant", content: answer };
+    const assistantId = crypto.randomUUID();
+    let assistantContent = "";
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
-    setInput("");
-  }
+    // Create empty assistant message
+    setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const allMessages = [...messages, userMsg].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    await streamLumyChat({
+      messages: allMessages,
+      financialContext: buildFinancialContext(transactions, categories),
+      signal: controller.signal,
+      onDelta: (chunk) => {
+        assistantContent += chunk;
+        const content = assistantContent;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, content } : m))
+        );
+      },
+      onDone: () => {
+        setIsStreaming(false);
+        abortRef.current = null;
+      },
+      onError: (error) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? { ...m, content: `❌ ${error}` }
+              : m
+          )
+        );
+        setIsStreaming(false);
+        abortRef.current = null;
+      },
+    });
+  }, [messages, transactions, categories, isStreaming]);
+
+  const handleStop = useCallback(() => {
+    abortRef.current?.abort();
+    setIsStreaming(false);
+  }, []);
 
   if (loading) {
     return (
@@ -92,130 +189,14 @@ export function LumyPage() {
 
   return (
     <div className="animate-fade space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Bot className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Lumy</h1>
-          <p className="text-sm text-muted-foreground">Seu assistente financeiro inteligente</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Insights */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Análises automáticas</h2>
-          </div>
-
-          {insights.length === 0 ? (
-            <div className="bg-card border border-border rounded-2xl p-8 text-center">
-              <Bot className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="text-sm text-muted-foreground">Sem dados suficientes para análise.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {insights.map((insight) => {
-                const style = INSIGHT_STYLES[insight.type] || INSIGHT_STYLES.info;
-                const Icon = style.icon;
-                return (
-                  <div key={insight.id} className="bg-card border border-border rounded-2xl p-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`mt-0.5 ${style.color}`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{insight.icon} {insight.title}</p>
-                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">{insight.body}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Right: Chat */}
-        <div className="bg-card border border-border rounded-2xl flex flex-col h-[600px]">
-          <div className="px-5 py-4 border-b border-border">
-            <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-              <Bot className="h-4 w-4 text-primary" />
-              Pergunte à Lumy
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Pergunte sobre saldo, despesas, dicas e mais</p>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-            {messages.length === 0 && (
-              <div className="text-center py-8">
-                <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
-                <p className="text-sm text-muted-foreground mb-4">Olá! Sou a Lumy 👋</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {["Resumo do mês", "Comparar com mês passado", "Saúde financeira", "Dicas personalizadas", "Como economizar?"].map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => {
-                        const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content: q };
-                        const answer = answerQuestion(q, transactions, categories);
-                        const assistantMsg: ChatMessage = { id: crypto.randomUUID(), role: "assistant", content: answer };
-                        setMessages((prev) => [...prev, userMsg, assistantMsg]);
-                      }}
-                      className="px-3 py-1.5 text-xs font-medium rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm whitespace-pre-line ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
-                  }`}
-                >
-                  {msg.content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
-                    if (part.startsWith("**") && part.endsWith("**")) {
-                      return <strong key={i}>{part.slice(2, -2)}</strong>;
-                    }
-                    return <span key={i}>{part}</span>;
-                  })}
-                </div>
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Input */}
-          <form onSubmit={handleSend} className="px-5 py-4 border-t border-border flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Pergunte algo sobre suas finanças..."
-              className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </form>
-        </div>
+        <LumyInsights insights={insights} />
+        <LumyChat
+          messages={messages}
+          isStreaming={isStreaming}
+          onSend={handleSend}
+          onStop={handleStop}
+        />
       </div>
     </div>
   );
