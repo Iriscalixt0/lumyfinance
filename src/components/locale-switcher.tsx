@@ -11,12 +11,12 @@ const FLAGS: Record<Locale, string> = {
 };
 
 const SHORT_LABELS: Record<Locale, string> = {
-  "pt-BR": "PT",
-  "pt-PT": "PT",
-  en: "EN",
-  es: "ES",
-  fr: "FR",
-  de: "DE",
+  "pt-BR": "Português (Brasil)",
+  "pt-PT": "Português (Portugal)",
+  en: "English",
+  es: "Español",
+  fr: "Français",
+  de: "Deutsch",
 };
 
 export function LocaleSwitcher() {
@@ -28,13 +28,13 @@ export function LocaleSwitcher() {
       <select
         value={locale}
         onChange={(e) => setLocale(e.target.value as Locale)}
-        className="appearance-none min-h-[44px] min-w-[44px] sm:min-w-[160px] sm:w-auto pl-0 sm:pl-10 pr-0 sm:pr-8 py-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground text-xs sm:text-sm font-bold cursor-pointer border-0 focus:ring-2 focus:ring-primary focus:outline-none transition-colors overflow-hidden text-transparent sm:text-inherit sm:overflow-visible"
+        className="appearance-none min-h-[44px] min-w-[44px] sm:min-w-[200px] sm:w-auto pl-0 sm:pl-10 pr-0 sm:pr-8 py-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground text-xs sm:text-sm font-bold cursor-pointer border-0 focus:ring-2 focus:ring-primary focus:outline-none transition-colors overflow-hidden text-transparent sm:text-inherit sm:overflow-visible"
         aria-label={t("label")}
-        title={t(locale)}
+        title={SHORT_LABELS[locale as Locale]}
       >
         {LOCALES.map((loc) => (
           <option key={loc} value={loc}>
-            {FLAGS[loc]} {SHORT_LABELS[loc]} · {t(loc)}
+            {FLAGS[loc]} {SHORT_LABELS[loc]}
           </option>
         ))}
       </select>
