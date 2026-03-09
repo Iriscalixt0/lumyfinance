@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { analyzeTransactions, answerQuestion, type LumyInsight } from "@/lib/lumy-engine";
-import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, Info } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, Info, ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -25,6 +25,7 @@ interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  feedback?: "up" | "down" | null;
 }
 
 const INSIGHT_STYLES: Record<string, { icon: typeof Sparkles; color: string }> = {
@@ -181,19 +182,39 @@ export function LumyPage() {
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm whitespace-pre-line ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
-                  }`}
-                >
-                  {msg.content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
-                    if (part.startsWith("**") && part.endsWith("**")) {
-                      return <strong key={i}>{part.slice(2, -2)}</strong>;
-                    }
-                    return <span key={i}>{part}</span>;
-                  })}
+                <div className="flex flex-col gap-1 max-w-[85%]">
+                  <div
+                    className={`rounded-2xl px-4 py-3 text-sm whitespace-pre-line ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {msg.content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                      if (part.startsWith("**") && part.endsWith("**")) {
+                        return <strong key={i}>{part.slice(2, -2)}</strong>;
+                      }
+                      return <span key={i}>{part}</span>;
+                    })}
+                  </div>
+                  {msg.role === "assistant" && (
+                    <div className="flex items-center gap-1 ml-1">
+                      <button
+                        onClick={() => setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, feedback: m.feedback === "up" ? null : "up" } : m))}
+                        className={`p-1 rounded-lg transition-colors ${msg.feedback === "up" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+                        aria-label="Resposta útil"
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, feedback: m.feedback === "down" ? null : "down" } : m))}
+                        className={`p-1 rounded-lg transition-colors ${msg.feedback === "down" ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+                        aria-label="Resposta não útil"
+                      >
+                        <ThumbsDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
