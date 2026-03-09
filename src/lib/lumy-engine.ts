@@ -949,6 +949,16 @@ function buildSmartFallback(ctx: QAContext): string {
     "lucro", "prejuizo", "ganhar", "perder", "render", "aplicar",
     "parcela", "juro", "taxa", "desconto", "promocao", "oferta",
     "salario", "renda", "trabalho", "emprego", "negocio",
+    "poupar", "guardar", "investir", "acao", "fundo", "bolsa",
+    "cripto", "bitcoin", "tesouro", "cdb", "lci", "lca", "fii",
+    "dividendo", "aposentar", "previdencia", "seguro", "imposto",
+    "cartao", "credito", "debito", "emprestimo", "consignado",
+    "aluguel", "imovel", "casa", "carro", "viagem", "milha",
+    "inflacao", "selic", "cdi", "ipca", "cambio", "dolar", "euro",
+    "score", "serasa", "cpf", "mei", "cnpj", "freelancer",
+    "orcamento", "economizar", "reserva", "emergencia", "divida",
+    "poupanca", "corretora", "etf", "golpe", "fraude",
+    "heranca", "consorcio", "energia", "supermercado", "assinatura",
   ];
 
   const isFinanceRelated = financeWords.some((w) => ctx.q.includes(w));
