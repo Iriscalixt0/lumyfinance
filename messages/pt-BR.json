@@ -518,7 +518,7 @@
       "hint": "O sistema calcula o valor mensal necessário com base na data escolhida."
     },
     "investment": {
-      "new": "Novo Aporte",
+      "new": "Novo Investimento",
       "edit": "Editar investimento",
       "date": "Data",
       "assetName": "Nome do ativo",
