@@ -89,14 +89,16 @@ Deno.serve(async (req) => {
     // ── Goal milestones (75%, 90%, 100%) ──
     const { data: goals } = await supabase
       .from("goals")
-      .select("id, title, target_amount, contributions_total")
-      .eq("workspace_id", workspace_id);
+      .select("id, title, target_amount, contributions_total, deadline, status")
+      .eq("workspace_id", workspace_id)
+      .eq("status", "active");
 
     if (goals) {
       for (const g of goals) {
         if (g.target_amount <= 0) continue;
-        const pct = g.contributions_total / g.target_amount;
+        const pct = (g.contributions_total ?? 0) / g.target_amount;
 
+        // Milestone notifications
         const thresholds = [
           { value: 1, label: 100 },
           { value: 0.9, label: 90 },
@@ -120,6 +122,35 @@ Deno.serve(async (req) => {
               data: { goal_id: g.id, threshold: t.label, dedup_key: `goal_${t.label}_${g.id}` },
             });
             break; // only highest threshold
+          }
+        }
+
+        // ── Deadline approaching: 1 day before ──
+        if (g.deadline && pct < 1) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const deadlineDate = new Date(g.deadline + "T00:00:00");
+          const diffMs = deadlineDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 1) {
+            notifications.push({
+              user_id: user.id,
+              workspace_id,
+              type: "goal_deadline",
+              title: `⏰ Meta vence amanhã: ${g.title}`,
+              body: `Sua meta "${g.title}" vence amanhã! Você está em ${Math.round(pct * 100)}% do objetivo.`,
+              data: { goal_id: g.id, dedup_key: `goal_deadline_1d_${g.id}` },
+            });
+          } else if (diffDays === 0) {
+            notifications.push({
+              user_id: user.id,
+              workspace_id,
+              type: "goal_deadline",
+              title: `⚠️ Meta vence hoje: ${g.title}`,
+              body: `Sua meta "${g.title}" vence hoje! Você está em ${Math.round(pct * 100)}% do objetivo.`,
+              data: { goal_id: g.id, dedup_key: `goal_deadline_0d_${g.id}` },
+            });
           }
         }
       }
