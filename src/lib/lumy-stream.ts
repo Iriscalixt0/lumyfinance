@@ -2,7 +2,7 @@
  * Stream chat with Lumy AI via edge function.
  */
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lumy-chat`;
+const CHAT_URL = "https://mbijojessqyzcklsyjre.supabase.co/functions/v1/lumy-chat";
 
 interface StreamChatOptions {
   messages: { role: "user" | "assistant"; content: string }[];
