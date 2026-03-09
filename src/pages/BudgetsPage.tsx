@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslations } from "@/lib/i18n";
 import { Wallet2, Pencil, Trash2, ChevronDown } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
@@ -28,13 +29,6 @@ interface Category {
   type: string;
 }
 
-const budgetSchema = z.object({
-  category: z.string().trim().min(1, "Categoria obrigatória").max(100),
-  limit_amount: z.number().positive("Limite deve ser positivo"),
-});
-
-const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-
 export function BudgetsPage() {
   const fmt = useIntlFormat();
   const formatBRL = fmt.money;
@@ -43,6 +37,20 @@ export function BudgetsPage() {
   const workspaceId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
   const { checkAchievements } = useGamification(workspaceId);
+  const t = useTranslations("budgetsPage");
+  const tc = useTranslations("common");
+
+  const MONTH_NAMES = useMemo(() => [
+    tc("months.january"), tc("months.february"), tc("months.march"), tc("months.april"),
+    tc("months.may"), tc("months.june"), tc("months.july"), tc("months.august"),
+    tc("months.september"), tc("months.october"), tc("months.november"), tc("months.december"),
+  ], [tc]);
+
+  const budgetSchema = useMemo(() => z.object({
+    category: z.string().trim().min(1).max(100),
+    limit_amount: z.number().positive(),
+  }), []);
+
   const [newAchievement, setNewAchievement] = useState<AchievementDef | null>(null);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -119,10 +127,10 @@ export function BudgetsPage() {
         .single();
 
       setSaving(false);
-      if (error) { setErrors({ category: "Erro ao salvar." }); return; }
+      if (error) { setErrors({ category: t("errorSave") }); return; }
       setBudgets((prev) => prev.map((b) => (b.id === editingId ? data : b)));
       setEditingId(null);
-      toast("Orçamento atualizado!");
+      toast(t("budgetUpdated"));
     } else {
       const { data, error } = await supabase
         .from("budgets")
@@ -131,9 +139,9 @@ export function BudgetsPage() {
         .single();
 
       setSaving(false);
-      if (error) { setErrors({ category: "Erro ao salvar." }); return; }
+      if (error) { setErrors({ category: t("errorSave") }); return; }
       setBudgets((prev) => [...prev, data]);
-      toast("Orçamento criado!");
+      toast(t("budgetCreated"));
     }
 
     setForm(emptyForm);
@@ -151,7 +159,7 @@ export function BudgetsPage() {
     setSaving(false);
     setDeleteModalOpen(false);
     setDeletingId(null);
-    toast("Orçamento excluído!");
+    toast(t("budgetDeleted"));
   }
 
   const expenseCategories = categories.filter((c) => c.type === "expense");
@@ -170,20 +178,18 @@ export function BudgetsPage() {
     <div className="animate-fade space-y-6">
       {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
 
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Orçamentos</h1>
-          <p className="text-sm text-muted-foreground mt-1">Defina limites por categoria e acompanhe seus gastos.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Month picker */}
           <div className="relative">
             <button
               onClick={() => { setShowMonthPicker(!showMonthPicker); setShowYearPicker(false); }}
               className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition"
             >
-              <span className="text-xs text-muted-foreground">Mês</span>
+              <span className="text-xs text-muted-foreground">{t("month")}</span>
               {MONTH_NAMES[selectedMonth]}
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
@@ -201,13 +207,12 @@ export function BudgetsPage() {
               </div>
             )}
           </div>
-          {/* Year picker */}
           <div className="relative">
             <button
               onClick={() => { setShowYearPicker(!showYearPicker); setShowMonthPicker(false); }}
               className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition"
             >
-              <span className="text-xs text-muted-foreground">Ano</span>
+              <span className="text-xs text-muted-foreground">{t("year")}</span>
               {selectedYear}
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
@@ -228,35 +233,33 @@ export function BudgetsPage() {
         </div>
       </div>
 
-      {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Form inline */}
         <div className="bg-card border border-border rounded-2xl p-6">
           <h3 className="font-semibold text-foreground mb-5">
-            {editingId ? "Editar orçamento" : "Novo orçamento"}
+            {editingId ? t("editBudget") : t("newBudget")}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Categoria</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("category")}</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <option value="">Selecione uma categoria</option>
+                <option value="">{t("selectCategory")}</option>
                 {expenseCategories.length > 0
                   ? expenseCategories.map((c) => (
                       <option key={c.id} value={c.name}>{c.icon} {c.name}</option>
                     ))
                   : (
                     <>
-                      <option value="Alimentação">Alimentação</option>
-                      <option value="Transporte">Transporte</option>
-                      <option value="Moradia">Moradia</option>
-                      <option value="Lazer">Lazer</option>
-                      <option value="Saúde">Saúde</option>
-                      <option value="Educação">Educação</option>
-                      <option value="Outros">Outros</option>
+                      <option value={t("fallbackCategories.food")}>{t("fallbackCategories.food")}</option>
+                      <option value={t("fallbackCategories.transport")}>{t("fallbackCategories.transport")}</option>
+                      <option value={t("fallbackCategories.housing")}>{t("fallbackCategories.housing")}</option>
+                      <option value={t("fallbackCategories.leisure")}>{t("fallbackCategories.leisure")}</option>
+                      <option value={t("fallbackCategories.health")}>{t("fallbackCategories.health")}</option>
+                      <option value={t("fallbackCategories.education")}>{t("fallbackCategories.education")}</option>
+                      <option value={t("fallbackCategories.other")}>{t("fallbackCategories.other")}</option>
                     </>
                   )
                 }
@@ -265,7 +268,7 @@ export function BudgetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Limite (R$)</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("limit")}</label>
               <input
                 type="text"
                 value={form.limit_amount}
@@ -283,7 +286,7 @@ export function BudgetsPage() {
                   onClick={() => { setEditingId(null); setForm(emptyForm); setErrors({}); }}
                   className="flex-1 py-2.5 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-secondary transition-colors"
                 >
-                  Cancelar
+                  {t("cancel")}
                 </button>
               )}
               <button
@@ -291,27 +294,24 @@ export function BudgetsPage() {
                 disabled={saving || !permissions.canEdit}
                 className="flex-1 bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
               >
-                {saving ? "Salvando..." : editingId ? "Salvar" : "Adicionar orçamento"}
+                {saving ? t("saving") : editingId ? t("save") : t("addBudget")}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Right: List */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <h3 className="font-semibold text-foreground">
-              Orçamentos de {MONTH_NAMES[selectedMonth]} de {selectedYear}
+              {t("budgetsOf", { month: MONTH_NAMES[selectedMonth], year: String(selectedYear) })}
             </h3>
-            <span className="text-xs text-muted-foreground">{activeCount} ativos</span>
+            <span className="text-xs text-muted-foreground">{activeCount} {t("active")}</span>
           </div>
 
           {budgets.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <Wallet2 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="text-sm text-muted-foreground">
-                Nenhum orçamento definido. Adicione um limite para uma categoria de despesa.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("noBudgets")}</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
@@ -327,10 +327,10 @@ export function BudgetsPage() {
                           {pct.toFixed(0)}%
                         </span>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => openEdit(budget)} className="h-6 w-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label="Editar">
+                          <button onClick={() => openEdit(budget)} className="h-6 w-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" aria-label={tc("edit")}>
                             <Pencil className="h-3 w-3" />
                           </button>
-                          <button onClick={() => openDelete(budget.id)} className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label="Excluir">
+                          <button onClick={() => openDelete(budget.id)} className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" aria-label={tc("delete")}>
                             <Trash2 className="h-3 w-3" />
                           </button>
                         </div>
@@ -340,8 +340,8 @@ export function BudgetsPage() {
                       <div className={`h-full rounded-full transition-all ${isOver ? "bg-rose-500" : "bg-primary"}`} style={{ width: `${pct}%` }} />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Gasto: {formatBRL(budget.spent_amount)}</span>
-                      <span>Limite: {formatBRL(budget.limit_amount)}</span>
+                      <span>{t("spent")}: {formatBRL(budget.spent_amount)}</span>
+                      <span>{t("budgetLimit")}: {formatBRL(budget.limit_amount)}</span>
                     </div>
                   </div>
                 );
@@ -351,13 +351,12 @@ export function BudgetsPage() {
         </div>
       </div>
 
-      {/* Modal de confirmação de exclusão */}
-      <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir orçamento">
-        <p className="text-muted-foreground mb-6">Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.</p>
+      <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title={t("deleteTitle")}>
+        <p className="text-muted-foreground mb-6">{t("deleteMessage")}</p>
         <div className="flex justify-end gap-3">
-          <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">Cancelar</button>
+          <button onClick={() => setDeleteModalOpen(false)} className="px-5 py-2.5 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors">{t("cancel")}</button>
           <button onClick={handleDelete} disabled={saving} className="px-5 py-2.5 rounded-lg bg-destructive text-destructive-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
-            {saving ? "Excluindo..." : "Excluir"}
+            {saving ? t("deleting") : t("delete")}
           </button>
         </div>
       </Modal>
