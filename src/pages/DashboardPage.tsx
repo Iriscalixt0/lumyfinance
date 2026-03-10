@@ -247,17 +247,8 @@ export function DashboardPage() {
         budgetLimit={budgetLimit}
       />
 
-      {/* Balance Forecast + Gamification */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <BalanceForecastCard
-          currentBalance={metrics.currentBalance}
-          estimatedEndOfMonth={metrics.estimatedEndOfMonth}
-          recurringExpenses={recurringExpenses}
-          recurringIncome={recurringIncome}
-        />
 
-        
-      </div>
+
 
       {!gamLoading && <AchievementsPanel unlockedKeys={unlockedKeys} />}
 
