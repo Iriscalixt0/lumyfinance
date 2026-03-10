@@ -250,7 +250,7 @@ export function DashboardPage() {
 
 
 
-      {!gamLoading && <AchievementsPanel unlockedKeys={unlockedKeys} />}
+      
 
       {/* Shareable achievement card — show when streak >= 30 or significant savings */}
       {!gamLoading && streak.current_streak >= 30 && (
