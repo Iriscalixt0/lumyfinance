@@ -212,11 +212,8 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {!gamLoading && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <StreakCard streak={streak} totalTx={totalTx} />
-            <AchievementsPanel unlockedKeys={unlockedKeys} />
-          </div>
+      {!gamLoading && (
+          <AchievementsPanel unlockedKeys={unlockedKeys} />
         )}
 
         <QuickTransactionModal
