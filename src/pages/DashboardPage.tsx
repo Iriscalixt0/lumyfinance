@@ -256,7 +256,7 @@ export function DashboardPage() {
           recurringIncome={recurringIncome}
         />
 
-        {!gamLoading && <StreakCard streak={streak} totalTx={totalTx} />}
+        
       </div>
 
       {!gamLoading && <AchievementsPanel unlockedKeys={unlockedKeys} />}
