@@ -131,7 +131,7 @@ export function ShareableAchievementCard({ type, value, label, onClose }: Sharea
         <p className="text-sm text-slate-400 mt-1">
           {label || (type === "goal" ? t("savedThisMonth") : t("streakAchieved"))}
         </p>
-        <p className="text-xs text-slate-500 mt-3">lumyf.app</p>
+        <p className="text-xs text-slate-500 mt-3">lumyf.com</p>
       </div>
 
       <div className="flex gap-2">
