@@ -12,6 +12,7 @@ export function BottomNav() {
   ] as const;
 
   const rightItems = [
+    { labelKey: "investments", href: "/investments", icon: TrendingUp },
     { labelKey: "lumy", href: "/lumy", icon: Bot },
   ] as const;
 
