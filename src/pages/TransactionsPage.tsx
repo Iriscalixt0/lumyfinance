@@ -447,34 +447,34 @@ export function TransactionsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("income")}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("income")}</span>
           </div>
-          <p className="text-xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
+          <p className="text-lg sm:text-xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
         </div>
-        <div className="bg-card border-2 border-destructive/30 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingDown className="h-4 w-4 text-destructive" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("expenses")}</span>
+        <div className="bg-card border-2 border-destructive/30 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("expenses")}</span>
           </div>
-          <p className="text-xl font-bold text-destructive">{formatBRL(totalExpense)}</p>
+          <p className="text-lg sm:text-xl font-bold text-destructive">{formatBRL(totalExpense)}</p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Wallet2 className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("invested")}</span>
+        <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Wallet2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("invested")}</span>
           </div>
-          <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{formatBRL(0)}</p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Target className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("goals")}</span>
+        <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("goals")}</span>
           </div>
-          <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{formatBRL(0)}</p>
         </div>
       </div>
 

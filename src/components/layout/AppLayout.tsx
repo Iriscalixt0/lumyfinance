@@ -407,7 +407,7 @@ export function AppLayout() {
             {/* Dark mode toggle */}
             <button
               onClick={toggleTheme}
-              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-xl hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
               aria-label={theme === "dark" ? t("lightMode") : t("darkMode")}
               title={theme === "dark" ? t("lightMode") : t("darkMode")}
             >
