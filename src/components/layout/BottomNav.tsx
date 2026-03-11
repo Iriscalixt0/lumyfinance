@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslations } from "@/lib/i18n";
 import { LayoutDashboard, ArrowLeftRight, Bot, Mic } from "lucide-react";
 
