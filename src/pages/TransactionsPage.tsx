@@ -367,9 +367,9 @@ export function TransactionsPage() {
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {/* Export group — unified muted style */}
-        <div className="flex items-center gap-1.5 bg-muted/50 rounded-xl p-1">
+        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 shrink-0">
           <button
             onClick={() => {
               const rows = filtered.map((tx) => [
