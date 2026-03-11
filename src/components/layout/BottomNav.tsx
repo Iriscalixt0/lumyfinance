@@ -5,7 +5,6 @@ import { LayoutDashboard, ArrowLeftRight, Bot, Mic } from "lucide-react";
 export function BottomNav() {
   const t = useTranslations("nav");
   const location = useLocation();
-  const navigate = useNavigate();
 
   const leftItems = [
     { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard },
