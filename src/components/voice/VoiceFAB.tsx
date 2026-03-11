@@ -169,13 +169,20 @@ export function VoiceFAB() {
 
   // ========== Actions ==========
 
-  const handleStartListening = async () => {
+  const handleStartListening = useCallback(async () => {
     if (!activeWorkspace) { toast(t("noWorkspace"), "error"); return; }
     setStage("listening");
     setMissingAmount(false);
     setMissingDesc(false);
     await startVoice();
-  };
+  }, [activeWorkspace, toast, t, startVoice]);
+
+  // Listen for external trigger (from BottomNav mic button)
+  useEffect(() => {
+    const handler = () => { if (stage === "idle") handleStartListening(); };
+    window.addEventListener("lumyf:voice-start", handler);
+    return () => window.removeEventListener("lumyf:voice-start", handler);
+  }, [stage, handleStartListening]);
 
   // Sync stage when voice stops
   useEffect(() => {
@@ -449,9 +456,9 @@ export function VoiceFAB() {
     );
   }
 
-  // ========== Main FAB ==========
+  // ========== Main FAB (hidden on mobile — mic is in BottomNav) ==========
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
+    <div className="fixed bottom-6 right-6 z-50 hidden md:flex items-center justify-center">
       {stage === "listening" && (
         <>
           <span
@@ -475,7 +482,6 @@ export function VoiceFAB() {
         aria-label={stage === "listening" ? t("stopListening") : t("startListening")}
         title={stage === "listening" ? t("stopListening") : t("startListening")}
       >
-        {/* Subtle inner glow */}
         {stage === "idle" && (
           <span className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
         )}
@@ -504,13 +510,6 @@ export function VoiceFAB() {
               <span className="text-muted-foreground">{t("listening")}</span>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Idle hint */}
-      {stage === "idle" && (
-        <div className="absolute -top-11 right-0 bg-card/95 backdrop-blur-md border border-border/60 text-foreground text-[11px] font-medium px-3 py-1.5 rounded-xl shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          {t("hint")}
         </div>
       )}
     </div>
