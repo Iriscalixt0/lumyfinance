@@ -108,6 +108,27 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Custom scrollbar — teal/primary */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent));
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary)) transparent;
+}
+
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   font-size: 16px;
