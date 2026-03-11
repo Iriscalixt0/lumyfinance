@@ -34,7 +34,7 @@ export function LocaleSwitcher() {
       >
         {LOCALES.map((loc) => (
           <option key={loc} value={loc}>
-            {FLAGS[loc]} {SHORT_LABELS[loc]}
+            {SHORT_LABELS[loc]}
           </option>
         ))}
       </select>
