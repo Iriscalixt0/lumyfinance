@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslations } from "@/lib/i18n";
-import { LayoutDashboard, ArrowLeftRight, Bot, Plus } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, Bot, Mic } from "lucide-react";
 
 export function BottomNav() {
   const t = useTranslations("nav");
