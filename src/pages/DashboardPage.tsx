@@ -6,8 +6,6 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
-import { HealthScoreCard } from "@/components/dashboard/HealthScoreCard";
-import { InsightPhrase } from "@/components/dashboard/InsightPhrase";
 import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
 import {
   Plus,
@@ -264,77 +262,63 @@ export function DashboardPage() {
 
   /* ---------- Normal Dashboard ---------- */
   return (
-    <div className="animate-fade space-y-5">
-      <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+    <div className="animate-fade space-y-4">
+      <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
 
-      {/* Transactions Chart Card */}
-      <div className="bg-card border border-border rounded-2xl p-4 sm:p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-foreground">{t("transactions")}</h2>
+      {/* Transactions Chart Card — dark card */}
+      <div className="bg-[#1a1a2e] rounded-2xl p-4 text-white">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-white/90">{t("transactions")}</h2>
           <select
             value={chartRange}
             onChange={(e) => setChartRange(e.target.value as "6" | "12")}
-            className="bg-secondary text-foreground text-xs font-medium px-2.5 py-1.5 rounded-lg border-0 focus:ring-2 focus:ring-primary/20 focus:outline-none cursor-pointer"
+            className="bg-white/10 text-white/80 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-white/10 focus:outline-none cursor-pointer"
           >
-            <option value="6">6 {tCommon("months.short") || "meses"}</option>
-            <option value="12">12 {tCommon("months.short") || "meses"}</option>
+            <option value="6" className="bg-[#1a1a2e] text-white">6 meses</option>
+            <option value="12" className="bg-[#1a1a2e] text-white">12 meses</option>
           </select>
         </div>
-        <div className="h-48 sm:h-56">
+        <div className="h-44">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} barGap={2} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <BarChart data={chartData} barGap={2} barCategoryGap="25%">
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                width={40}
+                tick={{ fontSize: 10, fill: "rgba(255,255,255,0.4)" }}
+                width={35}
                 tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)}
               />
               <Tooltip
                 contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "12px",
+                  background: "#1a1a2e",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: "10px",
                   fontSize: "12px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  color: "#fff",
                 }}
                 formatter={(value: number) => [formatBRL(Math.round(value * 100)), ""]}
-                labelStyle={{ fontWeight: 600, color: "hsl(var(--foreground))" }}
+                labelStyle={{ fontWeight: 600, color: "#fff" }}
               />
-              <Bar dataKey="income" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name={t("income")} />
-              <Bar dataKey="expense" fill="hsl(var(--muted-foreground) / 0.3)" radius={[4, 4, 0, 0]} name={t("expenses")} />
+              <Bar dataKey="income" fill="#4ade80" radius={[4, 4, 0, 0]} name={t("income")} />
+              <Bar dataKey="expense" fill="rgba(255,255,255,0.15)" radius={[4, 4, 0, 0]} name={t("expenses")} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Add Expense Button */}
+      {/* Add Expense Button — green pill */}
       <button
         onClick={() => setQuickTxOpen(true)}
-        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
+        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
       >
-        <Plus className="h-4 w-4" />
         {t("firstTransaction")}
       </button>
-
-      {/* Health Score — compact on mobile */}
-      <HealthScoreCard score={healthScore} />
-
-      {/* Insight */}
-      <InsightPhrase
-        totalIncome={metrics.totalIncome}
-        totalExpenses={metrics.totalExpenses}
-        avgMonthlyExpenses={metrics.avgMonthlyExpenses}
-        currentMonthExpenses={metrics.currentMonthExpenses}
-        budgetLimit={budgetLimit}
-      />
 
       {/* Recent Transactions */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -359,44 +343,20 @@ export function DashboardPage() {
                 onClick={() => navigate("/transactions")}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
               >
-                <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 text-sm ${
-                  tx.type === "income" ? "bg-emerald-500/10" : "bg-muted"
-                }`}>
+                <div className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center shrink-0 text-sm font-medium text-muted-foreground">
                   {getCategoryIcon(tx.category_id)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{tx.description}</p>
                   <p className="text-[11px] text-muted-foreground">{fmt.date(tx.date)}</p>
                 </div>
-                <span className={`text-sm font-bold tabular-nums shrink-0 ${
-                  tx.type === "income" ? "text-emerald-500" : "text-foreground"
-                }`}>
+                <span className="text-sm font-semibold tabular-nums shrink-0 text-muted-foreground">
                   {tx.type === "income" ? "+" : "−"} {formatBRL(tx.amount)}
                 </span>
               </button>
             ))}
           </div>
         )}
-      </div>
-
-      {/* Quick links */}
-      <div className="flex items-center justify-center gap-2 flex-wrap pb-2">
-        {[
-          { labelKey: "seeReports", href: "/annual-report", primary: true },
-          { labelKey: "budgets", href: "/budgets" },
-        ].map((link) => (
-          <Link
-            key={link.href}
-            to={link.href}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
-              link.primary
-                ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            }`}
-          >
-            {t(link.labelKey)}
-          </Link>
-        ))}
       </div>
 
       <QuickTransactionModal
