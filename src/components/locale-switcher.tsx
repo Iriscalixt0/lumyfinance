@@ -11,7 +11,7 @@ const FLAGS: Record<Locale, string> = {
 };
 
 const SHORT_LABELS: Record<Locale, string> = {
-  "pt-BR": "Português (Brasil)",
+  "pt-BR": "Português",
   "pt-PT": "Português (Portugal)",
   en: "English",
   es: "Español",
