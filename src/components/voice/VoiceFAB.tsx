@@ -169,13 +169,20 @@ export function VoiceFAB() {
 
   // ========== Actions ==========
 
-  const handleStartListening = async () => {
+  const handleStartListening = useCallback(async () => {
     if (!activeWorkspace) { toast(t("noWorkspace"), "error"); return; }
     setStage("listening");
     setMissingAmount(false);
     setMissingDesc(false);
     await startVoice();
-  };
+  }, [activeWorkspace, toast, t, startVoice]);
+
+  // Listen for external trigger (from BottomNav mic button)
+  useEffect(() => {
+    const handler = () => { if (stage === "idle") handleStartListening(); };
+    window.addEventListener("lumyf:voice-start", handler);
+    return () => window.removeEventListener("lumyf:voice-start", handler);
+  }, [stage, handleStartListening]);
 
   // Sync stage when voice stops
   useEffect(() => {
