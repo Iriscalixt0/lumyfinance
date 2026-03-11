@@ -134,6 +134,14 @@ body {
   .animate-fade {
     animation: fade 0.4s ease-out;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fade {

@@ -335,32 +335,28 @@ export function TransactionsPage() {
       {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {MONTH_NAMES[selectedMonth]} {selectedYear}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("pageSubtitle")}</p>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              {MONTH_NAMES[selectedMonth]} {selectedYear}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("pageSubtitle")}</p>
+          </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{t("monthLabel")}</span>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-card border border-border rounded-lg px-2 py-2 text-sm font-medium text-foreground focus:outline-none"
+              className="bg-card border border-border rounded-lg px-2 py-1.5 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {MONTH_NAMES.map((m, i) => (
                 <option key={i} value={i}>{m}</option>
               ))}
             </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{t("yearLabel")}</span>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-card border border-border rounded-lg px-2 py-2 text-sm font-medium text-foreground focus:outline-none"
+              className="bg-card border border-border rounded-lg px-2 py-1.5 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -371,9 +367,9 @@ export function TransactionsPage() {
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {/* Export group — unified muted style */}
-        <div className="flex items-center gap-1.5 bg-muted/50 rounded-xl p-1">
+        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 shrink-0">
           <button
             onClick={() => {
               const rows = filtered.map((tx) => [
@@ -451,34 +447,34 @@ export function TransactionsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("income")}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("income")}</span>
           </div>
-          <p className="text-xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
+          <p className="text-lg sm:text-xl font-bold text-emerald-500">{formatBRL(totalIncome)}</p>
         </div>
-        <div className="bg-card border-2 border-destructive/30 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingDown className="h-4 w-4 text-destructive" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("expenses")}</span>
+        <div className="bg-card border-2 border-destructive/30 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("expenses")}</span>
           </div>
-          <p className="text-xl font-bold text-destructive">{formatBRL(totalExpense)}</p>
+          <p className="text-lg sm:text-xl font-bold text-destructive">{formatBRL(totalExpense)}</p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Wallet2 className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("invested")}</span>
+        <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Wallet2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("invested")}</span>
           </div>
-          <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{formatBRL(0)}</p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Target className="h-4 w-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("goals")}</span>
+        <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("goals")}</span>
           </div>
-          <p className="text-xl font-bold text-foreground">{formatBRL(0)}</p>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{formatBRL(0)}</p>
         </div>
       </div>
 

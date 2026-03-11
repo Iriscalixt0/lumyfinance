@@ -278,15 +278,15 @@ export function AppLayout() {
       {/* Main content */}
       <div className="flex-1 md:ml-60 lg:ml-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-card/80 backdrop-blur-lg border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-20 bg-card/90 backdrop-blur-xl border-b border-border px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
+              className="md:hidden min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
               aria-label="Menu"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 text-muted-foreground" />
             </button>
 
             {/* Workspace selector */}
@@ -329,12 +329,12 @@ export function AppLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {/* Notifications */}
             <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setNotifOpen((v) => !v)}
-                className="relative min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+                className="relative min-h-[36px] min-w-[36px] flex items-center justify-center rounded-xl hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
               >
                 <Bell className="h-[18px] w-[18px]" />
                 {unreadCount > 0 && (
@@ -407,7 +407,7 @@ export function AppLayout() {
             {/* Dark mode toggle */}
             <button
               onClick={toggleTheme}
-              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-xl hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
               aria-label={theme === "dark" ? t("lightMode") : t("darkMode")}
               title={theme === "dark" ? t("lightMode") : t("darkMode")}
             >
