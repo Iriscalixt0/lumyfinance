@@ -6,8 +6,6 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
-import { HealthScoreCard } from "@/components/dashboard/HealthScoreCard";
-import { InsightPhrase } from "@/components/dashboard/InsightPhrase";
 import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
 import {
   Plus,
