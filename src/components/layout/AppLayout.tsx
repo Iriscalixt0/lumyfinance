@@ -289,6 +289,12 @@ export function AppLayout() {
               <Menu className="h-5 w-5 text-muted-foreground" />
             </button>
 
+            {/* Mobile logo */}
+            <div className="md:hidden flex items-center gap-1.5">
+              <Logo size="sm" />
+              <span className="text-base font-bold text-foreground">Lumyf</span>
+            </div>
+
             {/* Workspace selector */}
             <div className="relative hidden sm:block" ref={wsSelectorRef}>
               <button
