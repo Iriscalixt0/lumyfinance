@@ -335,32 +335,28 @@ export function TransactionsPage() {
       {!permissions.canEdit && <PermissionBanner reason={permissions.reason} hasPlan={permissions.hasPlan} isViewer={permissions.isViewer} />}
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {MONTH_NAMES[selectedMonth]} {selectedYear}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("pageSubtitle")}</p>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              {MONTH_NAMES[selectedMonth]} {selectedYear}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("pageSubtitle")}</p>
+          </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{t("monthLabel")}</span>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-card border border-border rounded-lg px-2 py-2 text-sm font-medium text-foreground focus:outline-none"
+              className="bg-card border border-border rounded-lg px-2 py-1.5 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {MONTH_NAMES.map((m, i) => (
                 <option key={i} value={i}>{m}</option>
               ))}
             </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{t("yearLabel")}</span>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-card border border-border rounded-lg px-2 py-2 text-sm font-medium text-foreground focus:outline-none"
+              className="bg-card border border-border rounded-lg px-2 py-1.5 text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
