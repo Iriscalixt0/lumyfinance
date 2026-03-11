@@ -38,14 +38,17 @@ export function BottomNav() {
       <div className="bg-[#1a1a2e] flex items-center justify-around h-[56px] relative">
         {leftItems.map(renderItem)}
 
-        {/* Center FAB — elevated green circle */}
+        {/* Center FAB — elevated green mic circle */}
         <div className="flex flex-col items-center justify-center flex-1">
           <button
-            onClick={() => navigate("/transactions?new=1")}
+            onClick={() => {
+              // Dispatch custom event to trigger VoiceFAB
+              window.dispatchEvent(new CustomEvent("lumyf:voice-start"));
+            }}
             className="relative -mt-7 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center active:scale-95 transition-transform"
-            aria-label={t("newTransaction")}
+            aria-label="Voice input"
           >
-            <Plus className="h-7 w-7" strokeWidth={2.5} />
+            <Mic className="h-6 w-6" strokeWidth={2.5} />
           </button>
         </div>
 
