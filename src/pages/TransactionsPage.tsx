@@ -599,7 +599,6 @@ export function TransactionsPage() {
                   disabled={!permissions.canEdit}
                 />
               </div>
-              </div>
               <p className="text-xs text-muted-foreground mb-1">
                 {t("magicInputHint")}
               </p>
