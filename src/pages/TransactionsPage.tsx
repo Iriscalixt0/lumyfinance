@@ -31,6 +31,8 @@ import {
 import { downloadCSV } from "@/lib/utils/csv";
 import { downloadPDF } from "@/lib/utils/pdf";
 import { ImportTransactionsModal } from "@/components/transactions/ImportTransactionsModal";
+import { VoiceInputButton } from "@/components/voice/VoiceInputButton";
+import { parseVoiceTransaction, predictCategory } from "@/lib/utils/voice-parser";
 import { ReceiptScanner } from "@/components/transactions/ReceiptScanner";
 import { ReceiptHistory } from "@/components/transactions/ReceiptHistory";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
