@@ -6,6 +6,8 @@ import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslations } from "@/lib/i18n";
 import { Plus, Target, Calendar, AlertTriangle } from "lucide-react";
+import { VoiceInputButton } from "@/components/voice/VoiceInputButton";
+import { parseVoiceGoal } from "@/lib/utils/voice-form-parser";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
