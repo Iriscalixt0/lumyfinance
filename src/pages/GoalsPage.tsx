@@ -324,8 +324,24 @@ export function GoalsPage() {
 
       <Modal open={showCreateModal} onClose={() => setShowCreateModal(false)} title={t("createModalTitle")}>
         <form onSubmit={handleCreate} className="space-y-4">
-          <div>
+          <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-foreground mb-1">{t("goalName")}</label>
+            <VoiceInputButton
+              hint={t("voiceHint") || "Fale: meta viagem 5000 reais"}
+              onTranscript={(transcript) => {
+                const parsed = parseVoiceGoal(transcript);
+                setCreateForm({
+                  ...createForm,
+                  title: parsed.title || createForm.title,
+                  target_amount: parsed.targetAmount ? String(parsed.targetAmount) : createForm.target_amount,
+                  deadline: parsed.deadline || createForm.deadline,
+                });
+                toast(t("voiceFilled") || "Campos preenchidos por voz ✓");
+              }}
+              disabled={!permissions.canEdit}
+            />
+          </div>
+          <div>
             <input
               required
               placeholder={t("goalNamePlaceholder")}
