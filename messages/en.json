@@ -414,6 +414,18 @@
     "loadingModel": "Downloading voice model...",
     "transcribing": "Transcribing..."
   },
+  "voiceInput": {
+    "hint": "Speak to fill",
+    "noSpeech": "No speech detected. Try again.",
+    "notSupported": "Your browser does not support voice input",
+    "micDenied": "Microphone permission denied.",
+    "error": "Voice recognition error",
+    "filled": "Fields filled by voice ✓",
+    "hintGoal": "Say: 'Travel goal 5000 dollars'",
+    "hintBudget": "Say: 'Food budget 800 dollars'",
+    "hintBilling": "Say: 'John 150 dollars tomorrow'",
+    "hintTransaction": "Say: 'Spent 50 dollars at the store'"
+  },
   "magicInput": {
     "placeholder": "Type: Uber 25.50, Rent 1200...",
     "description": "Description",

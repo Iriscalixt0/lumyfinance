@@ -106,6 +106,18 @@
     "loadingModel": "Téléchargement du modèle vocal...",
     "transcribing": "Transcription en cours..."
   },
+  "voiceInput": {
+    "hint": "Parler pour remplir",
+    "noSpeech": "Rien entendu. Réessayez.",
+    "notSupported": "Votre navigateur ne supporte pas la saisie vocale",
+    "micDenied": "Permission micro refusée.",
+    "error": "Erreur de reconnaissance vocale",
+    "filled": "Champs remplis par la voix ✓",
+    "hintGoal": "Dites : 'Objectif voyage 5000 euros'",
+    "hintBudget": "Dites : 'Alimentation 800 euros'",
+    "hintBilling": "Dites : 'Jean 150 euros demain'",
+    "hintTransaction": "Dites : 'Dépensé 50 euros au supermarché'"
+  },
   "magicInput": {
     "placeholder": "Tapez : Uber 25.50, Loyer 1200...",
     "description": "Description",
