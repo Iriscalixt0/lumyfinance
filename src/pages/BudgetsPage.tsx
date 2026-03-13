@@ -4,7 +4,9 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslations } from "@/lib/i18n";
-import { Wallet2, Pencil, Trash2, ChevronDown } from "lucide-react";
+import { Wallet2, Pencil, Trash2, ChevronDown, Mic } from "lucide-react";
+import { VoiceInputButton } from "@/components/voice/VoiceInputButton";
+import { parseVoiceBudget } from "@/lib/utils/voice-form-parser";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
 import { useToast } from "@/components/ui/Toast";
@@ -235,9 +237,27 @@ export function BudgetsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-card border border-border rounded-2xl p-6">
-          <h3 className="font-semibold text-foreground mb-5">
-            {editingId ? t("editBudget") : t("newBudget")}
-          </h3>
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-foreground">
+              {editingId ? t("editBudget") : t("newBudget")}
+            </h3>
+            <VoiceInputButton
+              hint={t("voiceHint") || "Fale: alimentação 800 reais"}
+              onTranscript={(transcript) => {
+                const parsed = parseVoiceBudget(transcript);
+                const catMatch = parsed.category
+                  ? expenseCategories.find(c => c.name.toLowerCase().includes(parsed.category.toLowerCase()))
+                  : null;
+                setForm({
+                  ...form,
+                  category: catMatch?.name || parsed.category || form.category,
+                  limit_amount: parsed.limitAmount ? String(parsed.limitAmount) : form.limit_amount,
+                });
+                toast(t("voiceFilled") || "Campos preenchidos por voz ✓");
+              }}
+              disabled={!permissions.canEdit}
+            />
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("category")}</label>

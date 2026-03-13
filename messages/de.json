@@ -106,6 +106,18 @@
     "loadingModel": "Sprachmodell wird geladen...",
     "transcribing": "Transkription läuft..."
   },
+  "voiceInput": {
+    "hint": "Sprechen zum Ausfüllen",
+    "noSpeech": "Nichts gehört. Versuchen Sie es erneut.",
+    "notSupported": "Ihr Browser unterstützt keine Spracheingabe",
+    "micDenied": "Mikrofonberechtigung verweigert.",
+    "error": "Spracherkennungsfehler",
+    "filled": "Felder per Sprache ausgefüllt ✓",
+    "hintGoal": "Sagen Sie: 'Ziel Reise 5000 Euro'",
+    "hintBudget": "Sagen Sie: 'Lebensmittel 800 Euro'",
+    "hintBilling": "Sagen Sie: 'Hans 150 Euro morgen'",
+    "hintTransaction": "Sagen Sie: '50 Euro für Lebensmittel ausgegeben'"
+  },
   "magicInput": {
     "placeholder": "Eingabe: Uber 25.50, Miete 1200...",
     "description": "Beschreibung",

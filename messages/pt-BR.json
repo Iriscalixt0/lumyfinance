@@ -414,6 +414,18 @@
     "loadingModel": "Baixando modelo de voz...",
     "transcribing": "Transcrevendo..."
   },
+  "voiceInput": {
+    "hint": "Falar por voz",
+    "noSpeech": "Não ouvi nada. Tente novamente.",
+    "notSupported": "Seu navegador não suporta entrada de voz",
+    "micDenied": "Permissão do microfone negada.",
+    "error": "Erro no reconhecimento de voz",
+    "filled": "Campos preenchidos por voz ✓",
+    "hintGoal": "Diga: 'Meta viagem 5000 reais'",
+    "hintBudget": "Diga: 'Alimentação 800 reais'",
+    "hintBilling": "Diga: 'João 150 reais amanhã'",
+    "hintTransaction": "Diga: 'Gastei 50 reais no mercado'"
+  },
   "magicInput": {
     "placeholder": "Digite: Uber 25.50, Aluguel 1200...",
     "description": "Descrição",

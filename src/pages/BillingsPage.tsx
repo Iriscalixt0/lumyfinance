@@ -19,6 +19,8 @@ import {
   Users,
   Wallet2,
 } from "lucide-react";
+import { VoiceInputButton } from "@/components/voice/VoiceInputButton";
+import { parseVoiceBilling } from "@/lib/utils/voice-form-parser";
 import { downloadCSV } from "@/lib/utils/csv";
 import { Modal } from "@/components/ui/Modal";
 import { z } from "zod";
@@ -350,10 +352,26 @@ export function BillingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Form */}
         <div className="bg-card border border-border rounded-2xl p-6">
-          <h3 className="font-semibold text-foreground mb-5 flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {editingId ? "Editar cobrança" : "Nova cobrança"}
-          </h3>
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              {editingId ? "Editar cobrança" : "Nova cobrança"}
+            </h3>
+            <VoiceInputButton
+              hint="Diga: João 150 reais amanhã"
+              onTranscript={(transcript) => {
+                const parsed = parseVoiceBilling(transcript);
+                setForm({
+                  ...form,
+                  description: parsed.description || form.description,
+                  amount: parsed.amount ? String(parsed.amount) : form.amount,
+                  due_date: parsed.dueDate || form.due_date,
+                });
+                toast("Campos preenchidos por voz ✓");
+              }}
+              disabled={!permissions.canEdit}
+            />
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
