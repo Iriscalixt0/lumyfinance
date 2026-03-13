@@ -258,7 +258,6 @@ export function BudgetsPage() {
               disabled={!permissions.canEdit}
             />
           </div>
-          </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("category")}</label>
