@@ -237,8 +237,27 @@ export function BudgetsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-card border border-border rounded-2xl p-6">
-          <h3 className="font-semibold text-foreground mb-5">
-            {editingId ? t("editBudget") : t("newBudget")}
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-foreground">
+              {editingId ? t("editBudget") : t("newBudget")}
+            </h3>
+            <VoiceInputButton
+              hint={t("voiceHint") || "Fale: alimentação 800 reais"}
+              onTranscript={(transcript) => {
+                const parsed = parseVoiceBudget(transcript);
+                const catMatch = parsed.category
+                  ? expenseCategories.find(c => c.name.toLowerCase().includes(parsed.category.toLowerCase()))
+                  : null;
+                setForm({
+                  ...form,
+                  category: catMatch?.name || parsed.category || form.category,
+                  limit_amount: parsed.limitAmount ? String(parsed.limitAmount) : form.limit_amount,
+                });
+                toast(t("voiceFilled") || "Campos preenchidos por voz ✓");
+              }}
+              disabled={!permissions.canEdit}
+            />
+          </div>
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
