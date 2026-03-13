@@ -575,9 +575,30 @@ export function TransactionsPage() {
             </>
           ) : (
             <>
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-foreground">Magic Input</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-foreground">Magic Input</h3>
+                </div>
+                <VoiceInputButton
+                  hint={t("voiceHint")}
+                  onTranscript={(transcript) => {
+                    const parsed = parseVoiceTransaction(transcript);
+                    const cat = predictCategory(parsed.description) || predictCategory(parsed.raw);
+                    const catMatch = cat ? categories.find(c => c.name.toLowerCase() === cat.toLowerCase()) : null;
+                    setForm({
+                      ...form,
+                      description: parsed.description || form.description,
+                      amount: parsed.amount ? String(parsed.amount) : form.amount,
+                      type: parsed.type,
+                      date: parsed.date,
+                      category_id: catMatch?.id || form.category_id,
+                    });
+                    toast(t("voiceFilled") || "✓");
+                  }}
+                  disabled={!permissions.canEdit}
+                />
+              </div>
               </div>
               <p className="text-xs text-muted-foreground mb-1">
                 {t("magicInputHint")}
