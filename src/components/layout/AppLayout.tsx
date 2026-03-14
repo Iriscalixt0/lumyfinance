@@ -289,11 +289,18 @@ export function AppLayout() {
               <Menu className="h-5 w-5 text-muted-foreground" />
             </button>
 
-            {/* Mobile logo */}
+            {/* Mobile logo + user avatar */}
             <div className="md:hidden flex items-center gap-1.5">
               <Logo size="sm" />
               <span className="text-base font-bold text-foreground">Lumyf</span>
             </div>
+            {user && (
+              <div className="md:hidden flex items-center">
+                <div className="h-7 w-7 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center ring-1 ring-primary/20">
+                  {(user.user_metadata?.full_name || user.email || "U").charAt(0).toUpperCase()}
+                </div>
+              </div>
+            )}
 
             {/* Workspace selector */}
             <div className="relative hidden sm:block" ref={wsSelectorRef}>
