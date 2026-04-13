@@ -27,6 +27,28 @@ import {
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { getPlanPriceByLocale } from "@/lib/product-config";
+import { motion } from "framer-motion";
+
+/* ── Animation variants ── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } },
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] } },
+};
+
+const phoneFLoat = {
+  hidden: { opacity: 0, y: 60, scale: 0.92 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1], delay: 0.3 } },
+};
 
 export function LandingPage() {
   const t = useTranslations("landing");
@@ -100,9 +122,14 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
-      {/* NAV — Pierre-inspired pill nav */}
+      {/* NAV */}
       <header className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
-        <div className="mx-auto max-w-5xl flex items-center justify-between rounded-full border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl px-5 sm:px-6 py-3">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="mx-auto max-w-5xl flex items-center justify-between rounded-full border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl px-5 sm:px-6 py-3"
+        >
           <Link to="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
             <Logo size="sm" />
             <span className="bg-gradient-to-r from-[hsl(160,45%,45%)] to-[hsl(160,45%,60%)] bg-clip-text text-transparent">
@@ -139,7 +166,7 @@ export function LandingPage() {
           >
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
-        </div>
+        </motion.div>
 
         {mobileOpen && (
           <div className="md:hidden mt-2 mx-auto max-w-5xl rounded-2xl border border-white/10 bg-[#0a0a0a]/95 backdrop-blur-xl px-5 pb-5 pt-3 space-y-2">
@@ -181,17 +208,22 @@ export function LandingPage() {
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[hsl(160,45%,30%)]/10 blur-[120px]" />
         </div>
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6">
             {t("hero.title")}
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/50 font-normal leading-relaxed max-w-xl mx-auto mb-10">
+          </motion.h1>
+          <motion.p variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/50 font-normal leading-relaxed max-w-xl mx-auto mb-10">
             {t("hero.subtitle")}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          </motion.p>
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to={registerHref}
-              className="bg-white text-[#0a0a0a] font-semibold px-8 py-3.5 rounded-full text-sm sm:text-base hover:bg-white/90 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+              className="bg-white text-[#0a0a0a] font-semibold px-8 py-3.5 rounded-full text-sm sm:text-base hover:bg-white/90 hover:scale-105 transition-all duration-200 flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               {t("hero.cta", { trialDays: PRODUCT_CONFIG.trialDays })}
             </Link>
@@ -201,20 +233,28 @@ export function LandingPage() {
             >
               {t("hero.howItWorks")} <ChevronRight className="h-4 w-4" />
             </a>
-          </div>
-          {/* Pills */}
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
+          </motion.div>
+          <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 mt-8">
             {["100% online", `${PRODUCT_CONFIG.trialDays} dias grátis`, "Sem cartão"].map((pill) => (
               <span key={pill} className="text-xs text-white/40 border border-white/10 rounded-full px-4 py-1.5">
                 {pill}
               </span>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* Phone Mockup */}
-        <div className="relative mt-12 sm:mt-20 flex justify-center">
-          <div className="relative w-[260px] sm:w-[300px] md:w-[340px]">
+        {/* Phone Mockup — floating entrance */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={phoneFLoat}
+          className="relative mt-12 sm:mt-20 flex justify-center"
+        >
+          <motion.div
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="relative w-[260px] sm:w-[300px] md:w-[340px]"
+          >
             <div className="absolute -inset-8 sm:-inset-12 bg-[hsl(160,45%,35%)]/8 rounded-full blur-[80px] -z-10" />
             <img
               src={heroPhoneMockup}
@@ -223,66 +263,109 @@ export function LandingPage() {
               height={1200}
               className="w-full h-auto drop-shadow-2xl"
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* FEATURES */}
       <section id="funcionalidades" className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-12 sm:mb-20">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center mb-12 sm:mb-20"
+          >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("features.title")}</h2>
             <p className="text-sm sm:text-base text-white/40 max-w-lg mx-auto">{t("features.subtitle")}</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+            variants={stagger}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+          >
             {FEATURES.map((f) => (
-              <div key={f.title} className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-7 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-300">
+              <motion.div
+                key={f.title}
+                variants={cardVariant}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-7 hover:border-white/[0.12] hover:bg-white/[0.04] transition-colors duration-300"
+              >
                 <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[hsl(160,45%,40%)]/10 text-[hsl(160,45%,55%)]">
                   <f.icon className="h-5 w-5" aria-hidden />
                 </div>
                 <h3 className="text-base sm:text-lg font-bold mb-2">{f.title}</h3>
                 <p className="text-sm text-white/40 leading-relaxed">{f.desc}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
       <section id="sobre" className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12 sm:mb-20">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center mb-12 sm:mb-20"
+          >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("steps.title")}</h2>
             <p className="text-sm sm:text-base text-white/40">{t("steps.subtitle")}</p>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8"
+          >
             {STEPS.map((s, i) => (
-              <div key={s.num} className="text-center relative">
+              <motion.div key={s.num} variants={cardVariant} className="text-center relative">
                 <span className="text-5xl sm:text-6xl font-black text-[hsl(160,45%,45%)]/15">{s.num}</span>
                 <h3 className="text-sm sm:text-base font-bold mt-2 mb-2">{s.title}</h3>
                 <p className="text-xs sm:text-sm text-white/40">{s.desc}</p>
                 {i < STEPS.length - 1 && (
                   <div className="hidden lg:block absolute top-8 -right-4 w-8 border-t border-dashed border-white/10" />
                 )}
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* TESTIMONIALS */}
       <section className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12 sm:mb-20">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center mb-12 sm:mb-20"
+          >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
               {t("testimonials.title")}
             </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 max-w-4xl mx-auto">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+            variants={stagger}
+            className="grid sm:grid-cols-2 gap-4 sm:gap-5 max-w-4xl mx-auto"
+          >
             {TESTIMONIALS.map((item, i) => (
-              <div
+              <motion.div
                 key={i}
-                className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-7"
+                variants={cardVariant}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-7 hover:border-white/[0.12] transition-colors duration-300"
               >
                 <Quote className="absolute top-5 right-5 h-5 w-5 text-[hsl(160,45%,45%)]/20" aria-hidden />
                 <p className="text-sm sm:text-base text-white/70 leading-relaxed mb-5 italic">
@@ -292,49 +375,78 @@ export function LandingPage() {
                   <span className="font-semibold text-white">{item.author}</span>
                   <span className="text-white/40">, {item.location}</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* SECURITY */}
       <section className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12 sm:mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center mb-12 sm:mb-16"
+          >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
               Como protegemos seus dados
             </h2>
             <p className="text-sm sm:text-base text-white/40 max-w-lg mx-auto">
               Segurança nível bancário. Os mesmos padrões dos maiores bancos do país.
             </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
             {SECURITY_ITEMS.map((item) => (
-              <div key={item.title} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6 text-center">
+              <motion.div
+                key={item.title}
+                variants={cardVariant}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6 text-center hover:border-white/[0.12] transition-colors duration-300"
+              >
                 <div className="mx-auto mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
                   <item.icon className="h-5 w-5 text-white/60" aria-hidden />
                 </div>
                 <h3 className="text-sm font-bold mb-2">{item.title}</h3>
                 <p className="text-xs text-white/40 leading-relaxed">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* PRICING */}
       <section id="precos" className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12 sm:mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center mb-12 sm:mb-16"
+          >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
               {t("pricing.title")}
             </h2>
             <p className="text-sm sm:text-base text-white/40 max-w-lg mx-auto">
               {t("pricing.subtext", { price: formattedPrice, trialDays: PRODUCT_CONFIG.trialDays })}
             </p>
-          </div>
-          <div className="max-w-md mx-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 sm:p-8 relative">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="max-w-md mx-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 sm:p-8 relative"
+          >
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[hsl(160,45%,45%)] text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
               {t("plans.pro.badge")}
             </span>
@@ -356,24 +468,36 @@ export function LandingPage() {
             </ul>
             <Link
               to={registerHref}
-              className="block w-full py-3.5 rounded-full font-semibold text-sm text-center bg-white text-[#0a0a0a] hover:bg-white/90 transition-colors"
+              className="block w-full py-3.5 rounded-full font-semibold text-sm text-center bg-white text-[#0a0a0a] hover:bg-white/90 hover:scale-[1.02] transition-all duration-200"
             >
               {t("plans.pro.cta", { trialDays: PRODUCT_CONFIG.trialDays })}
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* FAQ */}
       <section id="faq" className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-3xl">
-          <div className="text-center mb-12 sm:mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="text-center mb-12 sm:mb-16"
+          >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("faq.title")}</h2>
             <p className="text-sm sm:text-base text-white/40">{t("faq.subtitle")}</p>
-          </div>
-          <div className="space-y-3">
+          </motion.div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={stagger}
+            className="space-y-3"
+          >
             {FAQ_ITEMS.map((item, i) => (
-              <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+              <motion.div key={i} variants={cardVariant} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -385,25 +509,31 @@ export function LandingPage() {
                 <div className={`overflow-hidden transition-all duration-200 ${openFaq === i ? "max-h-72" : "max-h-0"}`}>
                   <p className="px-5 sm:px-6 pb-5 pt-0 text-sm text-white/40 leading-relaxed">{item.a}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* CTA FINAL */}
       <section className="py-16 sm:py-28 px-4 sm:px-6">
-        <div className="mx-auto max-w-2xl text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={fadeUp}
+          className="mx-auto max-w-2xl text-center"
+        >
           <Logo size="lg" className="mx-auto mb-6" />
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("cta.title")}</h2>
           <p className="text-sm sm:text-base text-white/40 mb-8 max-w-md mx-auto">{t("cta.subtitle")}</p>
           <Link
             to={registerHref}
-            className="bg-white text-[#0a0a0a] font-semibold px-10 py-4 rounded-full text-sm sm:text-base hover:bg-white/90 transition-colors inline-flex items-center gap-2"
+            className="bg-white text-[#0a0a0a] font-semibold px-10 py-4 rounded-full text-sm sm:text-base hover:bg-white/90 hover:scale-105 transition-all duration-200 inline-flex items-center gap-2"
           >
             {t("cta.button")} <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
+        </motion.div>
       </section>
 
       {/* FOOTER */}
