@@ -259,7 +259,7 @@ export function LandingPage() {
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="relative w-[260px] sm:w-[300px] md:w-[340px]"
           >
-            <div className="absolute -inset-8 sm:-inset-12 bg-[hsl(160,45%,35%)]/8 rounded-full blur-[80px] -z-10" />
+            <div className="absolute -inset-8 sm:-inset-12 bg-primary/[0.08] rounded-full blur-[80px] -z-10" />
             <img
               src={heroPhoneMockup}
               alt="Lumyf app dashboard mockup"
