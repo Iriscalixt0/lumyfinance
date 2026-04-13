@@ -175,7 +175,7 @@
       "q3": "A minha filha de 22 anos entrou no workspace. Foi a melhor coisa.",
       "a3": "Roberto F.",
       "l3": "Recife"
-    },
+    "pricing": {
       "title": "Plano único",
       "subtext": "{price} por mês após {trialDays} dias grátis.",
       "manageCta": "Gerir subscrição",
