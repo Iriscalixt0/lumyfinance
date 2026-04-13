@@ -211,6 +211,20 @@ export function LandingPage() {
             ))}
           </div>
         </div>
+
+        {/* Phone Mockup */}
+        <div className="relative mt-12 sm:mt-20 flex justify-center">
+          <div className="relative w-[260px] sm:w-[300px] md:w-[340px]">
+            <div className="absolute -inset-8 sm:-inset-12 bg-[hsl(160,45%,35%)]/8 rounded-full blur-[80px] -z-10" />
+            <img
+              src={heroPhoneMockup}
+              alt="Lumyf app dashboard mockup"
+              width={800}
+              height={1200}
+              className="w-full h-auto drop-shadow-2xl"
+            />
+          </div>
+        </div>
       </section>
 
       {/* FEATURES */}
