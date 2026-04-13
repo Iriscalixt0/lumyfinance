@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import heroPhoneMockup from "@/assets/hero-phone-mockup.png";
 import { PRODUCT_CONFIG } from "@/lib/product-config";
 import { useState } from "react";
 import { Logo } from "@/components/logo";
