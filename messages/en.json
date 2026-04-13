@@ -161,7 +161,21 @@
         "desc": "Track progress."
       }
     },
-    "pricing": {
+    "testimonials": {
+      "title": "Once you try it, you never go back to spreadsheets.",
+      "q0": "We used to fight about money every week. After Lumyf, it stopped.",
+      "a0": "Camila R.",
+      "l0": "São Paulo",
+      "q1": "It's the only app my wife also uses. Because it's truly simple.",
+      "a1": "Diego M.",
+      "l1": "Belo Horizonte",
+      "q2": "In three months I saw where I was wasting money. I cut it and started my savings.",
+      "a2": "Ana Paula S.",
+      "l2": "Curitiba",
+      "q3": "My 22-year-old daughter joined the workspace. Best thing ever.",
+      "a3": "Roberto F.",
+      "l3": "Recife"
+    },
       "title": "Single plan",
       "subtext": "{price} per month after {trialDays} free days.",
       "manageCta": "Manage subscription",
