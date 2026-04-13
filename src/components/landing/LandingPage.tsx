@@ -74,19 +74,12 @@ export function LandingPage() {
     [t("hero.stats.syncValue"), t("hero.stats.syncLabel")],
   ];
 
-  // Testimonials — fallback to hardcoded if i18n key missing
-  const TESTIMONIALS = (() => {
-    try {
-      const items = t("testimonials.items", { returnObjects: true });
-      if (Array.isArray(items) && items.length > 0) return items as { quote: string; author: string; location: string }[];
-    } catch { /* fallback */ }
-    return [
-      { quote: "A gente brigava por dinheiro toda semana. Depois do Lumyf, parou.", author: "Camila R.", location: "São Paulo" },
-      { quote: "É o único app que minha esposa também usa. Porque é simples de verdade.", author: "Diego M.", location: "Belo Horizonte" },
-      { quote: "Em três meses enxerguei onde estava desperdiçando. Cortei e comecei minha reserva.", author: "Ana Paula S.", location: "Curitiba" },
-      { quote: "Minha filha de 22 anos entrou no workspace. Foi a melhor coisa.", author: "Roberto F.", location: "Recife" },
-    ];
-  })();
+  const TESTIMONIALS = [
+    { quote: t("testimonials.q0"), author: t("testimonials.a0"), location: t("testimonials.l0") },
+    { quote: t("testimonials.q1"), author: t("testimonials.a1"), location: t("testimonials.l1") },
+    { quote: t("testimonials.q2"), author: t("testimonials.a2"), location: t("testimonials.l2") },
+    { quote: t("testimonials.q3"), author: t("testimonials.a3"), location: t("testimonials.l3") },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
