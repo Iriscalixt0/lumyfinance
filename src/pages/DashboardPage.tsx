@@ -1,12 +1,18 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/lib/supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
 import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
+import { SafeToSpendCard } from "@/components/dashboard/SafeToSpendCard";
+import { QuickStatsRow } from "@/components/dashboard/QuickStatsRow";
+import { GoalsOverview } from "@/components/dashboard/GoalsOverview";
+import { MemberSpending } from "@/components/dashboard/MemberSpending";
+import { HealthScoreCard } from "@/components/dashboard/HealthScoreCard";
 import {
   Plus,
   Sparkles,
@@ -14,8 +20,6 @@ import {
   Bookmark,
   Users,
   CheckCircle2,
-  ArrowDownLeft,
-  ArrowUpRight,
   ChevronRight,
 } from "lucide-react";
 
@@ -35,20 +39,28 @@ interface Category {
   icon: string;
 }
 
+interface GoalRow {
+  id: string;
+  name: string;
+  current_amount: number;
+  target_amount: number;
+}
+
 export function DashboardPage() {
   const fmt = useIntlFormat();
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const formatBRL = fmt.money;
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const { streak, unlockedKeys, totalTx, loading: gamLoading } = useGamification(activeWorkspace?.id ?? null);
 
   const [transactions, setTransactions] = useState<TxRow[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [goals, setGoals] = useState<GoalRow[]>([]);
   const [recurringExpenses, setRecurringExpenses] = useState(0);
   const [recurringIncome, setRecurringIncome] = useState(0);
-  const [budgetLimit, setBudgetLimit] = useState(0);
   const [loading, setLoading] = useState(true);
   const [hasTransactions, setHasTransactions] = useState(false);
   const [quickTxOpen, setQuickTxOpen] = useState(false);
@@ -56,6 +68,15 @@ export function DashboardPage() {
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
+
+  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Bom dia";
+    if (hour < 18) return "Boa tarde";
+    return "Boa noite";
+  }, []);
 
   const MONTH_SHORT = useMemo(() => [
     tCommon("months.january").slice(0, 3),
@@ -79,7 +100,7 @@ export function DashboardPage() {
       const startOfYear = `${currentYear}-01-01`;
       const endOfYear = `${currentYear}-12-31`;
 
-      const [txRes, budgetRes, recRes, catRes] = await Promise.all([
+      const [txRes, recRes, catRes, goalsRes] = await Promise.all([
         supabase
           .from("transactions")
           .select("id, description, amount, type, date, tags, category_id")
@@ -87,10 +108,6 @@ export function DashboardPage() {
           .gte("date", startOfYear)
           .lte("date", endOfYear)
           .order("date", { ascending: false }),
-        supabase
-          .from("budgets")
-          .select("limit_amount")
-          .eq("workspace_id", activeWorkspace.id),
         supabase
           .from("transactions")
           .select("amount, type, tags")
@@ -100,15 +117,18 @@ export function DashboardPage() {
           .from("categories")
           .select("id, name, icon")
           .eq("workspace_id", activeWorkspace.id),
+        supabase
+          .from("goals")
+          .select("id, name, current_amount, target_amount")
+          .eq("workspace_id", activeWorkspace.id)
+          .order("created_at", { ascending: false }),
       ]);
 
       const txData = txRes.data ?? [];
       setTransactions(txData);
       setCategories(catRes.data ?? []);
+      setGoals(goalsRes.data ?? []);
       setHasTransactions(txData.length > 0);
-
-      const totalBudget = (budgetRes.data ?? []).reduce((s, b) => s + (b.limit_amount || 0), 0);
-      setBudgetLimit(totalBudget);
 
       const recData = recRes.data ?? [];
       setRecurringExpenses(recData.filter(r => r.type === "expense").reduce((s, r) => s + r.amount, 0));
@@ -137,7 +157,10 @@ export function DashboardPage() {
     return { totalIncome, totalExpenses, currentMonthExpenses, currentMonthIncome, avgMonthlyExpenses, currentBalance, estimatedEndOfMonth };
   }, [transactions, currentMonth, recurringExpenses, recurringIncome]);
 
-  // Health Score calculation
+  // Safe-to-spend = current month income - current month expenses
+  const safeToSpend = metrics.currentMonthIncome - metrics.currentMonthExpenses;
+
+  // Health Score
   const healthScore = useMemo(() => {
     if (!hasTransactions) return 50;
     const { totalIncome, totalExpenses, currentMonthExpenses, avgMonthlyExpenses } = metrics;
@@ -154,7 +177,7 @@ export function DashboardPage() {
     return Math.round(Math.min(Math.max(score, 0), 100));
   }, [hasTransactions, metrics]);
 
-  // Chart data — last N months
+  // Chart data
   const chartData = useMemo(() => {
     const months = Number(chartRange);
     const data = [];
@@ -169,8 +192,8 @@ export function DashboardPage() {
     return data;
   }, [transactions, currentMonth, chartRange, MONTH_SHORT]);
 
-  // Recent transactions (last 8)
-  const recentTx = useMemo(() => transactions.slice(0, 8), [transactions]);
+  // Recent transactions
+  const recentTx = useMemo(() => transactions.slice(0, 6), [transactions]);
 
   const getCategoryIcon = (id: string | null | undefined) => {
     if (!id) return "$";
@@ -178,18 +201,35 @@ export function DashboardPage() {
     return cat?.icon || "$";
   };
 
+  // Goals for overview
+  const goalsForOverview = useMemo(() => goals.map(g => ({
+    id: g.id,
+    name: g.name,
+    current: g.current_amount,
+    target: g.target_amount,
+  })), [goals]);
+
+  // Mock member spending from transactions (group by unique description patterns)
+  const memberSpending = useMemo(() => {
+    if (!hasTransactions) return [];
+    const totalExpenses = metrics.currentMonthExpenses;
+    if (totalExpenses <= 0) return [];
+    return [
+      { name: userName, avatar: undefined, spent: metrics.currentMonthExpenses, percentage: 100 },
+    ];
+  }, [hasTransactions, metrics, userName]);
+
   /* ---------- Skeleton Loader ---------- */
   if (loading) {
     return (
-      <div className="animate-fade space-y-5">
-        <div className="h-7 w-40 bg-muted rounded-lg animate-pulse" />
-        <div className="bg-card border border-border rounded-2xl p-4 animate-pulse">
-          <div className="h-48 bg-muted rounded-xl" />
+      <div className="animate-fade space-y-4">
+        <div className="h-7 w-48 bg-muted rounded-lg animate-pulse" />
+        <div className="h-36 bg-primary/10 rounded-2xl animate-pulse" />
+        <div className="flex gap-3">
+          <div className="flex-1 h-20 bg-muted rounded-2xl animate-pulse" />
+          <div className="flex-1 h-20 bg-muted rounded-2xl animate-pulse" />
         </div>
-        <div className="h-12 bg-muted rounded-xl animate-pulse" />
-        <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="h-16 bg-card border border-border rounded-xl animate-pulse" />)}
-        </div>
+        <div className="h-48 bg-card border border-border rounded-2xl animate-pulse" />
       </div>
     );
   }
@@ -204,7 +244,12 @@ export function DashboardPage() {
 
     return (
       <div className="animate-fade space-y-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+          {greeting}, {userName} 👋
+        </h1>
+
+        {/* Safe-to-Spend even empty */}
+        <SafeToSpendCard amount={formatBRL(0)} />
 
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
           <div className="text-center mb-8">
@@ -263,61 +308,87 @@ export function DashboardPage() {
   /* ---------- Normal Dashboard ---------- */
   return (
     <div className="animate-fade space-y-4">
-      <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+      {/* Greeting */}
+      <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+        {greeting}, {userName} 👋
+      </h1>
 
-      {/* Transactions Chart Card — dark card */}
-      <div className="bg-[#1a1a2e] rounded-2xl p-4 text-white">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-white/90">{t("transactions")}</h2>
-          <select
-            value={chartRange}
-            onChange={(e) => setChartRange(e.target.value as "6" | "12")}
-            className="bg-white/10 text-white/80 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-white/10 focus:outline-none cursor-pointer"
-          >
-            <option value="6" className="bg-[#1a1a2e] text-white">6 meses</option>
-            <option value="12" className="bg-[#1a1a2e] text-white">12 meses</option>
-          </select>
+      {/* Safe-to-Spend Hero Card */}
+      <SafeToSpendCard amount={formatBRL(safeToSpend)} />
+
+      {/* Quick Stats — Income / Expenses */}
+      <QuickStatsRow
+        income={formatBRL(metrics.currentMonthIncome)}
+        expenses={formatBRL(metrics.currentMonthExpenses)}
+        incomeLabel={t("income")}
+        expensesLabel={t("expenses")}
+      />
+
+      {/* Desktop: 2-column grid for chart + health/goals */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Chart Card */}
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-foreground">{t("transactions")}</h2>
+            <select
+              value={chartRange}
+              onChange={(e) => setChartRange(e.target.value as "6" | "12")}
+              className="bg-muted text-foreground text-[11px] font-medium px-2.5 py-1 rounded-lg border border-border focus:outline-none cursor-pointer"
+            >
+              <option value="6">6 meses</option>
+              <option value="12">12 meses</option>
+            </select>
+          </div>
+          <div className="h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} barGap={2} barCategoryGap="25%">
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  width={35}
+                  tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "10px",
+                    fontSize: "12px",
+                    color: "hsl(var(--foreground))",
+                  }}
+                  formatter={(value: number) => [formatBRL(Math.round(value * 100)), ""]}
+                  labelStyle={{ fontWeight: 600 }}
+                />
+                <Bar dataKey="income" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} name={t("income")} />
+                <Bar dataKey="expense" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} name={t("expenses")} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="h-44">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} barGap={2} barCategoryGap="25%">
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: "rgba(255,255,255,0.4)" }}
-                width={35}
-                tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#1a1a2e",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: "10px",
-                  fontSize: "12px",
-                  color: "#fff",
-                }}
-                formatter={(value: number) => [formatBRL(Math.round(value * 100)), ""]}
-                labelStyle={{ fontWeight: 600, color: "#fff" }}
-              />
-              <Bar dataKey="income" fill="#4ade80" radius={[4, 4, 0, 0]} name={t("income")} />
-              <Bar dataKey="expense" fill="rgba(255,255,255,0.15)" radius={[4, 4, 0, 0]} name={t("expenses")} />
-            </BarChart>
-          </ResponsiveContainer>
+
+        {/* Health Score + Goals on desktop */}
+        <div className="space-y-4">
+          <HealthScoreCard score={healthScore} />
+          <GoalsOverview goals={goalsForOverview} />
         </div>
       </div>
 
-      {/* Add Expense Button — green pill */}
+      {/* Member Spending */}
+      {memberSpending.length > 0 && <MemberSpending members={memberSpending} />}
+
+      {/* Add Transaction Button */}
       <button
         onClick={() => setQuickTxOpen(true)}
         className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
       >
-        {t("firstTransaction")}
+        <Plus className="h-4 w-4" /> {t("firstTransaction")}
       </button>
 
       {/* Recent Transactions */}
