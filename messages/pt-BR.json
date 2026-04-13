@@ -163,28 +163,18 @@
     },
     "testimonials": {
       "title": "Quem usa não volta pra planilha.",
-      "items": [
-        {
-          "quote": "A gente brigava por dinheiro toda semana. Depois do Lumyf, parou.",
-          "author": "Camila R.",
-          "location": "São Paulo"
-        },
-        {
-          "quote": "É o único app que minha esposa também usa. Porque é simples de verdade.",
-          "author": "Diego M.",
-          "location": "Belo Horizonte"
-        },
-        {
-          "quote": "Em três meses enxerguei onde estava desperdiçando. Cortei e comecei minha reserva.",
-          "author": "Ana Paula S.",
-          "location": "Curitiba"
-        },
-        {
-          "quote": "Minha filha de 22 anos entrou no workspace. Foi a melhor coisa.",
-          "author": "Roberto F.",
-          "location": "Recife"
-        }
-      ]
+      "q0": "A gente brigava por dinheiro toda semana. Depois do Lumyf, parou.",
+      "a0": "Camila R.",
+      "l0": "São Paulo",
+      "q1": "É o único app que minha esposa também usa. Porque é simples de verdade.",
+      "a1": "Diego M.",
+      "l1": "Belo Horizonte",
+      "q2": "Em três meses enxerguei onde estava desperdiçando. Cortei e comecei minha reserva.",
+      "a2": "Ana Paula S.",
+      "l2": "Curitiba",
+      "q3": "Minha filha de 22 anos entrou no workspace. Foi a melhor coisa.",
+      "a3": "Roberto F.",
+      "l3": "Recife"
     },
     "pricing": {
       "title": "Simples. Transparente. Justo.",
