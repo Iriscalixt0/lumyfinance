@@ -167,6 +167,21 @@
         "desc": "Sigan el progreso."
       }
     },
+    "testimonials": {
+      "title": "Quien lo usa no vuelve a las hojas de cálculo.",
+      "q0": "Peleábamos por dinero cada semana. Después de Lumyf, paró.",
+      "a0": "Camila R.",
+      "l0": "São Paulo",
+      "q1": "Es la única app que mi esposa también usa. Porque es realmente simple.",
+      "a1": "Diego M.",
+      "l1": "Belo Horizonte",
+      "q2": "En tres meses vi dónde estaba desperdiciando. Corté y empecé mi reserva.",
+      "a2": "Ana Paula S.",
+      "l2": "Curitiba",
+      "q3": "Mi hija de 22 años entró al workspace. Fue lo mejor.",
+      "a3": "Roberto F.",
+      "l3": "Recife"
+    },
     "plans": {
       "title": "Planes para toda la familia",
       "subtitle": "Empieza gratis. Mejora cuando lo necesites.",

@@ -161,6 +161,21 @@
         "desc": "Acompanhem o progresso."
       }
     },
+    "testimonials": {
+      "title": "Quem usa não volta para as folhas de cálculo.",
+      "q0": "Discutíamos por dinheiro todas as semanas. Depois do Lumyf, parou.",
+      "a0": "Camila R.",
+      "l0": "São Paulo",
+      "q1": "É a única app que a minha mulher também usa. Porque é simples a sério.",
+      "a1": "Diego M.",
+      "l1": "Belo Horizonte",
+      "q2": "Em três meses percebi onde estava a desperdiçar. Cortei e comecei a minha reserva.",
+      "a2": "Ana Paula S.",
+      "l2": "Curitiba",
+      "q3": "A minha filha de 22 anos entrou no workspace. Foi a melhor coisa.",
+      "a3": "Roberto F.",
+      "l3": "Recife"
+    },
     "pricing": {
       "title": "Plano único",
       "subtext": "{price} por mês após {trialDays} dias grátis.",

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { PRODUCT_CONFIG } from "@/lib/product-config";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Logo } from "@/components/logo";
 import {
   ArrowRight,
@@ -18,6 +18,7 @@ import {
   HelpCircle,
   Moon,
   Sun,
+  Quote,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -71,6 +72,13 @@ export function LandingPage() {
     [t("hero.stats.onlineValue"), t("hero.stats.onlineLabel")],
     [`${PRODUCT_CONFIG.trialDays} ${t("hero.stats.trialValue")}`, t("hero.stats.trialLabel")],
     [t("hero.stats.syncValue"), t("hero.stats.syncLabel")],
+  ];
+
+  const TESTIMONIALS = [
+    { quote: t("testimonials.q0"), author: t("testimonials.a0"), location: t("testimonials.l0") },
+    { quote: t("testimonials.q1"), author: t("testimonials.a1"), location: t("testimonials.l1") },
+    { quote: t("testimonials.q2"), author: t("testimonials.a2"), location: t("testimonials.l2") },
+    { quote: t("testimonials.q3"), author: t("testimonials.a3"), location: t("testimonials.l3") },
   ];
 
   return (
@@ -249,6 +257,34 @@ export function LandingPage() {
               <p className="text-xs sm:text-sm text-muted-foreground">{s.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="py-12 sm:py-20 px-4 sm:px-6 bg-secondary/50">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight">
+              {t("testimonials.title")}
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            {TESTIMONIALS.map((item, i) => (
+              <div
+                key={i}
+                className="relative bg-card rounded-2xl p-5 sm:p-6 shadow-card border border-border"
+              >
+                <Quote className="absolute top-4 right-4 h-5 w-5 text-accent/20" aria-hidden />
+                <p className="text-sm sm:text-base text-foreground leading-relaxed mb-4 italic">
+                  "{item.quote}"
+                </p>
+                <div className="text-sm">
+                  <span className="font-semibold text-foreground">{item.author}</span>
+                  <span className="text-muted-foreground">, {item.location}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
