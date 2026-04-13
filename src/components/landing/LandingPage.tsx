@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { PRODUCT_CONFIG } from "@/lib/product-config";
 import { useState } from "react";
 import { Logo } from "@/components/logo";
+import heroMockup from "@/assets/hero-mockup.png";
 import {
   ArrowRight,
   BarChart3,
