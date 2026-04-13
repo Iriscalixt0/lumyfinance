@@ -207,8 +207,10 @@ export function LandingPage() {
 
       {/* HERO */}
       <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-24 px-4 sm:px-6">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[hsl(160,45%,30%)]/10 blur-[120px]" />
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full bg-primary/[0.07] blur-[100px]" />
+          <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] rounded-full bg-accent/[0.05] blur-[120px]" />
+          <div className="absolute top-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-primary/[0.04] blur-[140px]" />
         </div>
         <motion.div
           initial="hidden"
@@ -257,7 +259,7 @@ export function LandingPage() {
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="relative w-[260px] sm:w-[300px] md:w-[340px]"
           >
-            <div className="absolute -inset-8 sm:-inset-12 bg-[hsl(160,45%,35%)]/8 rounded-full blur-[80px] -z-10" />
+            <div className="absolute -inset-8 sm:-inset-12 bg-primary/[0.08] rounded-full blur-[80px] -z-10" />
             <img
               src={heroPhoneMockup}
               alt="Lumyf app dashboard mockup"
