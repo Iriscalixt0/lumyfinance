@@ -16,20 +16,22 @@ import {
   X,
   ChevronDown,
   HelpCircle,
-  Moon,
-  Sun,
+  Check,
   Quote,
+  ShieldCheck,
+  Lock,
+  Eye,
+  Landmark,
 } from "lucide-react";
-import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { PlanCard } from "@/components/plan/plan-card";
-import { useTranslations } from "@/lib/i18n";
+import { useTranslations, useLocale } from "@/lib/i18n";
+import { getPlanPriceByLocale } from "@/lib/product-config";
 
 export function LandingPage() {
   const t = useTranslations("landing");
+  const locale = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const { theme, toggleTheme } = useTheme();
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const loginHref = "/login";
   const registerHref = "/register";
@@ -68,12 +70,6 @@ export function LandingPage() {
     { q: t("faq.q6"), a: t("faq.a6") },
   ];
 
-  const STATS = [
-    [t("hero.stats.onlineValue"), t("hero.stats.onlineLabel")],
-    [`${PRODUCT_CONFIG.trialDays} ${t("hero.stats.trialValue")}`, t("hero.stats.trialLabel")],
-    [t("hero.stats.syncValue"), t("hero.stats.syncLabel")],
-  ];
-
   const TESTIMONIALS = [
     { quote: t("testimonials.q0"), author: t("testimonials.a0"), location: t("testimonials.l0") },
     { quote: t("testimonials.q1"), author: t("testimonials.a1"), location: t("testimonials.l1") },
@@ -81,19 +77,41 @@ export function LandingPage() {
     { quote: t("testimonials.q3"), author: t("testimonials.a3"), location: t("testimonials.l3") },
   ];
 
+  const SECURITY_ITEMS = [
+    { icon: ShieldCheck, title: t("features.security.title"), desc: t("features.security.desc") },
+    { icon: Lock, title: "Dados criptografados", desc: "Seus dados são protegidos com criptografia de ponta a ponta." },
+    { icon: Eye, title: "Somente leitura", desc: "Nós nunca acessamos suas contas bancárias nem fazemos transações." },
+    { icon: Landmark, title: "Controle total", desc: "Você registra tudo manualmente. Seus dados são só seus." },
+  ];
+
+  const priceInfo = getPlanPriceByLocale(locale);
+  const formattedPrice = priceInfo.formatted;
+
+  const planFeatures = [
+    t("plans.pro.features.trial", { trialDays: PRODUCT_CONFIG.trialDays }),
+    t("plans.pro.features.workspaces", { count: PRODUCT_CONFIG.maxWorkspaces }),
+    t("plans.pro.features.members", { count: PRODUCT_CONFIG.maxMembersPerWorkspace }),
+    t("plans.pro.features.unlimitedTransactions"),
+    t("plans.pro.features.unlimitedGoals"),
+    t("plans.pro.features.advancedReports"),
+    t("plans.pro.features.prioritySupport"),
+  ];
+
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* NAV */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-5 py-4">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+      {/* NAV — Pierre-inspired pill nav */}
+      <header className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
+        <div className="mx-auto max-w-5xl flex items-center justify-between rounded-full border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl px-5 sm:px-6 py-3">
+          <Link to="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
             <Logo size="sm" />
-            <span className="text-gradient-hero">Lumyf</span>
+            <span className="bg-gradient-to-r from-[hsl(160,45%,45%)] to-[hsl(160,45%,60%)] bg-clip-text text-transparent">
+              Lumyf
+            </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
             {NAV_LINKS.map((l) => (
-              <a key={l.href} href={`#${l.href}`} className="whitespace-nowrap transition-colors hover:text-foreground">
+              <a key={l.href} href={`#${l.href}`} className="whitespace-nowrap transition-colors hover:text-white">
                 {l.label}
               </a>
             ))}
@@ -101,20 +119,12 @@ export function LandingPage() {
 
           <div className="hidden md:flex items-center gap-3">
             <LocaleSwitcher />
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-              aria-label={theme === "dark" ? t("theme.activateLight") : t("theme.activateDark")}
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-            <Link to={loginHref} className="whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link to={loginHref} className="whitespace-nowrap text-sm font-medium text-white/70 hover:text-white transition-colors px-4 py-2 rounded-full border border-white/10 hover:border-white/25">
               {t("nav.login")}
             </Link>
             <Link
               to={registerHref}
-              className="whitespace-nowrap bg-hero-gradient text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+              className="whitespace-nowrap bg-white text-[#0a0a0a] text-sm font-semibold px-5 py-2 rounded-full hover:bg-white/90 transition-colors"
             >
               {t("nav.createAccount")}
             </Link>
@@ -122,7 +132,7 @@ export function LandingPage() {
 
           <button
             type="button"
-            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-foreground hover:bg-secondary transition-colors"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-white"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
@@ -131,112 +141,92 @@ export function LandingPage() {
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-background px-4 pb-5 pt-3 space-y-2">
+          <div className="md:hidden mt-2 mx-auto max-w-5xl rounded-2xl border border-white/10 bg-[#0a0a0a]/95 backdrop-blur-xl px-5 pb-5 pt-3 space-y-2">
             {NAV_LINKS.map((l) => (
               <a
                 key={l.href}
                 href={`#${l.href}`}
-                className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="block py-2.5 text-sm font-medium text-white/60 hover:text-white transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 {l.label}
               </a>
             ))}
-            <div className="pt-2 space-y-2 border-t border-border">
+            <div className="pt-3 space-y-2 border-t border-white/10">
               <div className="flex justify-center py-2">
                 <LocaleSwitcher />
               </div>
               <Link
                 to={loginHref}
-                className="block w-full rounded-lg border border-border px-5 py-2.5 text-center text-sm font-semibold text-foreground hover:bg-secondary transition-colors"
+                className="block w-full rounded-full border border-white/15 px-5 py-2.5 text-center text-sm font-semibold text-white hover:bg-white/5 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 {t("nav.login")}
               </Link>
               <Link
                 to={registerHref}
-                className="block w-full bg-hero-gradient text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg text-center"
+                className="block w-full bg-white text-[#0a0a0a] text-sm font-semibold px-5 py-2.5 rounded-full text-center hover:bg-white/90 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 {t("nav.createAccount")}
               </Link>
-              <button
-                type="button"
-                onClick={() => { toggleTheme(); setMobileOpen(false); }}
-                className="block w-full rounded-lg border border-border px-5 py-2.5 text-center text-sm font-semibold text-foreground"
-              >
-                {theme === "dark" ? t("theme.light") : t("theme.dark")}
-              </button>
             </div>
           </div>
         )}
       </header>
 
       {/* HERO */}
-      <section className="relative pt-28 pb-12 md:pt-29 md:pb-24 px-4 sm:px-6">
-        <div
-          className="absolute inset-0 -z-10 opacity-[0.03]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, hsl(160 45% 30%) 1px, transparent 0)",
-            backgroundSize: "32px 32px",
-          }}
-        />
+      <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-24 px-4 sm:px-6">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[hsl(160,45%,30%)]/10 blur-[120px]" />
+        </div>
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary mb-5 sm:mb-6">
-            <PiggyBank className="h-3.5 w-3.5" />
-            {t("hero.badge")}
-          </span>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl leading-tight tracking-tight mb-2 sm:mb-3">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6">
             {t("hero.title")}
           </h1>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gradient-hero mb-4 sm:mb-6">
-            {t("hero.titleHighlight", { trialDays: PRODUCT_CONFIG.trialDays })}
-          </h2>
-          <div className="max-w-xl mx-auto mt-2 sm:mt-3 mb-8 sm:mb-10">
-            <h3 className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">{t("hero.subtitle")}</h3>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+          <p className="text-base sm:text-lg md:text-xl text-white/50 font-normal leading-relaxed max-w-xl mx-auto mb-10">
+            {t("hero.subtitle")}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to={registerHref}
-              className="bg-hero-gradient text-primary-foreground font-semibold px-7 sm:px-8 py-3.5 rounded-xl text-sm sm:text-base hover:opacity-90 transition-opacity flex items-center gap-2 w-full sm:w-auto justify-center"
+              className="bg-white text-[#0a0a0a] font-semibold px-8 py-3.5 rounded-full text-sm sm:text-base hover:bg-white/90 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
             >
-              {t("hero.cta", { trialDays: PRODUCT_CONFIG.trialDays })} <ArrowRight className="h-4 w-4" />
+              {t("hero.cta", { trialDays: PRODUCT_CONFIG.trialDays })}
             </Link>
             <a
               href="#funcionalidades"
-              className="text-muted-foreground font-medium flex items-center gap-1.5 hover:text-foreground transition-colors text-sm sm:text-base"
+              className="text-white/50 font-medium flex items-center gap-1.5 hover:text-white transition-colors text-sm sm:text-base"
             >
               {t("hero.howItWorks")} <ChevronRight className="h-4 w-4" />
             </a>
           </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mx-auto mt-10 sm:mt-16 max-w-2xl grid grid-cols-3 gap-3 sm:gap-6 text-center">
-          {STATS.map(([val, label]) => (
-            <div key={label}>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient-hero">{val}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{label}</p>
-            </div>
-          ))}
+          {/* Pills */}
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
+            {["100% online", `${PRODUCT_CONFIG.trialDays} dias grátis`, "Sem cartão"].map((pill) => (
+              <span key={pill} className="text-xs text-white/40 border border-white/10 rounded-full px-4 py-1.5">
+                {pill}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* FEATURES */}
-      <section id="funcionalidades" className="py-12 sm:py-20 px-4 sm:px-6 bg-secondary/50">
+      <section id="funcionalidades" className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-10 sm:mb-14">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3">{t("features.title")}</h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">{t("features.subtitle")}</p>
+          <div className="text-center mb-12 sm:mb-20">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("features.title")}</h2>
+            <p className="text-sm sm:text-base text-white/40 max-w-lg mx-auto">{t("features.subtitle")}</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {FEATURES.map((f) => (
-              <div key={f.title} className="group bg-card rounded-2xl p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-                <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-secondary text-primary" role="img" aria-label={f.title}>
+              <div key={f.title} className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-7 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-300">
+                <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[hsl(160,45%,40%)]/10 text-[hsl(160,45%,55%)]">
                   <f.icon className="h-5 w-5" aria-hidden />
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 font-sans">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <h3 className="text-base sm:text-lg font-bold mb-2">{f.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -244,44 +234,74 @@ export function LandingPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="sobre" className="py-12 sm:py-20 px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl text-center mb-10 sm:mb-14">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3">{t("steps.title")}</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">{t("steps.subtitle")}</p>
-        </div>
-        <div className="mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {STEPS.map((s) => (
-            <div key={s.num} className="text-center">
-              <span className="text-3xl sm:text-4xl font-bold text-accent/30">{s.num}</span>
-              <h3 className="text-sm sm:text-base font-semibold mt-2 mb-1 font-sans">{s.title}</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">{s.desc}</p>
-            </div>
-          ))}
+      <section id="sobre" className="py-16 sm:py-28 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12 sm:mb-20">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("steps.title")}</h2>
+            <p className="text-sm sm:text-base text-white/40">{t("steps.subtitle")}</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {STEPS.map((s, i) => (
+              <div key={s.num} className="text-center relative">
+                <span className="text-5xl sm:text-6xl font-black text-[hsl(160,45%,45%)]/15">{s.num}</span>
+                <h3 className="text-sm sm:text-base font-bold mt-2 mb-2">{s.title}</h3>
+                <p className="text-xs sm:text-sm text-white/40">{s.desc}</p>
+                {i < STEPS.length - 1 && (
+                  <div className="hidden lg:block absolute top-8 -right-4 w-8 border-t border-dashed border-white/10" />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="py-12 sm:py-20 px-4 sm:px-6 bg-secondary/50">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-10 sm:mb-14">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight">
+      <section className="py-16 sm:py-28 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12 sm:mb-20">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
               {t("testimonials.title")}
             </h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 max-w-4xl mx-auto">
             {TESTIMONIALS.map((item, i) => (
               <div
                 key={i}
-                className="relative bg-card rounded-2xl p-5 sm:p-6 shadow-card border border-border"
+                className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-7"
               >
-                <Quote className="absolute top-4 right-4 h-5 w-5 text-accent/20" aria-hidden />
-                <p className="text-sm sm:text-base text-foreground leading-relaxed mb-4 italic">
+                <Quote className="absolute top-5 right-5 h-5 w-5 text-[hsl(160,45%,45%)]/20" aria-hidden />
+                <p className="text-sm sm:text-base text-white/70 leading-relaxed mb-5 italic">
                   "{item.quote}"
                 </p>
                 <div className="text-sm">
-                  <span className="font-semibold text-foreground">{item.author}</span>
-                  <span className="text-muted-foreground">, {item.location}</span>
+                  <span className="font-semibold text-white">{item.author}</span>
+                  <span className="text-white/40">, {item.location}</span>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECURITY */}
+      <section className="py-16 sm:py-28 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+              Como protegemos seus dados
+            </h2>
+            <p className="text-sm sm:text-base text-white/40 max-w-lg mx-auto">
+              Segurança nível bancário. Os mesmos padrões dos maiores bancos do país.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {SECURITY_ITEMS.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6 text-center">
+                <div className="mx-auto mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                  <item.icon className="h-5 w-5 text-white/60" aria-hidden />
+                </div>
+                <h3 className="text-sm font-bold mb-2">{item.title}</h3>
+                <p className="text-xs text-white/40 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -289,31 +309,66 @@ export function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <PlanCard ctaVariant="register" ctaHref={registerHref} sectionId="precos" />
+      <section id="precos" className="py-16 sm:py-28 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+              {t("pricing.title")}
+            </h2>
+            <p className="text-sm sm:text-base text-white/40 max-w-lg mx-auto">
+              {t("pricing.subtext", { price: formattedPrice, trialDays: PRODUCT_CONFIG.trialDays })}
+            </p>
+          </div>
+          <div className="max-w-md mx-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 sm:p-8 relative">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[hsl(160,45%,45%)] text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+              {t("plans.pro.badge")}
+            </span>
+            <h3 className="text-lg font-bold">{t("plans.pro.name")}</h3>
+            <p className="text-sm text-white/40 mt-1">
+              {t("plans.pro.desc", { trialDays: PRODUCT_CONFIG.trialDays })}
+            </p>
+            <div className="mt-5 mb-6">
+              <span className="text-4xl sm:text-5xl font-black">{formattedPrice}</span>
+              <span className="text-sm text-white/40">{t("plans.pro.period")}</span>
+            </div>
+            <ul className="space-y-3 mb-8">
+              {planFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-sm text-white/70">
+                  <Check className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(160,45%,55%)]" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link
+              to={registerHref}
+              className="block w-full py-3.5 rounded-full font-semibold text-sm text-center bg-white text-[#0a0a0a] hover:bg-white/90 transition-colors"
+            >
+              {t("plans.pro.cta", { trialDays: PRODUCT_CONFIG.trialDays })}
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-12 sm:py-20 px-4 sm:px-6">
+      <section id="faq" className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-3xl">
-          <div className="text-center mb-10 sm:mb-14">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <HelpCircle className="h-6 w-6 sm:h-8 sm:w-8 text-accent" aria-hidden />
-              <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight">{t("faq.title")}</h2>
-            </div>
-            <p className="text-sm sm:text-base text-muted-foreground">{t("faq.subtitle")}</p>
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("faq.title")}</h2>
+            <p className="text-sm sm:text-base text-white/40">{t("faq.subtitle")}</p>
           </div>
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-3">
             {FAQ_ITEMS.map((item, i) => (
-              <div key={i} className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
+              <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 text-left text-sm sm:text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                  className="w-full flex items-center justify-between gap-4 px-5 sm:px-6 py-4 sm:py-5 text-left text-sm sm:text-base font-medium text-white hover:bg-white/[0.03] transition-colors"
                 >
                   {item.q}
-                  <ChevronDown className={`h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${openFaq === i ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-white/30 transition-transform duration-200 ${openFaq === i ? "rotate-180" : ""}`} />
                 </button>
                 <div className={`overflow-hidden transition-all duration-200 ${openFaq === i ? "max-h-72" : "max-h-0"}`}>
-                  <p className="px-4 sm:px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed">{item.a}</p>
+                  <p className="px-5 sm:px-6 pb-5 pt-0 text-sm text-white/40 leading-relaxed">{item.a}</p>
                 </div>
               </div>
             ))}
@@ -321,15 +376,15 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-12 sm:py-20 px-4 sm:px-6">
+      {/* CTA FINAL */}
+      <section className="py-16 sm:py-28 px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <Logo size="lg" className="mx-auto mb-5 sm:mb-6" />
-          <h2 className="text-2xl sm:text-3xl md:text-4xl tracking-tight mb-3 sm:mb-4">{t("cta.title")}</h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-md mx-auto">{t("cta.subtitle")}</p>
+          <Logo size="lg" className="mx-auto mb-6" />
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{t("cta.title")}</h2>
+          <p className="text-sm sm:text-base text-white/40 mb-8 max-w-md mx-auto">{t("cta.subtitle")}</p>
           <Link
             to={registerHref}
-            className="bg-hero-gradient text-primary-foreground font-semibold px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl text-sm sm:text-base hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+            className="bg-white text-[#0a0a0a] font-semibold px-10 py-4 rounded-full text-sm sm:text-base hover:bg-white/90 transition-colors inline-flex items-center gap-2"
           >
             {t("cta.button")} <ArrowRight className="h-4 w-4" />
           </Link>
@@ -337,17 +392,17 @@ export function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-border py-8 sm:py-10 px-4 sm:px-6">
-        <div className="mx-auto max-w-6xl flex flex-col items-center gap-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <Link to="/" className="flex items-center gap-2 font-bold text-foreground">
+      <footer className="border-t border-white/[0.06] py-10 px-4 sm:px-6">
+        <div className="mx-auto max-w-6xl flex flex-col items-center gap-5 text-sm text-white/40 sm:flex-row sm:justify-between">
+          <Link to="/" className="flex items-center gap-2 font-bold text-white">
             <Logo size="sm" />
             Lumyf
           </Link>
           <p className="text-xs sm:text-sm text-center">{t("footer.copyright", { year: new Date().getFullYear() })}</p>
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-6">
-            <Link to="/terms" className="hover:text-foreground transition-colors text-xs sm:text-sm">{t("footer.terms")}</Link>
-            <Link to="/privacy" className="hover:text-foreground transition-colors text-xs sm:text-sm">{t("footer.privacy")}</Link>
-            <Link to="/refund" className="hover:text-foreground transition-colors text-xs sm:text-sm">{t("footer.refund")}</Link>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <Link to="/terms" className="hover:text-white transition-colors text-xs sm:text-sm">{t("footer.terms")}</Link>
+            <Link to="/privacy" className="hover:text-white transition-colors text-xs sm:text-sm">{t("footer.privacy")}</Link>
+            <Link to="/refund" className="hover:text-white transition-colors text-xs sm:text-sm">{t("footer.refund")}</Link>
           </div>
         </div>
       </footer>
