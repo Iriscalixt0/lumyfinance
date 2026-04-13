@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { PRODUCT_CONFIG } from "@/lib/product-config";
 import { useState } from "react";
 import { Logo } from "@/components/logo";
+import heroMockup from "@/assets/hero-mockup.png";
 import {
   ArrowRight,
   BarChart3,
@@ -173,7 +174,7 @@ export function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative pt-28 pb-12 md:pt-29 md:pb-24 px-4 sm:px-6">
+      <section className="relative pt-28 pb-12 md:pt-32 md:pb-24 px-4 sm:px-6">
         <div
           className="absolute inset-0 -z-10 opacity-[0.03]"
           style={{
@@ -181,44 +182,57 @@ export function LandingPage() {
             backgroundSize: "32px 32px",
           }}
         />
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary mb-5 sm:mb-6">
-            <PiggyBank className="h-3.5 w-3.5" />
-            {t("hero.badge")}
-          </span>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl leading-tight tracking-tight mb-2 sm:mb-3">
-            {t("hero.title")}
-          </h1>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gradient-hero mb-4 sm:mb-6">
-            {t("hero.titleHighlight", { trialDays: PRODUCT_CONFIG.trialDays })}
-          </h2>
-          <div className="max-w-xl mx-auto mt-2 sm:mt-3 mb-8 sm:mb-10">
-            <h3 className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">{t("hero.subtitle")}</h3>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <Link
-              to={registerHref}
-              className="bg-hero-gradient text-primary-foreground font-semibold px-7 sm:px-8 py-3.5 rounded-xl text-sm sm:text-base hover:opacity-90 transition-opacity flex items-center gap-2 w-full sm:w-auto justify-center"
-            >
-              {t("hero.cta", { trialDays: PRODUCT_CONFIG.trialDays })} <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="#funcionalidades"
-              className="text-muted-foreground font-medium flex items-center gap-1.5 hover:text-foreground transition-colors text-sm sm:text-base"
-            >
-              {t("hero.howItWorks")} <ChevronRight className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mx-auto mt-10 sm:mt-16 max-w-2xl grid grid-cols-3 gap-3 sm:gap-6 text-center">
-          {STATS.map(([val, label]) => (
-            <div key={label}>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient-hero">{val}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{label}</p>
+        <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center gap-10 md:gap-16">
+          {/* Text */}
+          <div className="flex-1 text-center md:text-left">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary mb-5 sm:mb-6">
+              <PiggyBank className="h-3.5 w-3.5" />
+              {t("hero.badge")}
+            </span>
+            <h1 className="text-3xl sm:text-5xl md:text-5xl lg:text-6xl leading-tight tracking-tight mb-2 sm:mb-3">
+              {t("hero.title")}
+            </h1>
+            <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-gradient-hero mb-4 sm:mb-6">
+              {t("hero.titleHighlight", { trialDays: PRODUCT_CONFIG.trialDays })}
+            </h2>
+            <div className="max-w-xl mt-2 sm:mt-3 mb-8 sm:mb-10 mx-auto md:mx-0">
+              <h3 className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">{t("hero.subtitle")}</h3>
             </div>
-          ))}
+            <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-3 sm:gap-4">
+              <Link
+                to={registerHref}
+                className="bg-hero-gradient text-primary-foreground font-semibold px-7 sm:px-8 py-3.5 rounded-xl text-sm sm:text-base hover:opacity-90 transition-opacity flex items-center gap-2 w-full sm:w-auto justify-center"
+              >
+                {t("hero.cta", { trialDays: PRODUCT_CONFIG.trialDays })} <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="#funcionalidades"
+                className="text-muted-foreground font-medium flex items-center gap-1.5 hover:text-foreground transition-colors text-sm sm:text-base"
+              >
+                {t("hero.howItWorks")} <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-10 sm:mt-12 grid grid-cols-3 gap-3 sm:gap-6 text-center md:text-left max-w-md mx-auto md:mx-0">
+              {STATS.map(([val, label]) => (
+                <div key={label}>
+                  <p className="text-xl sm:text-2xl font-bold text-gradient-hero">{val}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mockup */}
+          <div className="flex-1 flex justify-center md:justify-end">
+            <img
+              src={heroMockup}
+              alt="Lumyf app no celular e no computador"
+              className="w-full max-w-md md:max-w-lg lg:max-w-xl drop-shadow-2xl"
+              loading="eager"
+            />
+          </div>
         </div>
       </section>
 
