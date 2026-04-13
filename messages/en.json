@@ -175,7 +175,7 @@
       "q3": "My 22-year-old daughter joined the workspace. Best thing ever.",
       "a3": "Roberto F.",
       "l3": "Recife"
-    },
+    "pricing": {
       "title": "Single plan",
       "subtext": "{price} per month after {trialDays} free days.",
       "manageCta": "Manage subscription",
