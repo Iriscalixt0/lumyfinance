@@ -89,17 +89,17 @@
       "faq": "FAQ",
       "about": "Sobre",
       "login": "Entrar",
-      "createAccount": "Criar conta",
+      "createAccount": "Criar conta grátis",
       "downloadApp": "Baixar o app",
       "downloadAppIosHint": "Toque em Compartilhar (↑) e depois em \"Adicionar à Tela de Início\".",
       "downloadAppDesktopHint": "Use o menu do navegador (⋮) e escolha \"Instalar app\" ou \"Adicionar à tela inicial\" para usar o Lumyf como app.",
       "downloadAppTapToClose": "Toque para fechar"
     },
     "hero": {
-      "badge": "Finanças em harmonia para você e sua família",
-      "title": "Software de Gestão Financeira Pessoal e Compartilhada",
+      "badge": "Controle financeiro pessoal e compartilhado",
+      "title": "Sua família, finalmente na mesma página.",
       "titleFormat": "full",
-      "titleHighlight": "Teste por {trialDays} dias grátis",
+      "titleHighlight": "Controle financeiro pessoal e compartilhado. Sem planilha, sem confusão.",
       "subtitle": "Registre gastos em segundos, acompanhe investimentos e metas financeiras com total clareza. Compartilhe com quem importa — ou mantenha tudo privado.",
       "subtitleApp": "Baixe o <link>web app</link> direto no seu celular ou no computador e automatize sua rotina financeira para ganhar mais tempo e tranquilidade.",
       "cta": "Começar {trialDays} dias grátis",
@@ -109,61 +109,86 @@
         "onlineLabel": "Online",
         "trialValue": "dias",
         "trialLabel": "Grátis",
-        "syncValue": "Tempo real",
-        "syncLabel": "Sincronizado"
+        "syncValue": "Sem cartão",
+        "syncLabel": "Pra começar"
       }
     },
     "features": {
-      "title": "Funcionalidades Completas de Gestão Financeira Pessoal",
+      "title": "Tudo que você precisa, num só lugar.",
       "subtitle": "Controle receitas, despesas, investimentos e metas em um único lugar.",
       "incomeExpenses": {
         "title": "Receitas e Despesas",
-        "desc": "Registre entradas e saídas por categoria e acompanhe o fluxo de caixa da família em tempo real."
+        "desc": "Sabe pra onde foi o dinheiro esse mês? Com o Lumyf, você sabe."
       },
       "goals": {
         "title": "Metas Financeiras",
-        "desc": "Defina objetivos como viagem, casa ou reserva de emergência e acompanhe o progresso juntos."
+        "desc": "Defina juntos. Acompanhem juntos. A viagem dos sonhos começa aqui."
       },
       "investments": {
         "title": "Investimentos",
-        "desc": "Registre seus investimentos e visualize a evolução do patrimônio familiar."
+        "desc": "Veja seu patrimônio crescer. Sem precisar de vários apps."
       },
       "reports": {
         "title": "Relatórios Inteligentes",
-        "desc": "Gráficos claros e visão geral para decisões baseadas em dados reais."
+        "desc": "Gráficos que qualquer pessoa entende. Não só quem entende de finanças."
       },
       "workspace": {
         "title": "Workspace Compartilhado",
-        "desc": "Toda a família na mesma página — cada um vê, registra e acompanha junto."
+        "desc": "Toda a família na mesma página. Cada um vê, registra e acompanha."
       },
       "security": {
         "title": "Segurança Total",
-        "desc": "Seus dados protegidos com criptografia e autenticação segura."
+        "desc": "Seus dados protegidos. O Lumyf não acessa sua conta bancária."
       }
     },
     "steps": {
-      "title": "Como Começar a Usar o App de Finanças em 4 Passos",
-      "subtitle": "Setup em minutos. Controle total em horas.",
+      "title": "Pronto em menos de 5 minutos.",
+      "subtitle": "Sem burocracia. Sem complicação.",
       "step1": {
         "title": "Crie sua conta",
-        "desc": "Em segundos, sem burocracia."
+        "desc": "Sem cartão. Sem burocracia."
       },
       "step2": {
         "title": "Convide a família",
-        "desc": "Compartilhe o workspace."
+        "desc": "Cônjuge, parceiro, filho — quem você quiser."
       },
       "step3": {
         "title": "Registre tudo",
-        "desc": "Receitas, despesas e metas."
+        "desc": "Cada um no seu celular. Todo mundo vê junto."
       },
       "step4": {
         "title": "Cresçam juntos",
-        "desc": "Acompanhem o progresso."
+        "desc": "Finalmente uma conversa de dinheiro sem estresse."
       }
     },
+    "testimonials": {
+      "title": "Quem usa não volta pra planilha.",
+      "items": [
+        {
+          "quote": "A gente brigava por dinheiro toda semana. Depois do Lumyf, parou.",
+          "author": "Camila R.",
+          "location": "São Paulo"
+        },
+        {
+          "quote": "É o único app que minha esposa também usa. Porque é simples de verdade.",
+          "author": "Diego M.",
+          "location": "Belo Horizonte"
+        },
+        {
+          "quote": "Em três meses enxerguei onde estava desperdiçando. Cortei e comecei minha reserva.",
+          "author": "Ana Paula S.",
+          "location": "Curitiba"
+        },
+        {
+          "quote": "Minha filha de 22 anos entrou no workspace. Foi a melhor coisa.",
+          "author": "Roberto F.",
+          "location": "Recife"
+        }
+      ]
+    },
     "pricing": {
-      "title": "Plano único",
-      "subtext": "{price} por mês após {trialDays} dias grátis.",
+      "title": "Simples. Transparente. Justo.",
+      "subtext": "{price} por mês após {trialDays} dias grátis. Cancele quando quiser.",
       "manageCta": "Gerenciar assinatura",
       "betaTestCta": "Assinatura disponível quando o teste beta terminar."
     },
@@ -176,8 +201,8 @@
         "cta": "Começar grátis"
       },
       "pro": {
-        "name": "Pro",
-        "desc": "Plano único com {trialDays} dias grátis",
+        "name": "Lumyf Pro",
+        "desc": "{trialDays} dias grátis. Cancele quando quiser.",
         "cta": "Começar {trialDays} dias grátis",
         "ctaDashboard": "Assinar Plano",
         "badge": "Mais popular",
@@ -186,7 +211,7 @@
           "trial": "{trialDays} dias de teste grátis",
           "workspaces": "Até {count} workspaces",
           "members": "Até {count} membros",
-          "unlimitedTransactions": "Lançamentos Ilimitados",
+          "unlimitedTransactions": "Lançamentos ilimitados",
           "unlimitedGoals": "Metas ilimitadas",
           "advancedReports": "Relatório Anual",
           "prioritySupport": "Suporte prioritário"
@@ -218,29 +243,29 @@
       }
     },
     "faq": {
-      "title": "Perguntas Frequentes sobre App de Gestão Financeira",
+      "title": "Perguntas frequentes sobre app de gestão financeira",
       "subtitle": "Tire suas dúvidas sobre o Lumyf.",
       "q0": "O que é o Lumyf?",
-      "a0": "O Lumyf é um software de gestão financeira pessoal e compartilhada. Com ele você registra receitas e despesas, acompanha investimentos, define metas financeiras e controla gastos — tudo em um único lugar, sincronizado em tempo real, para você e sua família.",
+      "a0": "App de controle financeiro pessoal e compartilhado. Você registra, acompanha e planeja — junto com a família.",
       "q1": "O Lumyf é gratuito?",
-      "a1": "Não existe uso gratuito. Para usar o app é obrigatório assinar o plano Pro. Você tem {trialDays} dias de teste grátis e, após esse período, o Stripe cobra automaticamente. Cancele quando quiser.",
-      "q1b": "Para quem o Lumyf é destinado?",
-      "a1b": "O Lumyf é destinado a casais e famílias que querem organizar as finanças em um só lugar — e também pode ser usado de forma individual. Ideal para quem deseja compartilhar o controle financeiro com quem importa (ou gerenciar sozinho), definir metas e acompanhar receitas, despesas e investimentos com clareza e transparência.",
-      "q2": "Como funciona o compartilhamento com a família?",
-      "a2": "Cada família cria um workspace e convida membros por e-mail. Todos podem registrar transações, ver relatórios e acompanhar metas. As informações são sincronizadas em tempo real para todos os integrantes.",
-      "q3": "O Lumyf tem alguma ligação com meu banco?",
-      "a3": "Não. O Lumyf não tem nenhuma conexão, integração ou vínculo com sua conta bancária. Todas as transações são cadastradas manualmente por você e sua família. Nós não acessamos, conectamos ou importamos dados de instituições financeiras.",
+      "a1": "{trialDays} dias grátis, sem cartão. Depois, R$ 9,90/mês. Cancele quando quiser.",
+      "q1b": "Para quem foi feito?",
+      "a1b": "Pra quem não sabe pra onde vai o dinheiro. Pra casais e famílias que querem decidir juntos.",
+      "q2": "Como funciona o compartilhamento?",
+      "a2": "Você convida. Cada um entra com seu login. Todo mundo vê as mesmas finanças em tempo real.",
+      "q3": "O Lumyf acessa meu banco?",
+      "a3": "Não. Você registra tudo manualmente. Seus dados são só seus.",
       "q4": "Meus dados estão seguros?",
-      "a4": "Sim. Utilizamos criptografia e autenticação segura. Seus dados financeiros ficam protegidos e apenas as pessoas que você convidar terão acesso ao workspace.",
+      "a4": "Sim. Criptografia e autenticação segura. Nunca compartilhamos com terceiros.",
       "q5": "Como funciona o pagamento?",
-      "a5": "O pagamento é feito via Stripe (cartão). Após os {trialDays} dias de teste grátis, a cobrança é automática. Você pode cancelar a assinatura a qualquer momento no painel de configurações.",
-      "q6": "Quantas pessoas podem usar um workspace?",
-      "a6": "No plano Pro são até 3 membros por workspace."
+      "a5": "R$ 9,90/mês. Sem multa, sem burocracia pra cancelar.",
+      "q6": "Quantas pessoas por workspace?",
+      "a6": "Até 3 membros e 2 workspaces no plano Pro."
     },
     "cta": {
-      "title": "Pronto para construir o futuro juntos?",
-      "subtitle": "Junte-se a milhares de famílias que já organizam suas finanças com o Lumyf.",
-      "button": "Criar conta"
+      "title": "Chega de não saber pra onde foi o dinheiro.",
+      "subtitle": "7 dias grátis. Sem cartão. Sem compromisso.",
+      "button": "Criar conta grátis agora"
     },
     "footer": {
       "copyright": "© {year} Lumyf. Todos os direitos reservados.",
