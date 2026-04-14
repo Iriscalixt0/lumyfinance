@@ -155,6 +155,24 @@ export function DashboardPage() {
 
   const safeToSpend = metrics.currentMonthIncome - metrics.currentMonthExpenses;
 
+  // Weekly tx counts for streak comparison
+  const { thisWeekTx, lastWeekTx } = useMemo(() => {
+    const now = new Date();
+    const startOfThisWeek = new Date(now);
+    startOfThisWeek.setDate(now.getDate() - now.getDay());
+    startOfThisWeek.setHours(0, 0, 0, 0);
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+    let tw = 0, lw = 0;
+    for (const tx of transactions) {
+      const d = new Date(tx.date);
+      if (d >= startOfThisWeek) tw++;
+      else if (d >= startOfLastWeek) lw++;
+    }
+    return { thisWeekTx: tw, lastWeekTx: lw };
+  }, [transactions]);
+
   // Chart data for dependent spending
   const chartData = useMemo(() => {
     const data = [];
