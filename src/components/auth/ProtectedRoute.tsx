@@ -3,13 +3,17 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
+const DEV_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === "true";
+
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(!DEV_BYPASS);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
+    if (DEV_BYPASS) return;
+
     async function check() {
       if (!user) { setCheckingOnboarding(false); return; }
 
@@ -32,6 +36,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
     if (!loading) check();
   }, [user, loading, location.pathname]);
+
+  // Dev bypass — skip all auth checks
+  if (DEV_BYPASS) {
+    return <>{children}</>;
+  }
 
   if (loading || checkingOnboarding) {
     return (
