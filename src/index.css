@@ -180,6 +180,11 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes idle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 /* Blog content styles */
 .blog-content { font-size: 1.0625rem; line-height: 1.8; color: hsl(var(--foreground)); }
 .blog-content h2 { font-size: 1.375rem; font-weight: 700; margin-top: 2.25rem; margin-bottom: 0.875rem; }
