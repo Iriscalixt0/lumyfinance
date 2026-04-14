@@ -295,7 +295,7 @@ export function DashboardPage() {
 
   /* ---------- Normal Dashboard — 3 Big Blocks ---------- */
   return (
-    <div className="min-h-screen bg-background px-5 sm:px-8 py-6 sm:py-10 animate-fade space-y-8 max-w-xl mx-auto">
+    <div className="min-h-screen bg-background px-5 sm:px-8 py-8 sm:py-12 animate-fade space-y-10 max-w-xl mx-auto">
       {/* Greeting + Streak */}
       <div className="space-y-2">
         <h1 className="text-lg font-bold text-foreground">

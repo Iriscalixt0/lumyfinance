@@ -128,11 +128,11 @@ export function SafeToSpendCard({
           </div>
 
           {/* Amount + label */}
-          <div className="flex-1 min-w-0 pb-1">
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] text-white/60 mb-0.5">
+          <div className="flex-1 min-w-0 pb-2">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-white/50 mb-1">
               {label}
             </p>
-            <p className="text-2xl sm:text-4xl font-black tabular-nums text-white leading-none mb-2">
+            <p className="text-3xl sm:text-5xl font-black tabular-nums text-white leading-none mb-3">
               {amount}
             </p>
             {/* Mini mood tag */}
