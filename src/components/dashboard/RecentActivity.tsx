@@ -34,11 +34,11 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
     return (
       <div className="bg-card border border-border rounded-2xl p-4 shadow-[var(--card-shadow)]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "Atividade recente"}</h3>
+          <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         </div>
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <Receipt className="h-8 w-8 text-muted-foreground/30 mb-2" />
-          <p className="text-xs text-muted-foreground">{t("noTransactions") || "Nenhuma transação ainda"}</p>
+          <p className="text-xs text-muted-foreground">{t("noTransactions") || "Nada por aqui ainda"}</p>
         </div>
       </div>
     );
@@ -47,7 +47,7 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
   return (
     <div className="bg-card border border-border rounded-2xl p-4 shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "Atividade recente"}</h3>
+        <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         <Link
           to="/transactions"
           className="text-xs font-medium text-primary flex items-center gap-0.5 hover:underline"

@@ -38,7 +38,7 @@ export function MemberSpending({ members }: MemberSpendingProps) {
                   style={{ width: `${member.percentage}%` }}
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">Restam R$ 0.000,00 do orçamento mensal</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">Ainda sobra do orçamento</p>
             </div>
           </div>
         ))}
