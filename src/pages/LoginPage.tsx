@@ -180,7 +180,7 @@ export function LoginPage() {
           </p>
 
           <Link to="/" className="mt-4 flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-3.5 w-3.5" /> Voltar para página principal
+            <ArrowLeft className="h-3.5 w-3.5" /> {t("backHome")}
           </Link>
         </div>
       </div>
