@@ -20,7 +20,7 @@ export function GoalsOverview({ goals }: GoalsOverviewProps) {
   if (goals.length === 0) return null;
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 shadow-[var(--card-shadow)]">
+    <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-foreground">{t("goals")}</h3>
         <Link
@@ -30,16 +30,16 @@ export function GoalsOverview({ goals }: GoalsOverviewProps) {
           {t("quickLinks")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="space-y-3">
-        {goals.slice(0, 4).map((goal) => {
+      <div className="space-y-4">
+        {goals.slice(0, 3).map((goal) => {
           const pct = goal.target > 0 ? Math.min((goal.current / goal.target) * 100, 100) : 0;
           return (
             <div key={goal.id}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-foreground truncate max-w-[60%]">{goal.name}</span>
-                <span className="text-xs font-bold text-primary tabular-nums">{Math.round(pct)}%</span>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm font-medium text-foreground truncate max-w-[60%]">{goal.name}</span>
+                <span className="text-sm font-bold text-primary tabular-nums">{Math.round(pct)}%</span>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
                   style={{ width: `${pct}%` }}

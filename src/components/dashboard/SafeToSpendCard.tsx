@@ -65,9 +65,9 @@ export function SafeToSpendCard({
     "from-red-400 to-red-500";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Main premium card */}
-      <div className="relative overflow-hidden rounded-2xl p-5 sm:p-7"
+      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8"
         style={{
           background: "linear-gradient(135deg, #1FAF8B 0%, #0E7A66 100%)",
           boxShadow: "0 8px 32px -8px rgba(14,122,102,0.5), 0 0 60px -20px rgba(31,175,139,0.2), inset 0 1px 0 rgba(255,255,255,0.08)",
@@ -150,7 +150,7 @@ export function SafeToSpendCard({
       </div>
 
       {/* Financial Health Bar */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl px-4 py-3 space-y-2">
+      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-3xl px-5 py-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">

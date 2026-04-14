@@ -117,7 +117,7 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-2xl p-4 h-full shadow-[var(--card-shadow)]">
+      <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 h-full shadow-[var(--card-shadow)]">
         <h3 className="text-sm font-bold text-foreground mb-3">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
         <div className="flex items-center justify-center h-32 text-muted-foreground text-xs">
           Nada ainda este mês
@@ -127,7 +127,7 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
   }
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 h-full shadow-[var(--card-shadow)]">
+    <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 h-full shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-bold text-foreground">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
         <span className="text-[10px] text-muted-foreground font-medium">esse mês</span>
@@ -150,7 +150,7 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
       )}
 
       {/* Chart */}
-      <div className="h-36">
+      <div className="h-44 sm:h-48">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} barCategoryGap="20%" layout="vertical">
             <XAxis
