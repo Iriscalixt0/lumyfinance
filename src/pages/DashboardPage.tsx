@@ -183,7 +183,7 @@ export function DashboardPage() {
   /* ---------- Skeleton Loader ---------- */
   if (loading) {
     return (
-      <div className="min-h-screen bg-[hsl(160,40%,8%)] p-4 sm:p-6 animate-fade space-y-4">
+      <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-4">
         <div className="h-7 w-48 bg-white/10 rounded-lg animate-pulse" />
         <div className="h-44 bg-white/5 rounded-2xl animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,7 +203,7 @@ export function DashboardPage() {
     ];
 
     return (
-      <div className="min-h-screen bg-[hsl(160,40%,8%)] p-4 sm:p-6 animate-fade space-y-6">
+      <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-6">
         <h1 className="text-xl sm:text-2xl font-bold text-white">
           {greeting}, {userName} 👋
         </h1>
@@ -266,7 +266,7 @@ export function DashboardPage() {
 
   /* ---------- Normal Dashboard — Dark Green Premium ---------- */
   return (
-    <div className="min-h-screen bg-[hsl(160,40%,8%)] p-4 sm:p-6 animate-fade space-y-4">
+    <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-4">
       {/* Greeting */}
       <h1 className="text-xl sm:text-2xl font-bold text-white">
         {greeting}, {userName} 👋
