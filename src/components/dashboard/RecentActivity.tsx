@@ -64,9 +64,9 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
           return (
             <div
               key={tx.id}
-              className="flex items-center gap-3 py-2 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors"
+              className="flex items-center gap-3.5 py-3 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors"
             >
-              <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
                 isExpense ? "bg-destructive/10" : "bg-primary/10"
               }`}>
                 {cat ? (

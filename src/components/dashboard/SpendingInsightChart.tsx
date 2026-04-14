@@ -150,7 +150,7 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
       )}
 
       {/* Chart */}
-      <div className="h-36">
+      <div className="h-44 sm:h-48">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} barCategoryGap="20%" layout="vertical">
             <XAxis
