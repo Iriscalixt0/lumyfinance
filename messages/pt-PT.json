@@ -981,7 +981,10 @@
     "errorSetup": "Erro ao configurar workspace. Aceda a Configurações para tentar novamente.",
     "selectCurrency": "Qual é a sua moeda principal?",
     "selectCurrencyDesc": "Transações noutras moedas serão convertidas automaticamente",
-    "currency": "Moeda"
+    "currency": "Moeda",
+    "placeholderFamily": "Casa dos Silva",
+    "placeholderBusiness": "A Minha Empresa",
+    "placeholderPersonal": "As Minhas Finanças"
   },
   "tour": {
     "sidebarTitle": "Menu lateral",
