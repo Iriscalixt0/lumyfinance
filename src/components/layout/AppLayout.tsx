@@ -252,9 +252,9 @@ export function AppLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-[hsl(160,40%,8%)] flex">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-60 lg:w-64 flex-col border-r border-border bg-card fixed inset-y-0 left-0 z-30">
+      <aside className="hidden md:flex md:w-60 lg:w-64 flex-col border-r border-white/10 bg-[hsl(160,40%,6%)] fixed inset-y-0 left-0 z-30">
         <SidebarContent />
       </aside>
 
@@ -262,7 +262,7 @@ export function AppLayout() {
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={closeSidebar} />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-card flex flex-col shadow-xl">
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[hsl(160,40%,6%)] flex flex-col shadow-xl">
             <button
               onClick={closeSidebar}
               className="absolute right-3 top-4 text-muted-foreground hover:text-foreground"
@@ -278,7 +278,7 @@ export function AppLayout() {
       {/* Main content */}
       <div className="flex-1 md:ml-60 lg:ml-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-card/90 backdrop-blur-xl border-b border-border px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-20 bg-[hsl(160,40%,6%)]/90 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Mobile menu button */}
             <button
