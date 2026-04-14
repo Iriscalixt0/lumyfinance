@@ -274,15 +274,17 @@ export function DashboardPage() {
 
 
 
-  /* ---------- Normal Dashboard — Modular Layout ---------- */
+  /* ---------- Normal Dashboard — Minimal & Focused ---------- */
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-5">
-      {/* Greeting */}
-      <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-        {greeting}, {userName} 👋
-      </h1>
+    <div className="min-h-screen bg-background p-5 sm:p-8 animate-fade space-y-6 max-w-2xl mx-auto">
+      {/* Greeting — breathing room */}
+      <div className="pt-2">
+        <h1 className="text-lg sm:text-xl font-bold text-foreground">
+          {greeting}, {userName} 👋
+        </h1>
+      </div>
 
-      {/* Row 1: Safe-to-Spend (hero card, full width) */}
+      {/* Hero: Safe-to-Spend + Finny */}
       <SafeToSpendCard
         amount={formatBRL(safeToSpend)}
         safeToSpend={safeToSpend}
@@ -293,35 +295,27 @@ export function DashboardPage() {
         userName={userName}
       />
 
-      {/* Row 2: Gamification + Gráfico (2 colunas) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <GamificationBar
-          streak={streak?.current_streak ?? 0}
-          unlockedKeys={Array.from(unlockedKeys)}
-          totalTx={totalTx}
-        />
-        <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} />
-      </div>
+      {/* Spending insight — one focused chart */}
+      <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} />
 
-      {/* Row 3: Atividades + Objetivos (2 colunas) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RecentActivity transactions={transactions} categories={categories} />
+      {/* Recent activity — last 5 */}
+      <RecentActivity transactions={transactions} categories={categories} />
+
+      {/* Goals — only if user has any */}
+      {goalsForOverview.length > 0 && (
         <GoalsOverview goals={goalsForOverview} />
-      </div>
+      )}
 
-      {/* Row 4: Membros + Orçamentos (2 colunas) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {memberSpending.length > 0 && <MemberSpending members={memberSpending} />}
-        <BudgetsCard members={budgetMembers} />
-      </div>
-
-      {/* Add Transaction Button */}
+      {/* CTA */}
       <button
         onClick={() => setQuickTxOpen(true)}
-        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[var(--card-shadow)]"
+        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3.5 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
       >
         <Plus className="h-4 w-4" /> {t("firstTransaction")}
       </button>
+
+      {/* Spacer for bottom nav */}
+      <div className="h-4" />
 
       <QuickTransactionModal
         open={quickTxOpen}
