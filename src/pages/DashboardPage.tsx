@@ -8,6 +8,7 @@ import { useGamification } from "@/hooks/useGamification";
 import { useTranslations } from "@/lib/i18n";
 import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
 import { SafeToSpendCard } from "@/components/dashboard/SafeToSpendCard";
+import { GamificationBar } from "@/components/dashboard/GamificationBar";
 import { DependentSpendingChart } from "@/components/dashboard/DependentSpendingChart";
 import { BudgetsCard } from "@/components/dashboard/BudgetsCard";
 import { MemberSpending } from "@/components/dashboard/MemberSpending";
