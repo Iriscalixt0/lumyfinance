@@ -210,6 +210,13 @@ export function DashboardPage() {
     [goals]
   );
 
+  const finnyState = useMemo(() => getFinnyState({
+    safeToSpend, monthlyIncome: metrics.currentMonthIncome, monthlyExpenses: metrics.currentMonthExpenses,
+    streak: streak?.current_streak ?? 0, totalTx, userName,
+  }), [safeToSpend, metrics, streak, totalTx, userName]);
+
+  const savings = useMemo(() => goals.reduce((s, g) => s + g.current_amount, 0), [goals]);
+
   /* ---------- Skeleton Loader ---------- */
   if (loading) {
     return (
@@ -234,19 +241,19 @@ export function DashboardPage() {
 
     return (
       <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-white">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">
           {greeting}, {userName} 👋
         </h1>
 
         <SafeToSpendCard amount={formatBRL(0)} safeToSpend={0} streak={0} totalTx={0} userName={userName} />
 
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+        <div className="bg-muted/50 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
           <div className="text-center mb-8">
             <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">{t("quickStartTitle")}</h2>
-            <p className="text-white/50 text-sm max-w-md mx-auto">{t("quickStartSubtitle")}</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">{t("quickStartTitle")}</h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">{t("quickStartSubtitle")}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
@@ -257,7 +264,7 @@ export function DashboardPage() {
                 className={`relative flex flex-col items-center text-center p-5 rounded-xl border transition-all hover:shadow-md group ${
                   step.done
                     ? "border-emerald-500/30 bg-emerald-500/10"
-                    : "border-white/10 hover:border-primary/30 bg-white/5"
+                    : "border-border hover:border-primary/30 bg-card/50"
                 }`}
               >
                 {step.done && <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-emerald-500" />}
@@ -266,11 +273,11 @@ export function DashboardPage() {
                 }`}>
                   <step.icon className="h-5 w-5" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
                   {t("step")} {step.num}
                 </span>
-                <h3 className="text-sm font-bold text-white mb-1">{t(step.titleKey)}</h3>
-                <p className="text-xs text-white/50 leading-relaxed">{t(step.descKey)}</p>
+                <h3 className="text-sm font-bold text-foreground mb-1">{t(step.titleKey)}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t(step.descKey)}</p>
               </Link>
             ))}
           </div>
@@ -293,7 +300,6 @@ export function DashboardPage() {
       </div>
     );
   }
-
 
 
   const finnyState = useMemo(() => getFinnyState({
