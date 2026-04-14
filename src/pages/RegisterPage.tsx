@@ -102,7 +102,6 @@ export function RegisterPage() {
               <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-1.5">
                 {t("fullName")}
               </label>
-              </label>
               <input
                 id="fullName"
                 type="text"
@@ -118,7 +117,6 @@ export function RegisterPage() {
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
                 {t("email")}
               </label>
-              </label>
               <input
                 id="email"
                 type="email"
@@ -133,7 +131,6 @@ export function RegisterPage() {
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
                 {t("password")}
-              </label>
               </label>
               <div className="relative">
                 <input
