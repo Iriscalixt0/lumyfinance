@@ -274,7 +274,7 @@ export function DashboardPage() {
 
 
 
-  /* ---------- Normal Dashboard — Minimal & Focused ---------- */
+  /* ---------- Normal Dashboard — 3 Big Blocks ---------- */
   return (
     <div className="min-h-screen bg-background px-5 sm:px-8 py-6 sm:py-10 animate-fade space-y-8 max-w-xl mx-auto">
       {/* Greeting */}
@@ -282,24 +282,27 @@ export function DashboardPage() {
         {greeting}, {userName} 👋
       </h1>
 
-      {/* Hero: Safe-to-Spend + Finny */}
-      <SafeToSpendCard
-        amount={formatBRL(safeToSpend)}
-        safeToSpend={safeToSpend}
-        monthlyIncome={metrics.currentMonthIncome}
-        monthlyExpenses={metrics.currentMonthExpenses}
-        streak={streak?.current_streak ?? 0}
-        totalTx={totalTx}
-        userName={userName}
-      />
+      {/* BLOCK 1 — Visão Geral (safe-to-spend + chart together) */}
+      <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-[var(--card-shadow)]">
+        <SafeToSpendCard
+          amount={formatBRL(safeToSpend)}
+          safeToSpend={safeToSpend}
+          monthlyIncome={metrics.currentMonthIncome}
+          monthlyExpenses={metrics.currentMonthExpenses}
+          streak={streak?.current_streak ?? 0}
+          totalTx={totalTx}
+          userName={userName}
+          embedded
+        />
+        <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+          <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} embedded />
+        </div>
+      </div>
 
-      {/* Pra onde foi a grana */}
-      <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} />
-
-      {/* O que rolou */}
+      {/* BLOCK 2 — O que rolou */}
       <RecentActivity transactions={transactions} categories={categories} />
 
-      {/* Metas — só se tiver */}
+      {/* BLOCK 3 — Metas (só se tiver) */}
       {goalsForOverview.length > 0 && (
         <GoalsOverview goals={goalsForOverview} />
       )}

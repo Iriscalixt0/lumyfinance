@@ -22,6 +22,7 @@ interface SpendingInsightChartProps {
   transactions: Transaction[];
   categories: Category[];
   formatMoney: (v: number) => string;
+  embedded?: boolean;
 }
 
 const CATEGORY_COLORS = [
@@ -35,7 +36,7 @@ const CATEGORY_COLORS = [
   "hsl(0, 0%, 50%)",     // gray (outros)
 ];
 
-export function SpendingInsightChart({ transactions, categories, formatMoney }: SpendingInsightChartProps) {
+export function SpendingInsightChart({ transactions, categories, formatMoney, embedded = false }: SpendingInsightChartProps) {
   const t = useTranslations("dashboard");
 
   const currentMonth = new Date().getMonth();
@@ -116,6 +117,16 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
   }, [transactions, categories, currentMonth, prevMonth]);
 
   if (chartData.length === 0) {
+    if (embedded) {
+      return (
+        <div>
+          <h3 className="text-sm font-bold text-foreground mb-3">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
+          <div className="flex items-center justify-center h-32 text-muted-foreground text-xs">
+            Nada ainda este mês
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 h-full shadow-[var(--card-shadow)]">
         <h3 className="text-sm font-bold text-foreground mb-3">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
@@ -126,8 +137,12 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
     );
   }
 
+  const Wrapper = embedded ? "div" : ({ children, ...props }: any) => (
+    <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 h-full shadow-[var(--card-shadow)]" {...props}>{children}</div>
+  );
+
   return (
-    <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 h-full shadow-[var(--card-shadow)]">
+    <Wrapper>
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-bold text-foreground">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
         <span className="text-[10px] text-muted-foreground font-medium">esse mês</span>
@@ -205,6 +220,6 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
           </div>
         ))}
       </div>
-    </div>
+    </Wrapper>
   );
 }
