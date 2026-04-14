@@ -63,13 +63,13 @@ export function getFinnyState(params: {
     celebrating: finnyCelebrating,
   };
 
-  // Health label & color
+  // Health label & color — tom direto
   let healthLabel: string;
   let healthColor: string;
-  if (healthPercent >= 80) { healthLabel = "Excelente"; healthColor = "text-emerald-400"; }
-  else if (healthPercent >= 60) { healthLabel = "Boa"; healthColor = "text-primary"; }
-  else if (healthPercent >= 40) { healthLabel = "Atenção"; healthColor = "text-yellow-400"; }
-  else { healthLabel = "Crítica"; healthColor = "text-destructive"; }
+  if (healthPercent >= 80) { healthLabel = "Top"; healthColor = "text-emerald-400"; }
+  else if (healthPercent >= 60) { healthLabel = "De boa"; healthColor = "text-primary"; }
+  else if (healthPercent >= 40) { healthLabel = "Opa"; healthColor = "text-yellow-400"; }
+  else { healthLabel = "Eita"; healthColor = "text-destructive"; }
 
   // Contextual phrase
   const phrase = pickPhrase({
@@ -99,66 +99,72 @@ function pickPhrase(ctx: {
   const { mood, greetingTime, safeToSpend, streak, totalTx, userName, monthlyIncome, monthlyExpenses } = ctx;
   const pools: string[] = [];
 
-  // Greeting layer
-  if (greetingTime === "morning") pools.push(`Bom dia, ${userName}! ☀️`);
-  else if (greetingTime === "afternoon") pools.push(`Boa tarde, ${userName}! 🌤️`);
-  else pools.push(`Boa noite, ${userName}! 🌙`);
+  // Saudação curta
+  if (greetingTime === "morning") pools.push(`E aí, ${userName}! ☀️`);
+  else if (greetingTime === "afternoon") pools.push(`Fala, ${userName} 🤙`);
+  else pools.push(`Boa noite, ${userName} 🌙`);
 
-  // Mood-specific phrases
+  // Por humor — tom direto, casual, curto
   switch (mood) {
     case "worried":
       pools.push(
-        "Hmm… vamos com calma hoje 👀",
-        "Opa, tá apertado! Vamos rever os gastos? 🔍",
-        "Cuidado! Tô de olho no seu saldo 😟",
-        "Respira… vamos resolver isso juntos 💪",
+        "Calma. Vamos resolver 👀",
+        "Apertou. Bora rever? 🔍",
+        "Tô de olho aqui 😟",
+        "Respira. Tamo junto 💪",
+        "Segura a onda 🌊",
       );
       break;
 
     case "neutral":
       pools.push(
-        "Tá tudo sob controle 👍",
-        "Segue o plano que dá certo! 📋",
-        "Tô aqui cuidando das suas finanças 🧠",
-        "Bora manter o ritmo! 🎯",
+        "Tá de boa 👍",
+        "Segue o plano 📋",
+        "Tô cuidando 🧠",
+        "Bora manter 🎯",
+        "Tá no caminho ✅",
       );
       break;
 
     case "happy":
       pools.push(
-        "Mandando bem! Continue assim 💚",
-        "Suas finanças tão bonitas hoje! ✨",
-        "Tô orgulhoso de você! 🤩",
-        "Dá pra investir um pouco, hein? 📈",
+        "Mandou bem 💚",
+        "Tá bonito isso ✨",
+        "Orgulho de você 🤩",
+        "Sobrou? Investe 📈",
+        "Pode comemorar 🙌",
       );
       break;
 
     case "celebrating":
       pools.push(
-        "PARABÉNS! Você tá arrasando! 🎉",
-        "Que controle incrível! 🏆",
-        "Mestre das finanças! 🚀",
-        "Isso sim é disciplina! 🌟",
+        "ARRASOU! 🎉",
+        "Controle absurdo 🏆",
+        "Mestre 🚀",
+        "Disciplina bruta 🌟",
+        "Tá voando! ✈️",
       );
       break;
   }
 
-  // Streak phrases
-  if (streak >= 7) pools.push(`${streak} dias de streak! Imbatível! 🔥`);
-  else if (streak >= 3) pools.push(`${streak} dias seguidos! Tá forte! ⚡`);
-  else if (streak === 0 && totalTx > 0) pools.push("Cadê o streak? Lança algo hoje! 💪");
+  // Streak — curto
+  if (streak >= 30) pools.push(`${streak} dias. Lenda 🔥`);
+  else if (streak >= 7) pools.push(`${streak} dias! Imbatível 🔥`);
+  else if (streak >= 3) pools.push(`${streak} dias seguidos ⚡`);
+  else if (streak === 0 && totalTx > 0) pools.push("Cadê o streak? 💪");
 
-  // Transaction milestones
-  if (totalTx === 0) pools.push("Me conta seus gastos que eu cuido do resto 🎯");
-  else if (totalTx >= 100) pools.push("Mais de 100 lançamentos! Você é lenda 🏆");
+  // Milestones — direto
+  if (totalTx === 0) pools.push("Lança o primeiro gasto 🎯");
+  else if (totalTx >= 100) pools.push("100+ lançamentos. Pro 🏆");
+  else if (totalTx >= 50) pools.push("50+! Tá sério nisso 📊");
 
-  // Savings suggestion
+  // Economia
   if (safeToSpend > 0 && monthlyIncome > 0) {
     const savingsRate = ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100;
-    if (savingsRate > 30) pools.push("Taxa de economia top! Investe isso! 📊");
+    if (savingsRate > 30) pools.push("Sobrando grana. Investe! 📊");
+    else if (savingsRate > 15) pools.push("Guardando bem 💰");
   }
 
-  // Pick based on time to ensure variety but consistency within the same minute
   const minute = new Date().getMinutes();
   const index = minute % pools.length;
   return pools[index];
