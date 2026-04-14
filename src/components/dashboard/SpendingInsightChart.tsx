@@ -220,6 +220,6 @@ export function SpendingInsightChart({ transactions, categories, formatMoney, em
           </div>
         ))}
       </div>
-    </div>
+    </Wrapper>
   );
 }
