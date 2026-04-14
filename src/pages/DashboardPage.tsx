@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { getFinnyState } from "@/lib/finny-personality";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
@@ -295,11 +296,10 @@ export function DashboardPage() {
 
 
 
-  /* ---------- Normal Dashboard — Reference Layout ---------- */
-  const finnyState = (() => {
-    const { getFinnyState } = require("@/lib/finny-personality");
-    return getFinnyState({ safeToSpend, monthlyIncome: metrics.currentMonthIncome, monthlyExpenses: metrics.currentMonthExpenses, streak: streak?.current_streak ?? 0, totalTx, userName });
-  })();
+  const finnyState = useMemo(() => getFinnyState({
+    safeToSpend, monthlyIncome: metrics.currentMonthIncome, monthlyExpenses: metrics.currentMonthExpenses,
+    streak: streak?.current_streak ?? 0, totalTx, userName,
+  }), [safeToSpend, metrics, streak, totalTx, userName]);
 
   const savings = goals.reduce((s, g) => s + g.current_amount, 0);
 
