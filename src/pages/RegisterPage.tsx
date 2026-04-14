@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Logo } from "@/components/logo";
+import { useTranslations } from "@/lib/i18n";
 import { Eye, EyeOff, UserPlus, ArrowLeft } from "lucide-react";
 
 export function RegisterPage() {
