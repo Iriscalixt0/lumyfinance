@@ -15,6 +15,8 @@ import { MemberSpending } from "@/components/dashboard/MemberSpending";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { GoalsOverview } from "@/components/dashboard/GoalsOverview";
 import { StreakStrip } from "@/components/dashboard/StreakStrip";
+import { WeeklySummaryCard } from "@/components/dashboard/WeeklySummaryCard";
+import { HealthOverviewCard } from "@/components/dashboard/HealthOverviewCard";
 import {
   Plus,
   Sparkles,
