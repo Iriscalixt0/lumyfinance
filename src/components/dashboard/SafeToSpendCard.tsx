@@ -191,6 +191,7 @@ export function SafeToSpendCard({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
