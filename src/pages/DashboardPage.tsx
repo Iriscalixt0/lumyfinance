@@ -183,6 +183,11 @@ export function DashboardPage() {
     { name: "Gabriella", percentage: 88.7, color: "#3b82f6" },
   ], []);
 
+  const goalsForOverview = useMemo(() =>
+    goals.map(g => ({ id: g.id, name: g.name, current: g.current_amount, target: g.target_amount })),
+    [goals]
+  );
+
   /* ---------- Skeleton Loader ---------- */
   if (loading) {
     return (
