@@ -118,9 +118,9 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
   if (chartData.length === 0) {
     return (
       <div className="bg-card border border-border rounded-2xl p-4 h-full shadow-[var(--card-shadow)]">
-        <h3 className="text-sm font-bold text-foreground mb-3">{t("spendingByCategory") || "Gastos por categoria"}</h3>
+        <h3 className="text-sm font-bold text-foreground mb-3">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
         <div className="flex items-center justify-center h-32 text-muted-foreground text-xs">
-          Sem dados este mês
+          Nada ainda este mês
         </div>
       </div>
     );
@@ -129,8 +129,8 @@ export function SpendingInsightChart({ transactions, categories, formatMoney }: 
   return (
     <div className="bg-card border border-border rounded-2xl p-4 h-full shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-sm font-bold text-foreground">{t("spendingByCategory") || "Gastos por categoria"}</h3>
-        <span className="text-[10px] text-muted-foreground font-medium">este mês</span>
+        <h3 className="text-sm font-bold text-foreground">{t("spendingByCategory") || "Pra onde foi a grana"}</h3>
+        <span className="text-[10px] text-muted-foreground font-medium">esse mês</span>
       </div>
 
       {/* Auto-insight highlight */}
