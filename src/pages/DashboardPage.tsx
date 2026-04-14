@@ -12,6 +12,8 @@ import { GamificationBar } from "@/components/dashboard/GamificationBar";
 import { DependentSpendingChart } from "@/components/dashboard/DependentSpendingChart";
 import { BudgetsCard } from "@/components/dashboard/BudgetsCard";
 import { MemberSpending } from "@/components/dashboard/MemberSpending";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { GoalsOverview } from "@/components/dashboard/GoalsOverview";
 import {
   Plus,
   Sparkles,
@@ -181,15 +183,20 @@ export function DashboardPage() {
     { name: "Gabriella", percentage: 88.7, color: "#3b82f6" },
   ], []);
 
+  const goalsForOverview = useMemo(() =>
+    goals.map(g => ({ id: g.id, name: g.name, current: g.current_amount, target: g.target_amount })),
+    [goals]
+  );
+
   /* ---------- Skeleton Loader ---------- */
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-4">
-        <div className="h-7 w-48 bg-white/10 rounded-lg animate-pulse" />
-        <div className="h-44 bg-white/5 rounded-2xl animate-pulse" />
+        <div className="h-7 w-48 bg-muted rounded-lg animate-pulse" />
+        <div className="h-44 bg-card rounded-2xl animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-52 bg-white/5 rounded-2xl animate-pulse" />
-          <div className="h-52 bg-white/5 rounded-2xl animate-pulse" />
+          <div className="h-52 bg-card rounded-2xl animate-pulse" />
+          <div className="h-52 bg-card rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -265,48 +272,53 @@ export function DashboardPage() {
     );
   }
 
-  /* ---------- Normal Dashboard — Dark Green Premium ---------- */
+
+
+  /* ---------- Normal Dashboard — Modular Layout ---------- */
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-4">
+    <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-5">
       {/* Greeting */}
-      <h1 className="text-xl sm:text-2xl font-bold text-white">
+      <h1 className="text-xl sm:text-2xl font-bold text-foreground">
         {greeting}, {userName} 👋
       </h1>
 
-      {/* Main layout: left (safe-to-spend + member) / right (chart + budgets) */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Left column — 3/5 */}
-        <div className="lg:col-span-3 space-y-4">
-          <SafeToSpendCard
-            amount={formatBRL(safeToSpend)}
-            safeToSpend={safeToSpend}
-            monthlyIncome={metrics.currentMonthIncome}
-            monthlyExpenses={metrics.currentMonthExpenses}
-            streak={streak?.current_streak ?? 0}
-            totalTx={totalTx}
-            userName={userName}
-          />
+      {/* Row 1: Safe-to-Spend (hero card, full width) */}
+      <SafeToSpendCard
+        amount={formatBRL(safeToSpend)}
+        safeToSpend={safeToSpend}
+        monthlyIncome={metrics.currentMonthIncome}
+        monthlyExpenses={metrics.currentMonthExpenses}
+        streak={streak?.current_streak ?? 0}
+        totalTx={totalTx}
+        userName={userName}
+      />
 
-          {/* Member Spending */}
-          {memberSpending.length > 0 && <MemberSpending members={memberSpending} />}
-        </div>
+      {/* Row 2: Gamification + Gráfico (2 colunas) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <GamificationBar
+          streak={streak?.current_streak ?? 0}
+          unlockedKeys={Array.from(unlockedKeys)}
+          totalTx={totalTx}
+        />
+        <DependentSpendingChart data={chartData} formatMoney={formatBRL} />
+      </div>
 
-        {/* Right column — 2/5 */}
-        <div className="lg:col-span-2 space-y-4">
-          <GamificationBar
-            streak={streak?.current_streak ?? 0}
-            unlockedKeys={Array.from(unlockedKeys)}
-            totalTx={totalTx}
-          />
-          <DependentSpendingChart data={chartData} formatMoney={formatBRL} />
-          <BudgetsCard members={budgetMembers} />
-        </div>
+      {/* Row 3: Atividades + Objetivos (2 colunas) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <RecentActivity transactions={transactions} categories={categories} />
+        <GoalsOverview goals={goalsForOverview} />
+      </div>
+
+      {/* Row 4: Membros + Orçamentos (2 colunas) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {memberSpending.length > 0 && <MemberSpending members={memberSpending} />}
+        <BudgetsCard members={budgetMembers} />
       </div>
 
       {/* Add Transaction Button */}
       <button
         onClick={() => setQuickTxOpen(true)}
-        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[var(--card-shadow)]"
       >
         <Plus className="h-4 w-4" /> {t("firstTransaction")}
       </button>
