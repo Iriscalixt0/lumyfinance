@@ -155,6 +155,13 @@ body {
     @apply bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-sm;
   }
 
+  .dark .elevated-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow, 0 4px 24px -4px rgba(0,0,0,0.3)), var(--card-glow, none);
+  }
+
   .animate-fade {
     animation: fade 0.4s ease-out;
   }
