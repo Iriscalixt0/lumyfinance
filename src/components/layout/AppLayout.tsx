@@ -306,11 +306,11 @@ export function AppLayout() {
             <div className="relative hidden sm:block" ref={wsSelectorRef}>
               <button
                 onClick={() => setWsSelectorOpen((v) => !v)}
-                className="flex items-center gap-2 text-sm font-semibold text-foreground hover:bg-secondary px-3 py-1.5 rounded-lg transition-colors"
+                className="flex items-center gap-2 text-sm font-semibold text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
               >
-                <LayoutDashboard className="h-4 w-4 text-foreground/70" />
+                <LayoutDashboard className="h-4 w-4 text-white/80" />
                 <span className="max-w-[160px] truncate">{activeWorkspace?.name || "Workspace"}</span>
-                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${wsSelectorOpen ? "rotate-180" : ""}`} />
+                <ChevronDown className={`h-3.5 w-3.5 text-white/60 transition-transform ${wsSelectorOpen ? "rotate-180" : ""}`} />
               </button>
 
               {wsSelectorOpen && (
