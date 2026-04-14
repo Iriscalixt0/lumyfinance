@@ -7,6 +7,7 @@ import { Eye, EyeOff, UserPlus, ArrowLeft } from "lucide-react";
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const t = useTranslations("auth.register");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
