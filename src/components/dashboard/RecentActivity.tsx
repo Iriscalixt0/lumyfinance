@@ -34,7 +34,7 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
     return (
       <div className="bg-card border border-border rounded-2xl p-4 shadow-[var(--card-shadow)]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "Atividade recente"}</h3>
+          <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         </div>
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <Receipt className="h-8 w-8 text-muted-foreground/30 mb-2" />

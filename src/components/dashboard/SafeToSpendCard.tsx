@@ -4,7 +4,7 @@ import { getFinnyState, type FinnyState } from "@/lib/finny-personality";
 
 interface SafeToSpendCardProps {
   amount: string;
-  label?: string;
+  label?: string;  // e.g. "Dá pra gastar"
   safeToSpend?: number;
   monthlyIncome?: number;
   monthlyExpenses?: number;
@@ -15,7 +15,7 @@ interface SafeToSpendCardProps {
 
 export function SafeToSpendCard({
   amount,
-  label = "Safe-to-Spend",
+  label = "Dá pra gastar",
   safeToSpend = 0,
   monthlyIncome = 0,
   monthlyExpenses = 0,
@@ -156,7 +156,7 @@ export function SafeToSpendCard({
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <Heart className="h-3.5 w-3.5 text-primary" />
             </div>
-            <span className="text-xs sm:text-sm font-semibold text-foreground">Saúde da grana</span>
+            <span className="text-xs sm:text-sm font-semibold text-foreground">Como tá sua grana</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className={`text-sm font-black tabular-nums ${finny.healthColor}`}>
