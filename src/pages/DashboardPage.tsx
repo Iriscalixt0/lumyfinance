@@ -276,13 +276,11 @@ export function DashboardPage() {
 
   /* ---------- Normal Dashboard — Minimal & Focused ---------- */
   return (
-    <div className="min-h-screen bg-background p-5 sm:p-8 animate-fade space-y-6 max-w-2xl mx-auto">
-      {/* Greeting — breathing room */}
-      <div className="pt-2">
-        <h1 className="text-lg sm:text-xl font-bold text-foreground">
-          {greeting}, {userName} 👋
-        </h1>
-      </div>
+    <div className="min-h-screen bg-background px-5 sm:px-8 py-6 sm:py-10 animate-fade space-y-8 max-w-xl mx-auto">
+      {/* Greeting */}
+      <h1 className="text-lg font-bold text-foreground">
+        {greeting}, {userName} 👋
+      </h1>
 
       {/* Hero: Safe-to-Spend + Finny */}
       <SafeToSpendCard
@@ -295,13 +293,13 @@ export function DashboardPage() {
         userName={userName}
       />
 
-      {/* Spending insight — one focused chart */}
+      {/* Pra onde foi a grana */}
       <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} />
 
-      {/* Recent activity — last 5 */}
+      {/* O que rolou */}
       <RecentActivity transactions={transactions} categories={categories} />
 
-      {/* Goals — only if user has any */}
+      {/* Metas — só se tiver */}
       {goalsForOverview.length > 0 && (
         <GoalsOverview goals={goalsForOverview} />
       )}
@@ -309,9 +307,9 @@ export function DashboardPage() {
       {/* CTA */}
       <button
         onClick={() => setQuickTxOpen(true)}
-        className="w-full bg-primary text-primary-foreground font-semibold text-sm py-3.5 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        className="w-full bg-primary text-primary-foreground font-semibold text-base py-4 rounded-full hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
       >
-        <Plus className="h-4 w-4" /> {t("firstTransaction")}
+        <Plus className="h-5 w-5" /> {t("firstTransaction")}
       </button>
 
       {/* Spacer for bottom nav */}
