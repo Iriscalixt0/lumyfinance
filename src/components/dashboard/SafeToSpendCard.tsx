@@ -99,14 +99,19 @@ export function SafeToSpendCard({
         </div>
 
         <div className="flex items-end gap-4 sm:gap-5">
-          {/* Finny — reactive mascot */}
+          {/* Finny — reactive mascot with idle animation */}
           <div className="relative flex-shrink-0">
+            {/* Glow ring behind Finny */}
+            <div className="absolute inset-0 m-auto h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
             <img
               src={finny.image}
               alt={`Finny está ${finny.mood}`}
-              className={`h-28 w-28 sm:h-36 sm:w-36 object-contain drop-shadow-2xl cursor-pointer transition-all duration-300 hover:scale-110 ${
-                bearBounce ? "animate-[bounce_0.6s_ease-out]" : ""
+              className={`relative h-28 w-28 sm:h-36 sm:w-36 object-contain cursor-pointer transition-all duration-300 hover:scale-110 ${
+                bearBounce ? "animate-[bounce_0.6s_ease-out]" : "animate-[idle-float_3s_ease-in-out_infinite]"
               }`}
+              style={{
+                filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.3)) drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+              }}
               loading="eager"
               width={512}
               height={512}
