@@ -51,13 +51,12 @@ export function RegisterPage() {
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-md text-center">
           <Logo size="lg" className="mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-foreground mb-3">Verifique seu e-mail</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-3">{t("verifyEmail")}</h2>
           <p className="text-muted-foreground mb-6">
-            Enviamos um link de confirmação para <strong className="text-foreground">{email}</strong>.
-            Clique no link para ativar sua conta.
+            {t("emailSent").replace("{email}", email)}
           </p>
           <Link to="/login" className="text-primary font-semibold hover:underline">
-            Voltar para o login
+            {t("goToLogin")}
           </Link>
         </div>
       </div>
@@ -74,9 +73,9 @@ export function RegisterPage() {
         }} />
         <div className="relative text-center text-primary-foreground max-w-md">
           <Logo size="lg" className="mx-auto mb-8" />
-          <h1 className="text-4xl font-bold mb-4">Comece agora</h1>
+          <h1 className="text-4xl font-bold mb-4">{t("title")}</h1>
           <p className="text-lg opacity-90">
-            Crie sua conta gratuita e assuma o controle das suas finanças.
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -89,8 +88,8 @@ export function RegisterPage() {
             <span className="text-xl font-bold text-gradient-hero">Lumyf</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Criar conta</h2>
-          <p className="text-muted-foreground mb-8">Preencha os dados abaixo para começar</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t("title")}</h2>
+          <p className="text-muted-foreground mb-8">{t("subtitle")}</p>
 
           {error && (
             <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm font-medium">
@@ -101,7 +100,8 @@ export function RegisterPage() {
           <form onSubmit={handleRegister} className="space-y-5">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-1.5">
-                Nome completo
+                {t("fullName")}
+              </label>
               </label>
               <input
                 id="fullName"
@@ -116,7 +116,8 @@ export function RegisterPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-                E-mail
+                {t("email")}
+              </label>
               </label>
               <input
                 id="email"
@@ -131,7 +132,8 @@ export function RegisterPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
-                Senha
+                {t("password")}
+              </label>
               </label>
               <div className="relative">
                 <input
@@ -141,14 +143,14 @@ export function RegisterPage() {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={t("password")}
                   className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 pr-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-label={showPassword ? "Hide" : "Show"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -165,21 +167,21 @@ export function RegisterPage() {
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  Criar conta
+                  {t("submit")}
                 </>
               )}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Já tem uma conta?{" "}
+            {t("hasAccount")}{" "}
             <Link to="/login" className="text-primary font-semibold hover:underline">
-              Entrar
+              {t("login")}
             </Link>
           </p>
 
           <Link to="/" className="mt-4 flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-3.5 w-3.5" /> Voltar para página principal
+            <ArrowLeft className="h-3.5 w-3.5" /> {t("backHome")}
           </Link>
         </div>
       </div>
