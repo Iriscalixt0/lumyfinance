@@ -14,6 +14,7 @@ import { BudgetsCard } from "@/components/dashboard/BudgetsCard";
 import { MemberSpending } from "@/components/dashboard/MemberSpending";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { GoalsOverview } from "@/components/dashboard/GoalsOverview";
+import { StreakStrip } from "@/components/dashboard/StreakStrip";
 import {
   Plus,
   Sparkles,
@@ -154,6 +155,24 @@ export function DashboardPage() {
 
   const safeToSpend = metrics.currentMonthIncome - metrics.currentMonthExpenses;
 
+  // Weekly tx counts for streak comparison
+  const { thisWeekTx, lastWeekTx } = useMemo(() => {
+    const now = new Date();
+    const startOfThisWeek = new Date(now);
+    startOfThisWeek.setDate(now.getDate() - now.getDay());
+    startOfThisWeek.setHours(0, 0, 0, 0);
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+    let tw = 0, lw = 0;
+    for (const tx of transactions) {
+      const d = new Date(tx.date);
+      if (d >= startOfThisWeek) tw++;
+      else if (d >= startOfLastWeek) lw++;
+    }
+    return { thisWeekTx: tw, lastWeekTx: lw };
+  }, [transactions]);
+
   // Chart data for dependent spending
   const chartData = useMemo(() => {
     const data = [];
@@ -277,10 +296,18 @@ export function DashboardPage() {
   /* ---------- Normal Dashboard — 3 Big Blocks ---------- */
   return (
     <div className="min-h-screen bg-background px-5 sm:px-8 py-6 sm:py-10 animate-fade space-y-8 max-w-xl mx-auto">
-      {/* Greeting */}
-      <h1 className="text-lg font-bold text-foreground">
-        {greeting}, {userName} 👋
-      </h1>
+      {/* Greeting + Streak */}
+      <div className="space-y-2">
+        <h1 className="text-lg font-bold text-foreground">
+          {greeting}, {userName} 👋
+        </h1>
+        <StreakStrip
+          currentStreak={streak?.current_streak ?? 0}
+          totalTx={totalTx}
+          thisWeekTx={thisWeekTx}
+          lastWeekTx={lastWeekTx}
+        />
+      </div>
 
       {/* BLOCK 1 — Visão Geral (safe-to-spend + chart together) */}
       <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-[var(--card-shadow)]">
