@@ -176,7 +176,10 @@
     "settingUp": "Einrichten...",
     "start": "Los geht's!",
     "welcome": "Willkommen bei Lumyf! 🎉",
-    "errorSetup": "Fehler beim Einrichten des Workspace. Gehen Sie zu Einstellungen, um es erneut zu versuchen."
+    "errorSetup": "Fehler beim Einrichten des Workspace. Gehen Sie zu Einstellungen, um es erneut zu versuchen.",
+    "selectCurrency": "Was ist Ihre Hauptwährung?",
+    "selectCurrencyDesc": "Transaktionen in anderen Währungen werden automatisch umgerechnet",
+    "currency": "Währung"
   },
   "transactions": {
     "pageSubtitle": "Transaktionen des Monats",
@@ -459,6 +462,19 @@
     "expensesByCategory": "Ausgaben nach Kategorie",
     "noExpenseData": "Keine Ausgabendaten",
     "balanceProjection": "Saldoprognose (nächste 6 Monate)",
-    "monthsShort": ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"]
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mär",
+      "Apr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Dez"
+    ]
   }
 }

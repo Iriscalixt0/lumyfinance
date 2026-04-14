@@ -1027,7 +1027,10 @@
     "settingUp": "Setting up...",
     "start": "Let's go!",
     "welcome": "Welcome to Lumyf! 🎉",
-    "errorSetup": "Error setting up workspace. Go to Settings to try again."
+    "errorSetup": "Error setting up workspace. Go to Settings to try again.",
+    "selectCurrency": "What is your main currency?",
+    "selectCurrencyDesc": "Transactions in other currencies will be converted automatically",
+    "currency": "Currency"
   },
   "tour": {
     "sidebarTitle": "Sidebar menu",
