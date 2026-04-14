@@ -272,10 +272,7 @@ export function DashboardPage() {
     );
   }
 
-  const goalsForOverview = useMemo(() =>
-    goals.map(g => ({ id: g.id, name: g.name, current: g.current_amount, target: g.target_amount })),
-    [goals]
-  );
+
 
   /* ---------- Normal Dashboard — Modular Layout ---------- */
   return (
