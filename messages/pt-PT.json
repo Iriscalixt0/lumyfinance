@@ -96,12 +96,12 @@
       "downloadAppTapToClose": "Toque para fechar"
     },
     "hero": {
-      "badge": "Finanças em harmonia para si e para a sua família",
-      "title": "Software de Gestão Financeira Pessoal e Partilhada",
+      "badge": "Controlo financeiro pessoal e partilhado",
+      "title": "A sua família, finalmente na mesma página.",
       "titleFormat": "full",
-      "titleHighlight": "Teste por {trialDays} dias grátis",
-      "subtitle": "Controle receitas, despesas, investimentos e metas num espaço partilhado. Todos na mesma página, todas as decisões alinhadas.",
-      "subtitleApp": "Descarregue o <link>web app</link> no seu telemóvel ou no computador e automatize a sua rotina financeira para ganhar mais tempo e tranquilidade.",
+      "titleHighlight": "Controlo financeiro pessoal e partilhado. Sem folha de cálculo, sem confusão.",
+      "subtitle": "Controlo financeiro pessoal e partilhado. Sem folha de cálculo, sem confusão.",
+      "subtitleApp": "Descarregue o <link>web app</link> no telemóvel ou no computador e automatize a sua rotina financeira.",
       "cta": "Começar {trialDays} dias grátis",
       "howItWorks": "Ver como funciona",
       "stats": {
@@ -109,60 +109,60 @@
         "onlineLabel": "Online",
         "trialValue": "dias",
         "trialLabel": "Grátis",
-        "syncValue": "Tempo real",
-        "syncLabel": "Sincronizado"
+        "syncValue": "Sem cartão",
+        "syncLabel": "Para começar"
       }
     },
     "features": {
-      "title": "Funcionalidades Completas de Gestão Financeira Pessoal",
+      "title": "Tudo o que precisa, num só lugar.",
       "subtitle": "Controle receitas, despesas, investimentos e metas num único lugar.",
       "incomeExpenses": {
         "title": "Receitas e Despesas",
-        "desc": "Registre entradas e saídas por categoria e acompanhe o fluxo de caixa da família em tempo real."
+        "desc": "Sabe para onde foi o dinheiro este mês? Com o Lumyf, sabe."
       },
       "goals": {
         "title": "Metas Financeiras",
-        "desc": "Defina objetivos como viagem, casa ou reserva de emergência e acompanhe o progresso juntos."
+        "desc": "Definam juntos. Acompanhem juntos. A viagem de sonho começa aqui."
       },
       "investments": {
         "title": "Investimentos",
-        "desc": "Registre seus investimentos e visualize a evolução do patrimônio familiar."
+        "desc": "Veja o seu património crescer. Sem precisar de várias apps."
       },
       "reports": {
         "title": "Relatórios Inteligentes",
-        "desc": "Gráficos claros e visão geral para decisões baseadas em dados reais."
+        "desc": "Gráficos que qualquer pessoa entende. Não só quem percebe de finanças."
       },
       "workspace": {
-        "title": "Workspace Compartilhado",
-        "desc": "Toda a família na mesma página — cada um vê, registra e acompanha junto."
+        "title": "Workspace Partilhado",
+        "desc": "Toda a família na mesma página. Cada um vê, regista e acompanha."
       },
       "security": {
         "title": "Segurança Total",
-        "desc": "Seus dados protegidos com criptografia e autenticação segura."
+        "desc": "Os seus dados protegidos. O Lumyf não acede à sua conta bancária."
       }
     },
     "steps": {
-      "title": "Como Começar a Usar a App de Finanças em 4 Passos",
-      "subtitle": "Configuração em minutos. Controlo total em horas.",
+      "title": "Pronto em menos de 5 minutos.",
+      "subtitle": "Sem burocracia. Sem complicação.",
       "step1": {
         "title": "Crie a sua conta",
-        "desc": "Em segundos, sem burocracia."
+        "desc": "Sem cartão. Sem burocracia."
       },
       "step2": {
         "title": "Convide a família",
-        "desc": "Partilhe o espaço de trabalho."
+        "desc": "Cônjuge, parceiro, filho — quem quiser."
       },
       "step3": {
-        "title": "Registre tudo",
-        "desc": "Receitas, despesas e metas."
+        "title": "Registe tudo",
+        "desc": "Cada um no seu telemóvel. Todos veem juntos."
       },
       "step4": {
         "title": "Cresçam juntos",
-        "desc": "Acompanhem o progresso."
+        "desc": "Finalmente uma conversa de dinheiro sem stress."
       }
     },
     "testimonials": {
-      "title": "Quem usa não volta para as folhas de cálculo.",
+      "title": "Quem usa não volta à folha de cálculo.",
       "q0": "Discutíamos por dinheiro todas as semanas. Depois do Lumyf, parou.",
       "a0": "Camila R.",
       "l0": "São Paulo",
@@ -177,10 +177,10 @@
       "l3": "Recife"
     },
     "pricing": {
-      "title": "Plano único",
-      "subtext": "{price} por mês após {trialDays} dias grátis.",
+      "title": "Simples. Transparente. Justo.",
+      "subtext": "{price}/mês após {trialDays} dias grátis. Cancele quando quiser.",
       "manageCta": "Gerir subscrição",
-      "betaTestCta": "Subscrição disponível quando o teste beta terminar."
+      "betaTestCta": "Subscrição disponível quando o beta terminar."
     },
     "plans": {
       "title": "Planos para cada família",
@@ -233,29 +233,29 @@
       }
     },
     "faq": {
-      "title": "Perguntas Frequentes sobre a App de Gestão Financeira",
-      "subtitle": "Esclareça as suas dúvidas sobre o Lumyf.",
+      "title": "Perguntas frequentes",
+      "subtitle": "Dúvidas sobre o Lumyf?",
       "q0": "O que é o Lumyf?",
-      "a0": "O Lumyf é um software de gestão financeira pessoal e partilhada. Com ele regista receitas e despesas, acompanha investimentos, define metas financeiras e controla gastos — tudo num único lugar, sincronizado em tempo real, para si e para a sua família.",
+      "a0": "App de controlo financeiro pessoal e partilhado. Regista, acompanha e planeia — junto com a família.",
       "q1": "O Lumyf é gratuito?",
-      "a1": "Sim! O plano Free é 100% gratuito e inclui 1 espaço de trabalho, até 2 membros, 100 transações por mês e 3 metas financeiras. Ideal para começar a organizar as suas finanças em família sem custo.",
-      "q1b": "Para quem é destinado o Lumyf?",
-      "a1b": "O Lumyf é destinado a casais e famílias que querem organizar as finanças num só lugar — e também pode ser usado de forma individual. Ideal para quem deseja partilhar o controlo financeiro com quem importa (ou gerir sozinho), definir metas e acompanhar receitas, despesas e investimentos com clareza e transparência.",
-      "q2": "Como funciona a partilha com a família?",
-      "a2": "Cada família cria um espaço de trabalho e convida membros por e-mail. Todos podem registar transações, ver relatórios e acompanhar metas. As informações são sincronizadas em tempo real para todos os participantes.",
-      "q3": "O Lumyf tem alguma ligação com o meu banco?",
-      "a3": "Não. O Lumyf não tem qualquer conexão, integração ou vínculo com a sua conta bancária. Todas as transações são registadas manualmente por si e pela sua família. Não acedemos, conectamos ou importamos dados de instituições financeiras.",
+      "a1": "{trialDays} dias grátis, sem cartão. Depois, 9,90€/mês. Cancele quando quiser.",
+      "q1b": "Para quem foi feito?",
+      "a1b": "Para quem não sabe para onde vai o dinheiro. Para casais e famílias que querem decidir juntos.",
+      "q2": "Como funciona a partilha?",
+      "a2": "Convida. Cada um entra com o seu login. Todos veem as mesmas finanças em tempo real.",
+      "q3": "O Lumyf acede ao meu banco?",
+      "a3": "Não. Regista tudo manualmente. Os seus dados são só seus.",
       "q4": "Os meus dados estão seguros?",
-      "a4": "Sim. Utilizamos encriptação e autenticação segura. Os seus dados financeiros ficam protegidos e apenas as pessoas que convidar terão acesso ao espaço de trabalho.",
-      "q5": "Posso cancelar o plano pago a qualquer momento?",
-      "a5": "Sim. Pode cancelar a sua subscrição Pro ou Business quando quiser. Após o cancelamento, continua com acesso até ao fim do período já pago e, depois, o seu espaço de trabalho volta para o plano Free.",
-      "q6": "Quantas pessoas podem usar um espaço de trabalho?",
-      "a6": "No plano Free são até 2 membros. No Pro, até 3. No Business, até 20 membros. Tudo para garantir que toda a família possa participar na gestão financeira."
+      "a4": "Sim. Encriptação e autenticação segura. Nunca partilhamos com terceiros.",
+      "q5": "Como funciona o pagamento?",
+      "a5": "9,90€/mês. Sem multa, sem burocracia para cancelar.",
+      "q6": "Quantas pessoas por workspace?",
+      "a6": "Até 3 membros e 2 workspaces no plano Pro."
     },
     "cta": {
-      "title": "Pronto para construir o futuro juntos?",
-      "subtitle": "Junte-se a milhares de famílias que já organizam suas finanças com o Lumyf.",
-      "button": "Criar conta grátis"
+      "title": "Chega de não saber para onde foi o dinheiro.",
+      "subtitle": "7 dias grátis. Sem cartão. Sem compromisso.",
+      "button": "Criar conta grátis agora"
     },
     "footer": {
       "copyright": "© {year} Lumyf. Todos os direitos reservados.",
@@ -959,40 +959,27 @@
     "portalModalCommentPlaceholder": "Algo que queira nos contar..."
   },
   "onboarding": {
-    "skip": "Pular",
-    "stepOf": "Passo {current} de 3",
-    "whoUse": "Para quem você vai usar o Lumyf?",
-    "chooseOption": "Escolha a opção que melhor descreve seu uso.",
-    "intents": {
-      "personal": "Só para mim",
-      "personalDesc": "Organizar minhas finanças pessoais",
-      "family": "Para mim e minha família",
-      "familyDesc": "Casa, casal ou família",
-      "business": "Para minha empresa",
-      "businessDesc": "Gestão financeira do negócio",
-      "other": "Outro",
-      "otherDesc": "Casal, equipe ou grupo"
-    },
-    "workspaceName": "Como quer chamar seu espaço de finanças?",
-    "workspaceNameDesc": "Dê um nome que faça sentido para você.",
-    "placeholderName": "Ex: Minhas Finanças",
     "continue": "Continuar",
-    "readyTitle": "Pronto para começar!",
-    "readyDesc": "Você verá um tour guiado no app — seguimos juntos pelos caminhos para você aprender a registrar transações, metas e mais.",
-    "tourHint": "O tour vai destacar cada área do menu e mostrar onde clicar. No celular, abra o menu (ícone ☰) no topo para ver a navegação.",
-    "seeTourInApp": "Ver tour guiado no app",
-    "entering": "Entrando no app...",
-    "inviteNowTitle": "Convidar parceiro(a) agora",
-    "inviteNowDesc": "Gere um link de convite para compartilhar o workspace com sua fam?lia ainda no onboarding.",
-    "inviteNowNamePlaceholder": "Nome do parceiro(a)",
-    "inviteNowEmailPlaceholder": "E-mail (opcional)",
-    "inviteNowButton": "Gerar convite",
-    "inviteNowGenerating": "Gerando convite...",
-    "inviteNowLinkReady": "Link de convite pronto:",
-    "inviteNowCopy": "Copiar",
-    "inviteNowCopied": "Copiado!",
-    "inviteNowError": "N?o foi poss?vel gerar o convite agora.",
-    "saving": "Salvando..."
+    "howToUse": "Como quer usar o Lumyf?",
+    "howToUseDesc": "Isto ajuda-nos a personalizar a sua experiência",
+    "intentPersonal": "Pessoal",
+    "intentPersonalDesc": "Controlo individual de finanças",
+    "intentFamily": "Família / Casal",
+    "intentFamilyDesc": "Finanças partilhadas em casa",
+    "intentBusiness": "Pequeno negócio",
+    "intentBusinessDesc": "Controlo financeiro empresarial",
+    "intentOther": "Outro",
+    "intentOtherDesc": "Explorar o que a plataforma oferece",
+    "nameWorkspace": "Dê um nome ao seu espaço",
+    "nameWorkspaceDesc": "Pode mudar depois nas configurações",
+    "allReady": "Tudo pronto!",
+    "allReadyDesc": "Vamos começar a organizar as suas finanças",
+    "language": "Idioma",
+    "usage": "Uso",
+    "settingUp": "A configurar...",
+    "start": "Começar!",
+    "welcome": "Bem-vindo ao Lumyf! 🎉",
+    "errorSetup": "Erro ao configurar workspace. Aceda a Configurações para tentar novamente."
   },
   "tour": {
     "sidebarTitle": "Menu lateral",
@@ -1531,29 +1518,6 @@
     "errorCreate": "Erro ao criar.",
     "errorDelete": "Erro ao excluir."
   },
-  "onboarding": {
-    "continue": "Continuar",
-    "howToUse": "Como quer usar o Lumyf?",
-    "howToUseDesc": "Isto ajuda-nos a personalizar a sua experiência",
-    "intentPersonal": "Pessoal",
-    "intentPersonalDesc": "Controlo individual de finanças",
-    "intentFamily": "Família / Casal",
-    "intentFamilyDesc": "Finanças partilhadas em casa",
-    "intentBusiness": "Pequeno negócio",
-    "intentBusinessDesc": "Controlo financeiro empresarial",
-    "intentOther": "Outro",
-    "intentOtherDesc": "Explorar o que a plataforma oferece",
-    "nameWorkspace": "Dê um nome ao seu espaço",
-    "nameWorkspaceDesc": "Pode mudar depois nas configurações",
-    "allReady": "Tudo pronto!",
-    "allReadyDesc": "Vamos começar a organizar as suas finanças",
-    "language": "Idioma",
-    "usage": "Uso",
-    "settingUp": "A configurar...",
-    "start": "Começar!",
-    "welcome": "Bem-vindo ao Lumyf! 🎉",
-    "errorSetup": "Erro ao configurar workspace. Aceda a Configurações para tentar novamente."
-  },
   "goalsPage": {
     "title": "Metas e Objetivos",
     "subtitle": "Planeie e acompanhe a evolução das suas poupanças.",
@@ -1768,6 +1732,19 @@
     "expensesByCategory": "Gastos por categoria",
     "noExpenseData": "Sem dados de despesas",
     "balanceProjection": "Projeção de saldo (próximos 6 meses)",
-    "monthsShort": ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+    "monthsShort": [
+      "Jan",
+      "Fev",
+      "Mar",
+      "Abr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Set",
+      "Out",
+      "Nov",
+      "Dez"
+    ]
   }
 }
