@@ -302,13 +302,7 @@ export function DashboardPage() {
   }
 
 
-  const finnyState = useMemo(() => getFinnyState({
-    safeToSpend, monthlyIncome: metrics.currentMonthIncome, monthlyExpenses: metrics.currentMonthExpenses,
-    streak: streak?.current_streak ?? 0, totalTx, userName,
-  }), [safeToSpend, metrics, streak, totalTx, userName]);
-
-  const savings = goals.reduce((s, g) => s + g.current_amount, 0);
-
+  /* ---------- Normal Dashboard — Reference Layout ---------- */
   return (
     <div className="min-h-screen bg-background px-5 sm:px-8 py-8 sm:py-12 animate-fade space-y-8 max-w-6xl mx-auto">
       {/* Row 0 — Greeting + Streak */}
