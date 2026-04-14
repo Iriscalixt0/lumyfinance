@@ -156,7 +156,7 @@ export function SafeToSpendCard({
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <Heart className="h-3.5 w-3.5 text-primary" />
             </div>
-            <span className="text-xs sm:text-sm font-semibold text-foreground">Saúde Financeira</span>
+            <span className="text-xs sm:text-sm font-semibold text-foreground">Saúde da grana</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className={`text-sm font-black tabular-nums ${finny.healthColor}`}>
@@ -180,11 +180,11 @@ export function SafeToSpendCard({
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
           <div className="flex items-center gap-1">
             <Shield className="h-3 w-3" />
-            <span>Nenhum pagamento pendente</span>
+            <span>Sem pendências</span>
           </div>
           <div className="flex items-center gap-1">
             <TrendingUp className="h-3 w-3" />
-            <span>Finny cuida de você</span>
+            <span>Finny cuida pra você</span>
           </div>
         </div>
       </div>
