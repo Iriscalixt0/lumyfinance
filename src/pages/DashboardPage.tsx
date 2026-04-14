@@ -9,7 +9,7 @@ import { useTranslations } from "@/lib/i18n";
 import { QuickTransactionModal } from "@/components/transactions/QuickTransactionModal";
 import { SafeToSpendCard } from "@/components/dashboard/SafeToSpendCard";
 import { GamificationBar } from "@/components/dashboard/GamificationBar";
-import { DependentSpendingChart } from "@/components/dashboard/DependentSpendingChart";
+import { SpendingInsightChart } from "@/components/dashboard/SpendingInsightChart";
 import { BudgetsCard } from "@/components/dashboard/BudgetsCard";
 import { MemberSpending } from "@/components/dashboard/MemberSpending";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -300,7 +300,7 @@ export function DashboardPage() {
           unlockedKeys={Array.from(unlockedKeys)}
           totalTx={totalTx}
         />
-        <DependentSpendingChart data={chartData} formatMoney={formatBRL} />
+        <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} />
       </div>
 
       {/* Row 3: Atividades + Objetivos (2 colunas) */}
