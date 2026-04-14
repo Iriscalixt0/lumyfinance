@@ -209,7 +209,7 @@ export function DashboardPage() {
           {greeting}, {userName} 👋
         </h1>
 
-        <SafeToSpendCard amount={formatBRL(0)} />
+        <SafeToSpendCard amount={formatBRL(0)} safeToSpend={0} streak={0} totalTx={0} userName={userName} />
 
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
           <div className="text-center mb-8">
@@ -277,7 +277,13 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left column — 3/5 */}
         <div className="lg:col-span-3 space-y-4">
-          <SafeToSpendCard amount={formatBRL(safeToSpend)} />
+          <SafeToSpendCard
+            amount={formatBRL(safeToSpend)}
+            safeToSpend={safeToSpend}
+            streak={streak?.current_streak ?? 0}
+            totalTx={totalTx}
+            userName={userName}
+          />
 
           {/* Member Spending */}
           {memberSpending.length > 0 && <MemberSpending members={memberSpending} />}
@@ -285,6 +291,11 @@ export function DashboardPage() {
 
         {/* Right column — 2/5 */}
         <div className="lg:col-span-2 space-y-4">
+          <GamificationBar
+            streak={streak?.current_streak ?? 0}
+            unlockedKeys={unlockedKeys}
+            totalTx={totalTx}
+          />
           <DependentSpendingChart data={chartData} formatMoney={formatBRL} />
           <BudgetsCard members={budgetMembers} />
         </div>
