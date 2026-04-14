@@ -48,7 +48,7 @@ export function GamificationBar({ streak, unlockedKeys, totalTx }: GamificationB
   }, [unlockedKeys]);
 
   return (
-    <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 sm:p-5 space-y-4 animate-fade-in">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-4 animate-fade-in shadow-[var(--card-shadow)]">
       {/* Top row: Level + Streak */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">

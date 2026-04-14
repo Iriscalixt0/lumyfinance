@@ -17,7 +17,7 @@ export function MemberSpending({ members }: MemberSpendingProps) {
   if (members.length === 0) return null;
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
+    <div className="bg-card border border-border rounded-2xl p-4 shadow-[var(--card-shadow)]">
       <div className="space-y-3">
         {members.map((member, i) => (
           <div key={i} className="flex items-center gap-3">

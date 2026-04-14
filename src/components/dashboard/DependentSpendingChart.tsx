@@ -10,10 +10,10 @@ export function DependentSpendingChart({ data, formatMoney }: DependentSpendingC
   const t = useTranslations("dashboard");
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 h-full">
+    <div className="bg-card border border-border rounded-2xl p-4 h-full shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white/90">Gastos por dependente</h3>
-        <span className="text-[10px] text-white/40 font-medium">mensal</span>
+        <h3 className="text-sm font-bold text-foreground">Gastos por dependente</h3>
+        <span className="text-[10px] text-muted-foreground font-medium">mensal</span>
       </div>
       <div className="h-40">
         <ResponsiveContainer width="100%" height="100%">

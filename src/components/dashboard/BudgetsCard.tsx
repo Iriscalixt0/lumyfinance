@@ -13,9 +13,9 @@ interface BudgetsCardProps {
 
 export function BudgetsCard({ members }: BudgetsCardProps) {
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 h-full">
+    <div className="bg-card border border-border rounded-2xl p-4 h-full shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-bold text-white/90">Orçamentos</h3>
+        <h3 className="text-sm font-bold text-foreground">Orçamentos</h3>
         <Link
           to="/budgets"
           className="text-xs font-medium text-primary flex items-center gap-0.5 hover:underline"
