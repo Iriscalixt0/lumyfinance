@@ -295,12 +295,19 @@ export function DashboardPage() {
 
 
 
-  /* ---------- Normal Dashboard — 3 Big Blocks ---------- */
+  /* ---------- Normal Dashboard — Reference Layout ---------- */
+  const finnyState = (() => {
+    const { getFinnyState } = require("@/lib/finny-personality");
+    return getFinnyState({ safeToSpend, monthlyIncome: metrics.currentMonthIncome, monthlyExpenses: metrics.currentMonthExpenses, streak: streak?.current_streak ?? 0, totalTx, userName });
+  })();
+
+  const savings = goals.reduce((s, g) => s + g.current_amount, 0);
+
   return (
-    <div className="min-h-screen bg-background px-5 sm:px-8 py-8 sm:py-12 animate-fade space-y-10 max-w-xl mx-auto">
-      {/* Greeting + Streak */}
-      <div className="space-y-2">
-        <h1 className="text-lg font-bold text-foreground">
+    <div className="min-h-screen bg-background px-5 sm:px-8 py-8 sm:py-12 animate-fade space-y-8 max-w-6xl mx-auto">
+      {/* Row 0 — Greeting + Streak */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-foreground">
           {greeting}, {userName} 👋
         </h1>
         <StreakStrip
@@ -311,30 +318,40 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* BLOCK 1 — Visão Geral (safe-to-spend + chart together) */}
-      <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-[var(--card-shadow)]">
-        <SafeToSpendCard
-          amount={formatBRL(safeToSpend)}
-          safeToSpend={safeToSpend}
-          monthlyIncome={metrics.currentMonthIncome}
-          monthlyExpenses={metrics.currentMonthExpenses}
-          streak={streak?.current_streak ?? 0}
-          totalTx={totalTx}
-          userName={userName}
-          embedded
-        />
-        <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-          <SpendingInsightChart transactions={transactions} categories={categories} formatMoney={formatBRL} embedded />
+      {/* Row 1 — SafeToSpend (2/3) + Weekly Summary (1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
+          <SafeToSpendCard
+            amount={formatBRL(safeToSpend)}
+            safeToSpend={safeToSpend}
+            monthlyIncome={metrics.currentMonthIncome}
+            monthlyExpenses={metrics.currentMonthExpenses}
+            streak={streak?.current_streak ?? 0}
+            totalTx={totalTx}
+            userName={userName}
+          />
         </div>
+        <WeeklySummaryCard transactions={transactions} />
       </div>
 
-      {/* BLOCK 2 — O que rolou */}
-      <RecentActivity transactions={transactions} categories={categories} />
-
-      {/* BLOCK 3 — Metas (só se tiver) */}
-      {goalsForOverview.length > 0 && (
-        <GoalsOverview goals={goalsForOverview} />
-      )}
+      {/* Row 2 — Health | Recent Transactions | Goals (3 equal) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <HealthOverviewCard
+          healthPercent={finnyState.healthPercent}
+          healthLabel={finnyState.healthLabel}
+          healthColor={finnyState.healthColor}
+          goalsCount={goals.length}
+          savingsAmount={savings}
+        />
+        <RecentActivity transactions={transactions} categories={categories} />
+        {goalsForOverview.length > 0 ? (
+          <GoalsOverview goals={goalsForOverview} />
+        ) : (
+          <div className="bg-card border border-border rounded-3xl p-6 shadow-[var(--card-shadow)] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">Nenhum objetivo ainda</p>
+          </div>
+        )}
+      </div>
 
       {/* CTA */}
       <button
