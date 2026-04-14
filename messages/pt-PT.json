@@ -979,7 +979,10 @@
     "settingUp": "A configurar...",
     "start": "Começar!",
     "welcome": "Bem-vindo ao Lumyf! 🎉",
-    "errorSetup": "Erro ao configurar workspace. Aceda a Configurações para tentar novamente."
+    "errorSetup": "Erro ao configurar workspace. Aceda a Configurações para tentar novamente.",
+    "selectCurrency": "Qual é a sua moeda principal?",
+    "selectCurrencyDesc": "Transações noutras moedas serão convertidas automaticamente",
+    "currency": "Moeda"
   },
   "tour": {
     "sidebarTitle": "Menu lateral",

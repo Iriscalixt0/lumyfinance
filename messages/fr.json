@@ -176,7 +176,10 @@
     "settingUp": "Configuration...",
     "start": "Commencer !",
     "welcome": "Bienvenue sur Lumyf ! 🎉",
-    "errorSetup": "Erreur lors de la configuration. Accédez aux Paramètres pour réessayer."
+    "errorSetup": "Erreur lors de la configuration. Accédez aux Paramètres pour réessayer.",
+    "selectCurrency": "Quelle est votre devise principale ?",
+    "selectCurrencyDesc": "Les transactions dans d'autres devises seront converties automatiquement",
+    "currency": "Devise"
   },
   "transactions": {
     "pageSubtitle": "Transactions du mois",
@@ -459,6 +462,19 @@
     "expensesByCategory": "Dépenses par catégorie",
     "noExpenseData": "Aucune donnée de dépenses",
     "balanceProjection": "Projection de solde (6 prochains mois)",
-    "monthsShort": ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"]
+    "monthsShort": [
+      "Jan",
+      "Fév",
+      "Mar",
+      "Avr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aoû",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Déc"
+    ]
   }
 }
