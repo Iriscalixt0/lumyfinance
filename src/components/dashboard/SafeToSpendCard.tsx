@@ -69,19 +69,20 @@ export function SafeToSpendCard({
       {/* Main premium card */}
       <div className="relative overflow-hidden rounded-2xl p-5 sm:p-7"
         style={{
-          background: "linear-gradient(135deg, hsl(160 50% 28%) 0%, hsl(160 45% 38%) 50%, hsl(155 40% 32%) 100%)",
-          boxShadow: "0 8px 32px -8px hsl(160 50% 30% / 0.5), 0 0 60px -20px hsl(160 60% 50% / 0.15), inset 0 1px 0 hsl(160 50% 50% / 0.1)",
+          background: "linear-gradient(135deg, #1FAF8B 0%, #0E7A66 100%)",
+          boxShadow: "0 8px 32px -8px rgba(14,122,102,0.5), 0 0 60px -20px rgba(31,175,139,0.2), inset 0 1px 0 rgba(255,255,255,0.08)",
         }}
       >
-        {/* Floating decorative elements */}
-        <Star className="absolute top-3 right-5 h-5 w-5 text-yellow-300 fill-yellow-300 animate-pulse" />
-        <Star className="absolute top-8 right-12 h-3 w-3 text-yellow-300 fill-yellow-300 opacity-70" />
-        <Star className="absolute bottom-5 right-20 h-4 w-4 text-yellow-300 fill-yellow-300 opacity-50 animate-pulse" style={{ animationDelay: "1s" }} />
-        <Star className="absolute top-2 left-[42%] h-2.5 w-2.5 text-emerald-300 fill-emerald-300 opacity-40" />
+        {/* Floating stars — gentle twinkle */}
+        <Star className="absolute top-3 right-5 h-5 w-5 text-yellow-300/80 fill-yellow-300/80 animate-pulse" style={{ animationDuration: "3s" }} />
+        <Star className="absolute top-9 right-14 h-3 w-3 text-yellow-300/60 fill-yellow-300/60 animate-pulse" style={{ animationDuration: "4s", animationDelay: "1s" }} />
+        <Star className="absolute bottom-5 right-20 h-3.5 w-3.5 text-yellow-300/50 fill-yellow-300/50 animate-pulse" style={{ animationDuration: "3.5s", animationDelay: "2s" }} />
+        <Star className="absolute top-2 left-[42%] h-2.5 w-2.5 text-emerald-200/40 fill-emerald-200/40 animate-pulse" style={{ animationDuration: "5s", animationDelay: "0.5s" }} />
+        <Star className="absolute bottom-3 left-[55%] h-2 w-2 text-yellow-200/30 fill-yellow-200/30 animate-pulse" style={{ animationDuration: "4.5s", animationDelay: "1.5s" }} />
 
-        {/* Subtle glow effect */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-emerald-400/10 blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-primary/5 blur-2xl" />
+        {/* Glow behind mascot */}
+        <div className="absolute bottom-0 left-4 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-white/8 blur-2xl pointer-events-none" />
+        <div className="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-emerald-300/8 blur-3xl pointer-events-none" />
 
         {/* Speech Bubble */}
         <div
