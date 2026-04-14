@@ -50,19 +50,19 @@ interface NavItem {
   icon: typeof LayoutDashboard;
 }
 
-// 🔵 Main nav — only 3 core items
+// 🔵 Essencial — só o que importa
 const MAIN_ITEMS: NavItem[] = [
   { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard },
   { labelKey: "transactions", href: "/transactions", icon: ArrowLeftRight },
   { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
   { labelKey: "goals", href: "/goals", icon: Target },
   { labelKey: "investments", href: "/investments", icon: TrendingUp },
-  { labelKey: "recurring", href: "/recurring", icon: Repeat },
-  { labelKey: "lumy", href: "/lumy", icon: Bot },
 ];
 
-// 🧰 Mais Ferramentas (collapsed by default)
+// 🧰 Mais (collapsed)
 const MORE_TOOLS_ITEMS: NavItem[] = [
+  { labelKey: "recurring", href: "/recurring", icon: Repeat },
+  { labelKey: "lumy", href: "/lumy", icon: Bot },
   { labelKey: "cobrancas", href: "/billings", icon: Receipt },
   { labelKey: "reports", href: "/annual-report", icon: FileBarChart },
   { labelKey: "projection", href: "/projection", icon: LineChart },
@@ -73,10 +73,8 @@ const MORE_TOOLS_ITEMS: NavItem[] = [
 
 // ⚙️ Sistema
 const SYSTEM_ITEMS: NavItem[] = [
-  { labelKey: "plan", href: "/plan", icon: CreditCard },
-  { labelKey: "workspace", href: "/workspace", icon: Users },
-  { labelKey: "support", href: "/support", icon: MessageCircle },
   { labelKey: "settings", href: "/settings", icon: Settings },
+  { labelKey: "support", href: "/support", icon: MessageCircle },
 ];
 
 interface SidebarGroupProps {
