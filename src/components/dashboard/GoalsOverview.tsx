@@ -20,7 +20,7 @@ export function GoalsOverview({ goals }: GoalsOverviewProps) {
   if (goals.length === 0) return null;
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 shadow-[var(--card-shadow)]">
+    <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-foreground">{t("goals")}</h3>
         <Link
