@@ -280,6 +280,8 @@ export function DashboardPage() {
           <SafeToSpendCard
             amount={formatBRL(safeToSpend)}
             safeToSpend={safeToSpend}
+            monthlyIncome={metrics.currentMonthIncome}
+            monthlyExpenses={metrics.currentMonthExpenses}
             streak={streak?.current_streak ?? 0}
             totalTx={totalTx}
             userName={userName}
