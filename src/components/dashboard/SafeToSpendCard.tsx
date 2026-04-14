@@ -42,12 +42,12 @@ export function SafeToSpendCard({ amount, label = "Safe-to-Spend" }: SafeToSpend
       </div>
 
       {/* Saúde do Cashflow label */}
-      <div className="flex items-center justify-between mt-3 px-1">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-white/60">Saúde do Cashflow</span>
-          <Info className="h-3.5 w-3.5 text-white/40" />
+      <div className="flex items-center justify-between mt-3 px-1 flex-wrap gap-1">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Saúde do Cashflow</span>
+          <Info className="h-3.5 w-3.5 text-muted-foreground/60 flex-shrink-0" />
         </div>
-        <span className="text-xs text-white/40">Não há pms</span>
+        <span className="text-xs text-muted-foreground/60 whitespace-nowrap">Nenhum pagamento pendente</span>
       </div>
     </div>
   );
