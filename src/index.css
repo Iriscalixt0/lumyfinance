@@ -22,22 +22,25 @@
 }
 
 .dark {
-  --background: 160 40% 8%;
-  --foreground: 150 20% 95%;
-  --card: 160 40% 11%;
-  --border: 160 25% 18%;
-  --primary: 160 45% 45%;
+  --background: 160 50% 5%;
+  --foreground: 150 20% 96%;
+  --card: 160 35% 13%;
+  --border: 160 25% 20%;
+  --primary: 160 60% 48%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 160 30% 14%;
-  --muted: 160 25% 14%;
-  --muted-foreground: 155 15% 55%;
-  --accent: 160 45% 50%;
+  --secondary: 160 30% 16%;
+  --muted: 160 25% 15%;
+  --muted-foreground: 155 15% 60%;
+  --accent: 160 55% 52%;
   --destructive: 0 62% 50%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 160 45% 45%;
-  --input: 160 25% 18%;
-  --popover: 160 40% 11%;
-  --popover-foreground: 150 20% 95%;
+  --ring: 160 60% 48%;
+  --input: 160 25% 20%;
+  --popover: 160 35% 12%;
+  --popover-foreground: 150 20% 96%;
+
+  --card-shadow: 0 4px 24px -4px hsl(160 50% 5% / 0.6), 0 1px 3px hsl(160 50% 5% / 0.3);
+  --card-glow: 0 0 40px -12px hsl(160 60% 48% / 0.08);
 }
 
 /* Color themes */
@@ -150,6 +153,13 @@ body {
 
   .glass-card {
     @apply bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-sm;
+  }
+
+  .dark .elevated-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow, 0 4px 24px -4px rgba(0,0,0,0.3)), var(--card-glow, none);
   }
 
   .animate-fade {
