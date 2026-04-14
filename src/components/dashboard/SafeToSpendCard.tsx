@@ -1,12 +1,34 @@
+import { useState, useEffect } from "react";
 import bearMascot from "@/assets/bear-mascot.png";
 import { Star, Info } from "lucide-react";
+import { BearSpeechBubble } from "./BearSpeechBubble";
 
 interface SafeToSpendCardProps {
   amount: string;
   label?: string;
+  safeToSpend?: number;
+  streak?: number;
+  totalTx?: number;
+  userName?: string;
 }
 
-export function SafeToSpendCard({ amount, label = "Safe-to-Spend" }: SafeToSpendCardProps) {
+export function SafeToSpendCard({
+  amount,
+  label = "Safe-to-Spend",
+  safeToSpend = 0,
+  streak = 0,
+  totalTx = 0,
+  userName = "User",
+}: SafeToSpendCardProps) {
+  const [bearBounce, setBearBounce] = useState(false);
+
+  // Bear bounces on mount
+  useEffect(() => {
+    setBearBounce(true);
+    const timer = setTimeout(() => setBearBounce(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div>
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[hsl(160,50%,30%)] to-[hsl(160,45%,40%)] p-6 sm:p-8">
@@ -18,15 +40,29 @@ export function SafeToSpendCard({ amount, label = "Safe-to-Spend" }: SafeToSpend
         <Star className="absolute bottom-3 left-[55%] h-4 w-4 text-yellow-300 fill-yellow-300 opacity-40" />
         <Star className="absolute top-6 left-[30%] h-3 w-3 text-green-300 fill-green-300 opacity-30" />
 
+        {/* Speech bubble */}
+        <BearSpeechBubble
+          safeToSpend={safeToSpend}
+          streak={streak}
+          totalTx={totalTx}
+          userName={userName}
+        />
+
         <div className="flex items-center gap-5">
-          {/* Bear mascot */}
+          {/* Bear mascot — animated */}
           <img
             src={bearMascot}
             alt="Lumyf mascot"
-            className="h-28 w-28 sm:h-36 sm:w-36 object-contain drop-shadow-2xl flex-shrink-0"
+            className={`h-28 w-28 sm:h-36 sm:w-36 object-contain drop-shadow-2xl flex-shrink-0 cursor-pointer hover:scale-110 transition-transform duration-300 ${
+              bearBounce ? "animate-[bounce_0.6s_ease-out]" : ""
+            }`}
             loading="eager"
             width={512}
             height={512}
+            onClick={() => {
+              setBearBounce(true);
+              setTimeout(() => setBearBounce(false), 600);
+            }}
           />
 
           {/* Text */}
