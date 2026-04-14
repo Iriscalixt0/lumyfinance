@@ -67,7 +67,7 @@ export function SafeToSpendCard({
     "from-red-400 to-red-500";
 
   return (
-    <div className="space-y-4">
+    <div className={embedded ? "" : "space-y-4"}>
       {/* Main premium card */}
       <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8"
         style={{
@@ -151,7 +151,8 @@ export function SafeToSpendCard({
         </div>
       </div>
 
-      {/* Financial Health Bar */}
+      {/* Financial Health Bar — hide when embedded (parent card handles wrapper) */}
+      {!embedded && (
       <div className="bg-card/80 backdrop-blur-sm border border-border rounded-3xl px-5 py-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
