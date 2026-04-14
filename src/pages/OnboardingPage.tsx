@@ -285,7 +285,7 @@ export function OnboardingPage() {
                 type="text"
                 value={workspaceName}
                 onChange={(e) => setWorkspaceName(e.target.value)}
-                placeholder={intent === "family" ? "Casa dos Silva" : intent === "business" ? "Minha Empresa" : "Minhas Finanças"}
+                placeholder={intent === "family" ? (t("placeholderFamily") || "Casa dos Silva") : intent === "business" ? (t("placeholderBusiness") || "Minha Empresa") : (t("placeholderPersonal") || "Minhas Finanças")}
                 className="w-full bg-card border-2 border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors text-center text-lg font-medium"
                 maxLength={50}
                 autoFocus
