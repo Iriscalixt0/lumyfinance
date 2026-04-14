@@ -4,13 +4,14 @@ import { getFinnyState, type FinnyState } from "@/lib/finny-personality";
 
 interface SafeToSpendCardProps {
   amount: string;
-  label?: string;  // e.g. "Dá pra gastar"
+  label?: string;
   safeToSpend?: number;
   monthlyIncome?: number;
   monthlyExpenses?: number;
   streak?: number;
   totalTx?: number;
   userName?: string;
+  embedded?: boolean;
 }
 
 export function SafeToSpendCard({
@@ -22,6 +23,7 @@ export function SafeToSpendCard({
   streak = 0,
   totalTx = 0,
   userName = "User",
+  embedded = false,
 }: SafeToSpendCardProps) {
   const [bearBounce, setBearBounce] = useState(false);
   const [showBubble, setShowBubble] = useState(false);

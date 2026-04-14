@@ -22,6 +22,7 @@ interface SpendingInsightChartProps {
   transactions: Transaction[];
   categories: Category[];
   formatMoney: (v: number) => string;
+  embedded?: boolean;
 }
 
 const CATEGORY_COLORS = [
@@ -35,7 +36,7 @@ const CATEGORY_COLORS = [
   "hsl(0, 0%, 50%)",     // gray (outros)
 ];
 
-export function SpendingInsightChart({ transactions, categories, formatMoney }: SpendingInsightChartProps) {
+export function SpendingInsightChart({ transactions, categories, formatMoney, embedded = false }: SpendingInsightChartProps) {
   const t = useTranslations("dashboard");
 
   const currentMonth = new Date().getMonth();
