@@ -140,10 +140,10 @@ export function SafeToSpendCard({
               finny.mood === "happy" ? "bg-emerald-500/20 text-emerald-300" :
               "bg-white/10 text-white/60"
             }`}>
-              {finny.mood === "worried" && "⚠️ atenção"}
-              {finny.mood === "neutral" && "😐 neutro"}
-              {finny.mood === "happy" && "😊 tranquilo"}
-              {finny.mood === "celebrating" && "🎉 excelente"}
+              {finny.mood === "worried" && "⚠️ alerta"}
+              {finny.mood === "neutral" && "😐 de boa"}
+              {finny.mood === "happy" && "😊 suave"}
+              {finny.mood === "celebrating" && "🎉 voando"}
             </span>
           </div>
         </div>
