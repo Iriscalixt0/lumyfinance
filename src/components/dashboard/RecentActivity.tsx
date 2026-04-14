@@ -26,15 +26,15 @@ interface RecentActivityProps {
 export function RecentActivity({ transactions, categories }: RecentActivityProps) {
   const t = useTranslations("dashboard");
   const fmt = useIntlFormat();
-  const recent = transactions.slice(0, 5);
+  const recent = transactions.slice(0, 4);
 
   const catMap = new Map(categories.map(c => [c.id, c]));
 
   if (recent.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-[var(--card-shadow)]">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
+      <div className="bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-[var(--card-shadow)]">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         </div>
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <Receipt className="h-8 w-8 text-muted-foreground/30 mb-2" />
@@ -45,9 +45,9 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
   }
 
   return (
-    <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-[var(--card-shadow)]">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
+    <div className="bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-[var(--card-shadow)]">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         <Link
           to="/transactions"
           className="text-xs font-medium text-primary flex items-center gap-0.5 hover:underline"
