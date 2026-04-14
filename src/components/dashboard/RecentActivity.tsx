@@ -56,7 +56,7 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
         </Link>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {recent.map((tx) => {
           const cat = tx.category_id ? catMap.get(tx.category_id) : null;
           const isExpense = tx.type === "expense";
@@ -64,7 +64,7 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
           return (
             <div
               key={tx.id}
-              className="flex items-center gap-3.5 py-3 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors"
+              className="flex items-center gap-3.5 py-3.5 px-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors"
             >
               <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
                 isExpense ? "bg-destructive/10" : "bg-primary/10"
@@ -79,14 +79,14 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground truncate">{tx.description}</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-sm font-semibold text-foreground truncate">{tx.description}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {new Date(tx.date).toLocaleDateString()}
                   {cat && ` · ${cat.name}`}
                 </p>
               </div>
 
-              <span className={`text-xs font-bold tabular-nums ${
+              <span className={`text-sm font-bold tabular-nums ${
                 isExpense ? "text-destructive" : "text-primary"
               }`}>
                 {isExpense ? "-" : "+"}{fmt.money(tx.amount)}
