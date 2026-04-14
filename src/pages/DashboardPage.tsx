@@ -293,7 +293,7 @@ export function DashboardPage() {
         <div className="lg:col-span-2 space-y-4">
           <GamificationBar
             streak={streak?.current_streak ?? 0}
-            unlockedKeys={unlockedKeys}
+            unlockedKeys={Array.from(unlockedKeys)}
             totalTx={totalTx}
           />
           <DependentSpendingChart data={chartData} formatMoney={formatBRL} />
