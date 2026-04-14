@@ -2,6 +2,15 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
+const DEV_BYPASS = import.meta.env.DEV;
+
+const MOCK_WORKSPACE = {
+  id: "00000000-0000-0000-0000-000000000001",
+  name: "Meu Workspace",
+  slug: "meu-workspace",
+  owner_id: "00000000-0000-0000-0000-000000000000",
+};
+
 interface Workspace {
   id: string;
   name: string;
@@ -27,11 +36,12 @@ const WorkspaceContext = createContext<WorkspaceContextType>({
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(DEV_BYPASS ? [MOCK_WORKSPACE] : []);
+  const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(DEV_BYPASS ? MOCK_WORKSPACE : null);
+  const [loading, setLoading] = useState(!DEV_BYPASS);
 
   const load = useCallback(async () => {
+    if (DEV_BYPASS) { setLoading(false); return; }
     if (!user) { setLoading(false); return; }
 
     const { data: memberRows } = await supabase
@@ -51,7 +61,6 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const list = wsList ?? [];
     setWorkspaces(list);
 
-    // Restore last selected or pick first
     const savedId = localStorage.getItem("lmyf_active_ws");
     const saved = list.find((w) => w.id === savedId);
     setActiveWorkspace(saved ?? list[0] ?? null);
