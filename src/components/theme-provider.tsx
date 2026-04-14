@@ -21,10 +21,10 @@ const ThemeContext = createContext<{
 });
 
 function readTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
   if (stored === "dark" || stored === "light") return stored;
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  return "dark";
 }
 
 function applyTheme(theme: Theme) {
