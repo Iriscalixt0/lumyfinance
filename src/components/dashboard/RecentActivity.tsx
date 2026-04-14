@@ -32,7 +32,7 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
 
   if (recent.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-[var(--card-shadow)]">
+      <div className="bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-[var(--card-shadow)] h-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         </div>
@@ -45,7 +45,7 @@ export function RecentActivity({ transactions, categories }: RecentActivityProps
   }
 
   return (
-    <div className="bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-[var(--card-shadow)]">
+    <div className="bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-[var(--card-shadow)] h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-bold text-foreground">{t("recentActivity") || "O que rolou"}</h3>
         <Link
