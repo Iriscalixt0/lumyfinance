@@ -179,7 +179,10 @@
     "errorSetup": "Erreur lors de la configuration. Accédez aux Paramètres pour réessayer.",
     "selectCurrency": "Quelle est votre devise principale ?",
     "selectCurrencyDesc": "Les transactions dans d'autres devises seront converties automatiquement",
-    "currency": "Devise"
+    "currency": "Devise",
+    "placeholderFamily": "Famille Dupont",
+    "placeholderBusiness": "Mon Entreprise",
+    "placeholderPersonal": "Mes Finances"
   },
   "transactions": {
     "pageSubtitle": "Transactions du mois",

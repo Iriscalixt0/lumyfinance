@@ -179,7 +179,10 @@
     "errorSetup": "Fehler beim Einrichten des Workspace. Gehen Sie zu Einstellungen, um es erneut zu versuchen.",
     "selectCurrency": "Was ist Ihre Hauptwährung?",
     "selectCurrencyDesc": "Transaktionen in anderen Währungen werden automatisch umgerechnet",
-    "currency": "Währung"
+    "currency": "Währung",
+    "placeholderFamily": "Familie Müller",
+    "placeholderBusiness": "Mein Unternehmen",
+    "placeholderPersonal": "Meine Finanzen"
   },
   "transactions": {
     "pageSubtitle": "Transaktionen des Monats",

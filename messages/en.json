@@ -1029,7 +1029,10 @@
     "errorSetup": "Error setting up workspace. Go to Settings to try again.",
     "selectCurrency": "What is your main currency?",
     "selectCurrencyDesc": "Transactions in other currencies will be converted automatically",
-    "currency": "Currency"
+    "currency": "Currency",
+    "placeholderFamily": "The Smith Family",
+    "placeholderBusiness": "My Business",
+    "placeholderPersonal": "My Finances"
   },
   "tour": {
     "sidebarTitle": "Sidebar menu",
