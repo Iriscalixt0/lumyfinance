@@ -296,10 +296,18 @@ export function DashboardPage() {
   /* ---------- Normal Dashboard — 3 Big Blocks ---------- */
   return (
     <div className="min-h-screen bg-background px-5 sm:px-8 py-6 sm:py-10 animate-fade space-y-8 max-w-xl mx-auto">
-      {/* Greeting */}
-      <h1 className="text-lg font-bold text-foreground">
-        {greeting}, {userName} 👋
-      </h1>
+      {/* Greeting + Streak */}
+      <div className="space-y-2">
+        <h1 className="text-lg font-bold text-foreground">
+          {greeting}, {userName} 👋
+        </h1>
+        <StreakStrip
+          currentStreak={streak?.current_streak ?? 0}
+          totalTx={totalTx}
+          thisWeekTx={thisWeekTx}
+          lastWeekTx={lastWeekTx}
+        />
+      </div>
 
       {/* BLOCK 1 — Visão Geral (safe-to-spend + chart together) */}
       <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-[var(--card-shadow)]">
