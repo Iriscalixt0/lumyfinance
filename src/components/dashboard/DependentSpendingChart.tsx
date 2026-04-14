@@ -22,22 +22,22 @@ export function DependentSpendingChart({ data, formatMoney }: DependentSpendingC
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: "rgba(255,255,255,0.5)" }}
+              tick={{ fontSize: 10, fill: "hsl(155, 15%, 55%)" }}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 9, fill: "rgba(255,255,255,0.4)" }}
+              tick={{ fontSize: 9, fill: "hsl(155, 15%, 50%)" }}
               width={30}
               tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
             />
             <Tooltip
               contentStyle={{
-                background: "hsl(160, 40%, 15%)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "hsl(160, 35%, 13%)",
+                border: "1px solid hsl(160, 25%, 20%)",
                 borderRadius: "10px",
                 fontSize: "11px",
-                color: "#fff",
+                color: "hsl(150, 20%, 96%)",
               }}
               formatter={(value: number) => [formatMoney(Math.round(value * 100)), ""]}
             />
