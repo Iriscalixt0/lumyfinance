@@ -192,11 +192,11 @@ export function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-4 sm:p-6 animate-fade space-y-4">
-        <div className="h-7 w-48 bg-white/10 rounded-lg animate-pulse" />
-        <div className="h-44 bg-white/5 rounded-2xl animate-pulse" />
+        <div className="h-7 w-48 bg-muted rounded-lg animate-pulse" />
+        <div className="h-44 bg-card rounded-2xl animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-52 bg-white/5 rounded-2xl animate-pulse" />
-          <div className="h-52 bg-white/5 rounded-2xl animate-pulse" />
+          <div className="h-52 bg-card rounded-2xl animate-pulse" />
+          <div className="h-52 bg-card rounded-2xl animate-pulse" />
         </div>
       </div>
     );
