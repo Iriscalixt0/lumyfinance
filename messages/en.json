@@ -96,12 +96,12 @@
       "downloadAppTapToClose": "Tap to close"
     },
     "hero": {
-      "badge": "Finances in harmony for you and your family",
-      "title": "Personal and Shared Financial Management Software",
+      "badge": "Personal and shared financial control",
+      "title": "Your family, finally on the same page.",
       "titleFormat": "full",
-      "titleHighlight": "Try {trialDays} days free",
-      "subtitle": "Record expenses in seconds, track investments and financial goals with full clarity. Share with who matters — or keep everything private.",
-      "subtitleApp": "Download the <link>web app</link> on your phone or computer and automate your financial routine to save time and peace of mind.",
+      "titleHighlight": "Personal and shared financial control. No spreadsheet, no confusion.",
+      "subtitle": "Personal and shared financial control. No spreadsheet, no confusion.",
+      "subtitleApp": "Download the <link>web app</link> on your phone or computer and automate your financial routine.",
       "cta": "Start {trialDays} days free",
       "howItWorks": "See how it works",
       "stats": {
@@ -109,67 +109,67 @@
         "onlineLabel": "Online",
         "trialValue": "days",
         "trialLabel": "Free",
-        "syncValue": "Real time",
-        "syncLabel": "Synced"
+        "syncValue": "No card",
+        "syncLabel": "To start"
       }
     },
     "features": {
-      "title": "Complete Personal Finance Management Features",
+      "title": "Everything you need, in one place.",
       "subtitle": "Control income, expenses, investments and goals in one place.",
       "incomeExpenses": {
-        "title": "Income and Expenses",
-        "desc": "Record income and expenses by category and track your family cash flow in real time."
+        "title": "Income & Expenses",
+        "desc": "Know where your money went this month? With Lumyf, you do."
       },
       "goals": {
         "title": "Financial Goals",
-        "desc": "Set goals like travel, home or emergency fund and track progress together."
+        "desc": "Set them together. Track them together. The dream trip starts here."
       },
       "investments": {
         "title": "Investments",
-        "desc": "Register accounts and applications and visualize your family's wealth evolution."
+        "desc": "Watch your wealth grow. Without needing multiple apps."
       },
       "reports": {
         "title": "Smart Reports",
-        "desc": "Clear charts and overview for data-driven decisions."
+        "desc": "Charts anyone can understand. Not just finance experts."
       },
       "workspace": {
         "title": "Shared Workspace",
-        "desc": "The whole family on the same page — everyone sees, records and tracks together."
+        "desc": "Whole family on the same page. Everyone sees, records and tracks."
       },
       "security": {
         "title": "Total Security",
-        "desc": "Your data protected with encryption and secure authentication."
+        "desc": "Your data protected. Lumyf doesn't access your bank account."
       }
     },
     "steps": {
-      "title": "How to Get Started with the Finance App in 4 Steps",
-      "subtitle": "Setup in minutes. Full control in hours.",
+      "title": "Ready in less than 5 minutes.",
+      "subtitle": "No paperwork. No hassle.",
       "step1": {
         "title": "Create your account",
-        "desc": "In seconds, no bureaucracy."
+        "desc": "No card. No hassle."
       },
       "step2": {
         "title": "Invite the family",
-        "desc": "Share the workspace."
+        "desc": "Spouse, partner, kid — whoever you want."
       },
       "step3": {
         "title": "Record everything",
-        "desc": "Income, expenses and goals."
+        "desc": "Each on their phone. Everyone sees it together."
       },
       "step4": {
         "title": "Grow together",
-        "desc": "Track progress."
+        "desc": "Finally a money talk without stress."
       }
     },
     "testimonials": {
-      "title": "Once you try it, you never go back to spreadsheets.",
+      "title": "Once you try it, no going back to spreadsheets.",
       "q0": "We used to fight about money every week. After Lumyf, it stopped.",
       "a0": "Camila R.",
       "l0": "São Paulo",
       "q1": "It's the only app my wife also uses. Because it's truly simple.",
       "a1": "Diego M.",
       "l1": "Belo Horizonte",
-      "q2": "In three months I saw where I was wasting money. I cut it and started my savings.",
+      "q2": "In three months I saw where I was wasting. Cut it and started saving.",
       "a2": "Ana Paula S.",
       "l2": "Curitiba",
       "q3": "My 22-year-old daughter joined the workspace. Best thing ever.",
@@ -177,10 +177,10 @@
       "l3": "Recife"
     },
     "pricing": {
-      "title": "Single plan",
-      "subtext": "{price} per month after {trialDays} free days.",
+      "title": "Simple. Transparent. Fair.",
+      "subtext": "{price}/month after {trialDays} free days. Cancel anytime.",
       "manageCta": "Manage subscription",
-      "betaTestCta": "Subscription available when the beta test ends."
+      "betaTestCta": "Subscription available when beta ends."
     },
     "plans": {
       "title": "Plans for every family",
@@ -233,29 +233,29 @@
       }
     },
     "faq": {
-      "title": "Frequently Asked Questions about Financial Management App",
-      "subtitle": "Get answers about Lumyf.",
+      "title": "Frequently asked questions",
+      "subtitle": "Got questions about Lumyf?",
       "q0": "What is Lumyf?",
-      "a0": "Lumyf is personal and shared financial management software. With it you record income and expenses, track investments, set financial goals and control spending — all in one place, synced in real time, for you and your family.",
+      "a0": "Personal and shared finance app. You record, track and plan — together with your family.",
       "q1": "Is Lumyf free?",
-      "a1": "There is no free usage. To use the app you must subscribe to the Pro plan. You have {trialDays} free trial days and after that period, Stripe charges automatically. Cancel anytime.",
-      "q1b": "Who is Lumyf for?",
-      "a1b": "Lumyf is for couples and families who want to organize their finances in one place — and can also be used individually. Ideal for those who want to share financial control with the people who matter (or manage on their own), set goals and track income, expenses and investments with clarity and transparency.",
-      "q2": "How does family sharing work?",
-      "a2": "Each family creates a workspace and invites members by email. Everyone can record transactions, view reports and track goals. Information is synced in real time for all members.",
-      "q3": "Does Lumyf connect to my bank?",
-      "a3": "No. Lumyf has no connection, integration or link to your bank account. All transactions are entered manually by you and your family. We do not access, connect or import data from financial institutions.",
+      "a1": "{trialDays} free days, no card. Then $9.90/month. Cancel anytime.",
+      "q1b": "Who is it for?",
+      "a1b": "For anyone who doesn't know where the money goes. For couples and families who want to decide together.",
+      "q2": "How does sharing work?",
+      "a2": "You invite. Each logs in. Everyone sees the same finances in real time.",
+      "q3": "Does Lumyf access my bank?",
+      "a3": "No. You record everything manually. Your data is yours only.",
       "q4": "Is my data secure?",
-      "a4": "Yes. We use encryption and secure authentication. Your financial data is protected and only people you invite will have access to the workspace.",
+      "a4": "Yes. Encryption and secure authentication. We never share with third parties.",
       "q5": "How does payment work?",
-      "a5": "Payment is processed via Stripe (card). After the {trialDays} free trial days, billing is automatic. You can cancel your subscription at any time in the settings panel.",
-      "q6": "How many people can use a workspace?",
-      "a6": "The Pro plan allows up to 3 members per workspace."
+      "a5": "$9.90/month. No penalty, no hassle to cancel.",
+      "q6": "How many people per workspace?",
+      "a6": "Up to 3 members and 2 workspaces on the Pro plan."
     },
     "cta": {
-      "title": "Ready to build the future together?",
-      "subtitle": "Join thousands of families who already organize their finances with Lumyf.",
-      "button": "Create account"
+      "title": "Stop wondering where the money went.",
+      "subtitle": "7 free days. No card. No commitment.",
+      "button": "Create free account now"
     },
     "footer": {
       "copyright": "© {year} Lumyf. All rights reserved.",
@@ -1007,40 +1007,27 @@
     "portalModalCommentPlaceholder": "Anything you want to tell us..."
   },
   "onboarding": {
-    "skip": "Skip",
-    "stepOf": "Step {current} of 3",
-    "whoUse": "Who will you use Lumyf for?",
-    "chooseOption": "Choose the option that best describes your use.",
-    "intents": {
-      "personal": "Just for me",
-      "personalDesc": "Organize my personal finances",
-      "family": "For me and my family",
-      "familyDesc": "Home, couple or family",
-      "business": "For my business",
-      "businessDesc": "Business financial management",
-      "other": "Other",
-      "otherDesc": "Couple, team or group"
-    },
-    "workspaceName": "What do you want to call your finance space?",
-    "workspaceNameDesc": "Give it a name that makes sense to you.",
-    "placeholderName": "E.g. My Finances",
     "continue": "Continue",
-    "readyTitle": "Ready to get started!",
-    "readyDesc": "You'll see a guided tour in the app — we'll walk through together so you can learn to record transactions, goals and more.",
-    "tourHint": "The tour will highlight each menu area and show where to click. On mobile, open the menu (☰ icon) at the top to see navigation.",
-    "seeTourInApp": "See guided tour in app",
-    "entering": "Entering app...",
-    "saving": "Saving...",
-    "inviteNowTitle": "Convidar parceiro(a) agora",
-    "inviteNowDesc": "Gere um link de convite para compartilhar o workspace com sua fam?lia ainda no onboarding.",
-    "inviteNowNamePlaceholder": "Nome do parceiro(a)",
-    "inviteNowEmailPlaceholder": "E-mail (opcional)",
-    "inviteNowButton": "Gerar convite",
-    "inviteNowGenerating": "Gerando convite...",
-    "inviteNowLinkReady": "Link de convite pronto:",
-    "inviteNowCopy": "Copiar",
-    "inviteNowCopied": "Copiado!",
-    "inviteNowError": "N?o foi poss?vel gerar o convite agora."
+    "howToUse": "How do you want to use Lumyf?",
+    "howToUseDesc": "This helps us personalize your experience",
+    "intentPersonal": "Personal",
+    "intentPersonalDesc": "Individual finance control",
+    "intentFamily": "Family / Couple",
+    "intentFamilyDesc": "Shared finances at home",
+    "intentBusiness": "Small business",
+    "intentBusinessDesc": "Business financial control",
+    "intentOther": "Other",
+    "intentOtherDesc": "Explore what the platform offers",
+    "nameWorkspace": "Name your workspace",
+    "nameWorkspaceDesc": "You can change it later in settings",
+    "allReady": "All set!",
+    "allReadyDesc": "Let's start organizing your finances",
+    "language": "Language",
+    "usage": "Usage",
+    "settingUp": "Setting up...",
+    "start": "Let's go!",
+    "welcome": "Welcome to Lumyf! 🎉",
+    "errorSetup": "Error setting up workspace. Go to Settings to try again."
   },
   "tour": {
     "sidebarTitle": "Sidebar menu",
@@ -1531,29 +1518,6 @@
       }
     }
   },
-  "onboarding": {
-    "continue": "Continue",
-    "howToUse": "How do you want to use Lumyf?",
-    "howToUseDesc": "This helps us personalize your experience",
-    "intentPersonal": "Personal",
-    "intentPersonalDesc": "Individual finance control",
-    "intentFamily": "Family / Couple",
-    "intentFamilyDesc": "Shared finances at home",
-    "intentBusiness": "Small business",
-    "intentBusinessDesc": "Business financial control",
-    "intentOther": "Other",
-    "intentOtherDesc": "Explore what the platform offers",
-    "nameWorkspace": "Name your workspace",
-    "nameWorkspaceDesc": "You can change it later in settings",
-    "allReady": "All set!",
-    "allReadyDesc": "Let's start organizing your finances",
-    "language": "Language",
-    "usage": "Usage",
-    "settingUp": "Setting up...",
-    "start": "Let's go!",
-    "welcome": "Welcome to Lumyf! 🎉",
-    "errorSetup": "Error setting up workspace. Go to Settings to try again."
-  },
   "goalsPage": {
     "title": "Goals & Objectives",
     "subtitle": "Plan and track the progress of your savings.",
@@ -1768,6 +1732,19 @@
     "expensesByCategory": "Expenses by category",
     "noExpenseData": "No expense data",
     "balanceProjection": "Balance projection (next 6 months)",
-    "monthsShort": ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ]
   }
 }
