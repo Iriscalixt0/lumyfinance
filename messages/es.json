@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "Lumyf",
+    "brand": "Lumy",
     "locales": {
       "label": "Idioma",
       "pt-BR": "Portugués (Brasil)",
@@ -123,7 +123,7 @@
       "subtitle": "Controla ingresos, gastos, inversiones y metas en un solo lugar.",
       "incomeExpenses": {
         "title": "Ingresos y Gastos",
-        "desc": "¿Sabes a dónde fue el dinero este mes? Con Lumyf, lo sabes."
+        "desc": "¿Sabes a dónde fue el dinero este mes? Con Lumy, lo sabes."
       },
       "goals": {
         "title": "Metas Financieras",
@@ -143,7 +143,7 @@
       },
       "security": {
         "title": "Seguridad Total",
-        "desc": "Tus datos protegidos. Lumyf no accede a tu cuenta bancaria."
+        "desc": "Tus datos protegidos. Lumy no accede a tu cuenta bancaria."
       }
     },
     "steps": {
@@ -168,7 +168,7 @@
     },
     "testimonials": {
       "title": "Quien lo usa no vuelve a la planilla.",
-      "q0": "Peleábamos por plata cada semana. Después de Lumyf, paró.",
+      "q0": "Peleábamos por plata cada semana. Después de Lumy, paró.",
       "a0": "Camila R.",
       "l0": "São Paulo",
       "q1": "Es la única app que mi esposa también usa. Porque es simple de verdad.",
@@ -233,16 +233,16 @@
     },
     "faq": {
       "title": "Preguntas frecuentes",
-      "subtitle": "¿Dudas sobre Lumyf?",
-      "q0": "¿Qué es Lumyf?",
+      "subtitle": "¿Dudas sobre Lumy?",
+      "q0": "¿Qué es Lumy?",
       "a0": "App de control financiero personal y compartido. Registras, acompañas y planificas — junto con la familia.",
-      "q1": "¿Lumyf es gratis?",
+      "q1": "¿Lumy es gratis?",
       "a1": "{trialDays} días gratis, sin tarjeta. Después, $9.90/mes. Cancela cuando quieras.",
       "q1b": "¿Para quién fue hecho?",
       "a1b": "Para quien no sabe a dónde va el dinero. Para parejas y familias que quieren decidir juntos.",
       "q2": "¿Cómo funciona el compartir?",
       "a2": "Invitas. Cada uno entra con su login. Todos ven las mismas finanzas en tiempo real.",
-      "q3": "¿Lumyf accede a mi banco?",
+      "q3": "¿Lumy accede a mi banco?",
       "a3": "No. Registras todo manualmente. Tus datos son solo tuyos.",
       "q4": "¿Mis datos están seguros?",
       "a4": "Sí. Cifrado y autenticación segura. Nunca compartimos con terceros.",
@@ -257,7 +257,7 @@
       "button": "Crear cuenta gratis ahora"
     },
     "footer": {
-      "copyright": "© {year} Lumyf. Todos los derechos reservados.",
+      "copyright": "© {year} Lumy. Todos los derechos reservados.",
       "terms": "Términos",
       "privacy": "Privacidad",
       "refund": "Reembolso",
@@ -337,7 +337,7 @@
     "freeBalance": "Saldo libre",
     "selectWorkspace": "Seleccione un espacio de trabajo en configuración.",
     "quickLinks": "Ver todos",
-    "welcomeTitle": "¡Bienvenido a Lumyf! 🎉",
+    "welcomeTitle": "¡Bienvenido a Lumy! 🎉",
     "welcomeSubtitle": "Tu dashboard cobrará vida cuando registres tu primera transacción. ¡Empecemos!",
     "firstTransaction": "Nueva transacción",
     "investments": "Inversiones",
@@ -381,8 +381,8 @@
     "savedThisMonth": "Ahorré este mes con ayuda de Lumy IA 🚀",
     "streakAchieved": "¡Racha lograda!",
     "shareTagline": "Logré esta meta con ayuda de Lumy IA 🚀",
-    "shareGoalText": "¡Ahorré {value} este mes con Lumyf! 🚀 lumyf.app",
-    "shareStreakText": "¡{value} días consecutivos de seguimiento financiero con Lumyf! 🔥 lumyf.app"
+    "shareGoalText": "¡Ahorré {value} este mes con Lumy! 🚀 lumyf.app",
+    "shareStreakText": "¡{value} días consecutivos de seguimiento financiero con Lumy! 🔥 lumyf.app"
   },
   "quickTransaction": {
     "title": "Transacción Relámpago",
@@ -903,7 +903,7 @@
   },
   "onboarding": {
     "continue": "Continuar",
-    "howToUse": "¿Cómo quieres usar Lumyf?",
+    "howToUse": "¿Cómo quieres usar Lumy?",
     "howToUseDesc": "Esto nos ayuda a personalizar tu experiencia",
     "intentPersonal": "Personal",
     "intentPersonalDesc": "Control financiero individual",
@@ -921,7 +921,7 @@
     "usage": "Uso",
     "settingUp": "Configurando...",
     "start": "¡Empezar!",
-    "welcome": "¡Bienvenido a Lumyf! 🎉",
+    "welcome": "¡Bienvenido a Lumy! 🎉",
     "errorSetup": "Error al configurar workspace. Ve a Configuraciones para intentar de nuevo.",
     "selectCurrency": "¿Cuál es tu moneda principal?",
     "selectCurrencyDesc": "Las transacciones en otras monedas se convertirán automáticamente",
@@ -1277,7 +1277,7 @@
   },
   "blog": {
     "meta": {
-      "listTitle": "Blog Lumyf - Consejos de Finanzas Personales y Presupuesto Familiar",
+      "listTitle": "Blog Lumy - Consejos de Finanzas Personales y Presupuesto Familiar",
       "listDescription": "Articulos practicos sobre presupuesto, control de gastos, inversiones y metas financieras para personas y familias."
     },
     "nav": {
@@ -1294,7 +1294,7 @@
       "readingTime": "{minutes} min de lectura",
       "backToBlog": "Volver al blog",
       "ctaLead": "Te gusto este articulo?",
-      "ctaTitle": "Empieza a organizar tus finanzas con Lumyf - gratis por 7 dias.",
+      "ctaTitle": "Empieza a organizar tus finanzas con Lumy - gratis por 7 dias.",
       "ctaButton": "Empezar gratis"
     }
   },
@@ -1309,7 +1309,7 @@
       "sections": {
         "s1": {
           "title": "1. Responsable de los Datos",
-          "body": "Lumyf actua como responsable de los datos personales que proporcionas al usar la plataforma. Procesamos tus datos conforme a LGPD y GDPR cuando aplique."
+          "body": "Lumy actua como responsable de los datos personales que proporcionas al usar la plataforma. Procesamos tus datos conforme a LGPD y GDPR cuando aplique."
         },
         "s2": {
           "title": "2. Datos que Recopilamos",
@@ -1410,7 +1410,7 @@
       "sections": {
         "s1": {
           "title": "1. Aceptacion de los Terminos",
-          "body": "Lumyf es un SaaS de gestion financiera colaborativa. Al usar la plataforma, aceptas estos Terminos de Uso. Si no estas de acuerdo, no uses el servicio."
+          "body": "Lumy es un SaaS de gestion financiera colaborativa. Al usar la plataforma, aceptas estos Terminos de Uso. Si no estas de acuerdo, no uses el servicio."
         },
         "s2": {
           "title": "2. Descripcion del Servicio",
@@ -1509,7 +1509,7 @@
     "errorCancel": "No se pudo cancelar la invitaci?n.",
     "emailOptional": "Correo (opcional, para invitaci?n espec?fica)",
     "proRequiredTitle": "El usuario debe ser Pro",
-    "proRequiredMessage": "La persona necesita una cuenta Lumyf con plan Pro para editar y usar el workspace en conjunto. Las invitaciones por enlace gen?rico permiten acceso como visualizador.",
+    "proRequiredMessage": "La persona necesita una cuenta Lumy con plan Pro para editar y usar el workspace en conjunto. Las invitaciones por enlace gen?rico permiten acceso como visualizador.",
     "proRequiredOk": "Entendido"
   },
   "invite": {

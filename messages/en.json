@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "Lumyf",
+    "brand": "Lumy",
     "locales": {
       "label": "Language",
       "pt-BR": "Portuguese (Brazil)",
@@ -91,7 +91,7 @@
       "createAccount": "Create account",
       "downloadApp": "Download app",
       "downloadAppIosHint": "Tap Share (↑) then \"Add to Home Screen\".",
-      "downloadAppDesktopHint": "Use your browser menu (⋮) and choose \"Install app\" or \"Add to Home Screen\" to use Lumyf as an app.",
+      "downloadAppDesktopHint": "Use your browser menu (⋮) and choose \"Install app\" or \"Add to Home Screen\" to use Lumy as an app.",
       "downloadAppTapToClose": "Tap to close"
     },
     "hero": {
@@ -117,7 +117,7 @@
       "subtitle": "Control income, expenses, investments and goals in one place.",
       "incomeExpenses": {
         "title": "Income & Expenses",
-        "desc": "Know where your money went this month? With Lumyf, you do."
+        "desc": "Know where your money went this month? With Lumy, you do."
       },
       "goals": {
         "title": "Financial Goals",
@@ -137,7 +137,7 @@
       },
       "security": {
         "title": "Total Security",
-        "desc": "Your data protected. Lumyf doesn't access your bank account."
+        "desc": "Your data protected. Lumy doesn't access your bank account."
       }
     },
     "steps": {
@@ -162,7 +162,7 @@
     },
     "testimonials": {
       "title": "Once you try it, no going back to spreadsheets.",
-      "q0": "We used to fight about money every week. After Lumyf, it stopped.",
+      "q0": "We used to fight about money every week. After Lumy, it stopped.",
       "a0": "Camila R.",
       "l0": "São Paulo",
       "q1": "It's the only app my wife also uses. Because it's truly simple.",
@@ -233,16 +233,16 @@
     },
     "faq": {
       "title": "Frequently asked questions",
-      "subtitle": "Got questions about Lumyf?",
-      "q0": "What is Lumyf?",
+      "subtitle": "Got questions about Lumy?",
+      "q0": "What is Lumy?",
       "a0": "Personal and shared finance app. You record, track and plan — together with your family.",
-      "q1": "Is Lumyf free?",
+      "q1": "Is Lumy free?",
       "a1": "{trialDays} free days, no card. Then $9.90/month. Cancel anytime.",
       "q1b": "Who is it for?",
       "a1b": "For anyone who doesn't know where the money goes. For couples and families who want to decide together.",
       "q2": "How does sharing work?",
       "a2": "You invite. Each logs in. Everyone sees the same finances in real time.",
-      "q3": "Does Lumyf access my bank?",
+      "q3": "Does Lumy access my bank?",
       "a3": "No. You record everything manually. Your data is yours only.",
       "q4": "Is my data secure?",
       "a4": "Yes. Encryption and secure authentication. We never share with third parties.",
@@ -257,7 +257,7 @@
       "button": "Create free account now"
     },
     "footer": {
-      "copyright": "© {year} Lumyf. All rights reserved.",
+      "copyright": "© {year} Lumy. All rights reserved.",
       "terms": "Terms",
       "privacy": "Privacy",
       "refund": "Refund",
@@ -305,7 +305,7 @@
     "newTransaction": "New Transaction",
     "downloadApp": "Download app",
     "downloadAppIosHint": "Tap Share (↑) then \"Add to Home Screen\".",
-    "downloadAppDesktopHint": "Use your browser menu (⋮) and choose \"Install app\" or \"Add to Home Screen\" to use Lumyf as an app.",
+    "downloadAppDesktopHint": "Use your browser menu (⋮) and choose \"Install app\" or \"Add to Home Screen\" to use Lumy as an app.",
     "downloadAppTapToClose": "Tap to close",
     "betaAdmin": "Admin",
     "betaPrograms": "Beta Programs"
@@ -337,7 +337,7 @@
     "freeBalance": "Free balance",
     "selectWorkspace": "Select a workspace in settings.",
     "quickLinks": "View all",
-    "welcomeTitle": "Welcome to Lumyf! 🎉",
+    "welcomeTitle": "Welcome to Lumy! 🎉",
     "welcomeSubtitle": "Your dashboard will come alive once you add your first transaction. Let's get started!",
     "firstTransaction": "New transaction",
     "investments": "Investments",
@@ -381,8 +381,8 @@
     "savedThisMonth": "Saved this month with Lumy AI 🚀",
     "streakAchieved": "Streak achieved!",
     "shareTagline": "Achieved this goal with Lumy AI 🚀",
-    "shareGoalText": "I saved {value} this month with Lumyf! 🚀 lumyf.app",
-    "shareStreakText": "{value} consecutive days of financial tracking with Lumyf! 🔥 lumyf.app"
+    "shareGoalText": "I saved {value} this month with Lumy! 🚀 lumyf.app",
+    "shareStreakText": "{value} consecutive days of financial tracking with Lumy! 🔥 lumyf.app"
   },
   "quickTransaction": {
     "title": "Lightning Transaction",
@@ -909,7 +909,7 @@
     "errorCancel": "Could not cancel invite.",
     "emailOptional": "Email (optional, for specific invite)",
     "proRequiredTitle": "User must be Pro",
-    "proRequiredMessage": "The person needs a Lumyf account with Pro plan to edit and use the workspace together. Generic link invites allow viewer access.",
+    "proRequiredMessage": "The person needs a Lumy account with Pro plan to edit and use the workspace together. Generic link invites allow viewer access.",
     "proRequiredOk": "OK"
   },
   "invite": {
@@ -1007,7 +1007,7 @@
   },
   "onboarding": {
     "continue": "Continue",
-    "howToUse": "How do you want to use Lumyf?",
+    "howToUse": "How do you want to use Lumy?",
     "howToUseDesc": "This helps us personalize your experience",
     "intentPersonal": "Personal",
     "intentPersonalDesc": "Individual finance control",
@@ -1025,7 +1025,7 @@
     "usage": "Usage",
     "settingUp": "Setting up...",
     "start": "Let's go!",
-    "welcome": "Welcome to Lumyf! 🎉",
+    "welcome": "Welcome to Lumy! 🎉",
     "errorSetup": "Error setting up workspace. Go to Settings to try again.",
     "selectCurrency": "What is your main currency?",
     "selectCurrencyDesc": "Transactions in other currencies will be converted automatically",
@@ -1333,7 +1333,7 @@
   },
   "blog": {
     "meta": {
-      "listTitle": "Lumyf Blog - Personal Finance and Family Budgeting Tips",
+      "listTitle": "Lumy Blog - Personal Finance and Family Budgeting Tips",
       "listDescription": "Practical articles on budgeting, spending control, investments and financial goals for individuals and families."
     },
     "nav": {
@@ -1350,7 +1350,7 @@
       "readingTime": "{minutes} min read",
       "backToBlog": "Back to blog",
       "ctaLead": "Liked this article?",
-      "ctaTitle": "Start organizing your finances with Lumyf - free for 7 days.",
+      "ctaTitle": "Start organizing your finances with Lumy - free for 7 days.",
       "ctaButton": "Start free"
     }
   },
@@ -1384,7 +1384,7 @@
       "sections": {
         "s1": {
           "title": "1. Data Controller",
-          "body": "Lumyf acts as the controller of personal data you provide when using the platform. We process your data in compliance with LGPD and GDPR where applicable."
+          "body": "Lumy acts as the controller of personal data you provide when using the platform. We process your data in compliance with LGPD and GDPR where applicable."
         },
         "s2": {
           "title": "2. Data We Collect",
@@ -1485,7 +1485,7 @@
       "sections": {
         "s1": {
           "title": "1. Acceptance of Terms",
-          "body": "Lumyf is a collaborative financial management SaaS. By using the platform, you agree to these Terms of Use. If you do not agree, do not use the service."
+          "body": "Lumy is a collaborative financial management SaaS. By using the platform, you agree to these Terms of Use. If you do not agree, do not use the service."
         },
         "s2": {
           "title": "2. Service Description",
