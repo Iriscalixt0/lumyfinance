@@ -67,7 +67,7 @@ export function downloadPDF(
     doc.setFontSize(7);
     doc.setTextColor(150);
     doc.text(
-      `Lumyf — Gerado em ${new Date().toLocaleDateString("pt-BR")} — Página ${i}/${pageCount}`,
+      `Lumy — Gerado em ${new Date().toLocaleDateString("pt-BR")} — Página ${i}/${pageCount}`,
       14,
       doc.internal.pageSize.getHeight() - 10
     );

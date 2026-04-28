@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "Lumyf",
+    "brand": "Lumy",
     "locales": {
       "label": "Idioma",
       "pt-BR": "Português (Brasil)",
@@ -92,7 +92,7 @@
       "createAccount": "Criar conta grátis",
       "downloadApp": "Baixar o app",
       "downloadAppIosHint": "Toque em Compartilhar (↑) e depois em \"Adicionar à Tela de Início\".",
-      "downloadAppDesktopHint": "Use o menu do navegador (⋮) e escolha \"Instalar app\" ou \"Adicionar à tela inicial\" para usar o Lumyf como app.",
+      "downloadAppDesktopHint": "Use o menu do navegador (⋮) e escolha \"Instalar app\" ou \"Adicionar à tela inicial\" para usar o Lumy como app.",
       "downloadAppTapToClose": "Toque para fechar"
     },
     "hero": {
@@ -118,7 +118,7 @@
       "subtitle": "Controle receitas, despesas, investimentos e metas em um único lugar.",
       "incomeExpenses": {
         "title": "Receitas e Despesas",
-        "desc": "Sabe pra onde foi o dinheiro esse mês? Com o Lumyf, você sabe."
+        "desc": "Sabe pra onde foi o dinheiro esse mês? Com o Lumy, você sabe."
       },
       "goals": {
         "title": "Metas Financeiras",
@@ -138,7 +138,7 @@
       },
       "security": {
         "title": "Segurança Total",
-        "desc": "Seus dados protegidos. O Lumyf não acessa sua conta bancária."
+        "desc": "Seus dados protegidos. O Lumy não acessa sua conta bancária."
       }
     },
     "steps": {
@@ -163,7 +163,7 @@
     },
     "testimonials": {
       "title": "Quem usa não volta pra planilha.",
-      "q0": "A gente brigava por dinheiro toda semana. Depois do Lumyf, parou.",
+      "q0": "A gente brigava por dinheiro toda semana. Depois do Lumy, parou.",
       "a0": "Camila R.",
       "l0": "São Paulo",
       "q1": "É o único app que minha esposa também usa. Porque é simples de verdade.",
@@ -191,7 +191,7 @@
         "cta": "Começar grátis"
       },
       "pro": {
-        "name": "Lumyf Pro",
+        "name": "Lumy Pro",
         "desc": "{trialDays} dias grátis. Cancele quando quiser.",
         "cta": "Começar {trialDays} dias grátis",
         "ctaDashboard": "Assinar Plano",
@@ -234,16 +234,16 @@
     },
     "faq": {
       "title": "Perguntas frequentes sobre app de gestão financeira",
-      "subtitle": "Tire suas dúvidas sobre o Lumyf.",
-      "q0": "O que é o Lumyf?",
+      "subtitle": "Tire suas dúvidas sobre o Lumy.",
+      "q0": "O que é o Lumy?",
       "a0": "App de controle financeiro pessoal e compartilhado. Você registra, acompanha e planeja — junto com a família.",
-      "q1": "O Lumyf é gratuito?",
+      "q1": "O Lumy é gratuito?",
       "a1": "{trialDays} dias grátis, sem cartão. Depois, R$ 9,90/mês. Cancele quando quiser.",
       "q1b": "Para quem foi feito?",
       "a1b": "Pra quem não sabe pra onde vai o dinheiro. Pra casais e famílias que querem decidir juntos.",
       "q2": "Como funciona o compartilhamento?",
       "a2": "Você convida. Cada um entra com seu login. Todo mundo vê as mesmas finanças em tempo real.",
-      "q3": "O Lumyf acessa meu banco?",
+      "q3": "O Lumy acessa meu banco?",
       "a3": "Não. Você registra tudo manualmente. Seus dados são só seus.",
       "q4": "Meus dados estão seguros?",
       "a4": "Sim. Criptografia e autenticação segura. Nunca compartilhamos com terceiros.",
@@ -258,7 +258,7 @@
       "button": "Criar conta grátis agora"
     },
     "footer": {
-      "copyright": "© {year} Lumyf. Todos os direitos reservados.",
+      "copyright": "© {year} Lumy. Todos os direitos reservados.",
       "terms": "Termos",
       "privacy": "Privacidade",
       "refund": "Reembolso",
@@ -306,7 +306,7 @@
     "newTransaction": "Nova transação",
     "downloadApp": "Baixar o app",
     "downloadAppIosHint": "Toque em Compartilhar (↑) e depois em \"Adicionar à Tela de Início\".",
-    "downloadAppDesktopHint": "Use o menu do navegador (⋮) e escolha \"Instalar app\" ou \"Adicionar à tela de início\" para usar o Lumyf como app.",
+    "downloadAppDesktopHint": "Use o menu do navegador (⋮) e escolha \"Instalar app\" ou \"Adicionar à tela de início\" para usar o Lumy como app.",
     "downloadAppTapToClose": "Toque para fechar",
     "betaAdmin": "Admin",
     "betaPrograms": "Programas Beta"
@@ -338,7 +338,7 @@
     "freeBalance": "Saldo livre",
     "selectWorkspace": "Selecione um workspace nas configurações.",
     "quickLinks": "Ver todos",
-    "welcomeTitle": "Bem-vindo ao Lumyf! 🎉",
+    "welcomeTitle": "Bem-vindo ao Lumy! 🎉",
     "welcomeSubtitle": "Seu dashboard vai ganhar vida assim que você registrar sua primeira transação. Vamos começar?",
     "firstTransaction": "Nova transação",
     "investments": "Investimentos",
@@ -382,8 +382,8 @@
     "savedThisMonth": "Economizei este mês com ajuda da Lumy IA 🚀",
     "streakAchieved": "Sequência alcançada!",
     "shareTagline": "Alcancei essa meta com ajuda da Lumy IA 🚀",
-    "shareGoalText": "Economizei {value} este mês com o Lumyf! 🚀 lumyf.app",
-    "shareStreakText": "{value} dias seguidos de controle financeiro com o Lumyf! 🔥 lumyf.app"
+    "shareGoalText": "Economizei {value} este mês com o Lumy! 🚀 lumyf.app",
+    "shareStreakText": "{value} dias seguidos de controle financeiro com o Lumy! 🔥 lumyf.app"
   },
   "quickTransaction": {
     "title": "Transação Relâmpago",
@@ -910,7 +910,7 @@
     "errorCancel": "Não foi possível cancelar convite.",
     "emailOptional": "E-mail (opcional, para convite específico)",
     "proRequiredTitle": "Usuário precisa ser Pro",
-    "proRequiredMessage": "A pessoa precisa ter uma conta Lumyf com plano Pro para editar e usar o workspace junto. Convites por link genérico permitem acesso como visualizador.",
+    "proRequiredMessage": "A pessoa precisa ter uma conta Lumy com plano Pro para editar e usar o workspace junto. Convites por link genérico permitem acesso como visualizador.",
     "proRequiredOk": "Entendi"
   },
   "invite": {
@@ -1005,7 +1005,7 @@
   },
   "onboarding": {
     "continue": "Continuar",
-    "howToUse": "Como você quer usar o Lumyf?",
+    "howToUse": "Como você quer usar o Lumy?",
     "howToUseDesc": "Isso nos ajuda a personalizar sua experiência",
     "intentPersonal": "Pessoal",
     "intentPersonalDesc": "Controle individual de finanças",
@@ -1023,7 +1023,7 @@
     "usage": "Uso",
     "settingUp": "Configurando...",
     "start": "Começar!",
-    "welcome": "Bem-vindo ao Lumyf! 🎉",
+    "welcome": "Bem-vindo ao Lumy! 🎉",
     "errorSetup": "Erro ao configurar workspace. Acesse Configurações para tentar novamente.",
     "selectCurrency": "Qual é sua moeda principal?",
     "selectCurrencyDesc": "Transações em outras moedas serão convertidas automaticamente",
@@ -1331,7 +1331,7 @@
   },
   "blog": {
     "meta": {
-      "listTitle": "Blog Lumyf - Dicas de Gestao Financeira Pessoal e Familiar",
+      "listTitle": "Blog Lumy - Dicas de Gestao Financeira Pessoal e Familiar",
       "listDescription": "Artigos praticos sobre orcamento, controle de gastos, investimentos e metas financeiras para pessoas e familias."
     },
     "nav": {
@@ -1348,7 +1348,7 @@
       "readingTime": "{minutes} min de leitura",
       "backToBlog": "Voltar ao blog",
       "ctaLead": "Gostou do artigo?",
-      "ctaTitle": "Comece a organizar suas financas com o Lumyf - gratis por 7 dias.",
+      "ctaTitle": "Comece a organizar suas financas com o Lumy - gratis por 7 dias.",
       "ctaButton": "Comecar gratis"
     }
   },
@@ -1382,7 +1382,7 @@
       "sections": {
         "s1": {
           "title": "1. Controlador de Dados",
-          "body": "O Lumyf atua como controlador dos dados pessoais que voce fornece ao usar a plataforma. Processamos seus dados em conformidade com a LGPD e o GDPR, quando aplicavel."
+          "body": "O Lumy atua como controlador dos dados pessoais que voce fornece ao usar a plataforma. Processamos seus dados em conformidade com a LGPD e o GDPR, quando aplicavel."
         },
         "s2": {
           "title": "2. Dados que Coletamos",
@@ -1483,7 +1483,7 @@
       "sections": {
         "s1": {
           "title": "1. Aceitacao dos Termos",
-          "body": "O Lumyf e um SaaS de gestao financeira colaborativa. Ao utilizar a plataforma, voce concorda com estes Termos de Uso. Se nao concordar, nao utilize o servico."
+          "body": "O Lumy e um SaaS de gestao financeira colaborativa. Ao utilizar a plataforma, voce concorda com estes Termos de Uso. Se nao concordar, nao utilize o servico."
         },
         "s2": {
           "title": "2. Descricao do Servico",

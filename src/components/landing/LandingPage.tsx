@@ -89,7 +89,7 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-5 py-4">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
             <Logo size="sm" />
-            <span className="text-gradient-hero">Lumyf</span>
+            <span className="text-gradient-hero">Lumy</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
@@ -228,7 +228,7 @@ export function LandingPage() {
           <div className="flex-1 flex justify-center md:justify-end">
             <img
               src={heroMockup}
-              alt="Lumyf app no celular e no computador"
+              alt="Lumy app no celular e no computador"
               className="w-full max-w-md md:max-w-lg lg:max-w-xl drop-shadow-2xl"
               loading="eager"
             />
@@ -355,7 +355,7 @@ export function LandingPage() {
         <div className="mx-auto max-w-6xl flex flex-col items-center gap-4 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-foreground">
             <Logo size="sm" />
-            Lumyf
+            Lumy
           </Link>
           <p className="text-xs sm:text-sm text-center">{t("footer.copyright", { year: new Date().getFullYear() })}</p>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-6">

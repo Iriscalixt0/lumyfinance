@@ -10,7 +10,7 @@ export function Logo({ size = "md", className = "" }: { size?: LogoSize; classNa
   return (
     <img
       src="/pig.png"
-      alt="Lumyf"
+      alt="Lumy"
       className={`object-contain ${sizeMap[size]} ${className}`}
       loading="eager"
     />

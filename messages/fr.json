@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "Lumyf",
+    "brand": "Lumy",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "close": "Fermer",
@@ -79,8 +79,8 @@
     "savedThisMonth": "Économisé ce mois avec Lumy IA 🚀",
     "streakAchieved": "Séquence atteinte !",
     "shareTagline": "J'ai atteint cet objectif avec l'aide de Lumy IA 🚀",
-    "shareGoalText": "J'ai économisé {value} ce mois avec Lumyf ! 🚀 lumyf.app",
-    "shareStreakText": "{value} jours consécutifs de suivi financier avec Lumyf ! 🔥 lumyf.app"
+    "shareGoalText": "J'ai économisé {value} ce mois avec Lumy ! 🚀 lumyf.app",
+    "shareStreakText": "{value} jours consécutifs de suivi financier avec Lumy ! 🔥 lumyf.app"
   },
   "voiceFAB": {
     "hint": "Appuyez et parlez",
@@ -157,7 +157,7 @@
   },
   "onboarding": {
     "continue": "Continuer",
-    "howToUse": "Comment souhaitez-vous utiliser Lumyf ?",
+    "howToUse": "Comment souhaitez-vous utiliser Lumy ?",
     "howToUseDesc": "Cela nous aide à personnaliser votre expérience",
     "intentPersonal": "Personnel",
     "intentPersonalDesc": "Gestion financière individuelle",
@@ -175,7 +175,7 @@
     "usage": "Utilisation",
     "settingUp": "Configuration...",
     "start": "Commencer !",
-    "welcome": "Bienvenue sur Lumyf ! 🎉",
+    "welcome": "Bienvenue sur Lumy ! 🎉",
     "errorSetup": "Erreur lors de la configuration. Accédez aux Paramètres pour réessayer.",
     "selectCurrency": "Quelle est votre devise principale ?",
     "selectCurrencyDesc": "Les transactions dans d'autres devises seront converties automatiquement",

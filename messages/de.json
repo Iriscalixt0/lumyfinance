@@ -1,6 +1,6 @@
 {
   "common": {
-    "brand": "Lumyf",
+    "brand": "Lumy",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "close": "Schließen",
@@ -79,8 +79,8 @@
     "savedThisMonth": "Diesen Monat mit Lumy KI gespart 🚀",
     "streakAchieved": "Serie erreicht!",
     "shareTagline": "Dieses Ziel mit Hilfe von Lumy KI erreicht 🚀",
-    "shareGoalText": "Ich habe {value} diesen Monat mit Lumyf gespart! 🚀 lumyf.app",
-    "shareStreakText": "{value} aufeinanderfolgende Tage Finanztracking mit Lumyf! 🔥 lumyf.app"
+    "shareGoalText": "Ich habe {value} diesen Monat mit Lumy gespart! 🚀 lumyf.app",
+    "shareStreakText": "{value} aufeinanderfolgende Tage Finanztracking mit Lumy! 🔥 lumyf.app"
   },
   "voiceFAB": {
     "hint": "Tippen und sprechen",
@@ -157,7 +157,7 @@
   },
   "onboarding": {
     "continue": "Weiter",
-    "howToUse": "Wie möchten Sie Lumyf verwenden?",
+    "howToUse": "Wie möchten Sie Lumy verwenden?",
     "howToUseDesc": "Dies hilft uns, Ihre Erfahrung zu personalisieren",
     "intentPersonal": "Persönlich",
     "intentPersonalDesc": "Individuelle Finanzverwaltung",
@@ -175,7 +175,7 @@
     "usage": "Verwendung",
     "settingUp": "Einrichten...",
     "start": "Los geht's!",
-    "welcome": "Willkommen bei Lumyf! 🎉",
+    "welcome": "Willkommen bei Lumy! 🎉",
     "errorSetup": "Fehler beim Einrichten des Workspace. Gehen Sie zu Einstellungen, um es erneut zu versuchen.",
     "selectCurrency": "Was ist Ihre Hauptwährung?",
     "selectCurrencyDesc": "Transaktionen in anderen Währungen werden automatisch umgerechnet",
