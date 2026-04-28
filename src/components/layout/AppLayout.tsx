@@ -175,7 +175,7 @@ export function AppLayout() {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5">
         <Logo size="sm" />
-        <span className="text-lg font-bold text-gradient-hero">Lumyf</span>
+        <span className="text-lg font-bold text-gradient-hero">Lumy</span>
       </div>
 
       {/* Nav sections */}
@@ -290,7 +290,7 @@ export function AppLayout() {
             {/* Mobile logo + user avatar */}
             <div className="md:hidden flex items-center gap-1.5">
               <Logo size="sm" />
-              <span className="text-base font-bold text-foreground">Lumyf</span>
+              <span className="text-base font-bold text-foreground">Lumy</span>
             </div>
             {user && (
               <div className="md:hidden flex items-center">

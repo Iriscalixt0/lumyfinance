@@ -484,7 +484,7 @@ const KNOWLEDGE_BASE: { keywords: (string | RegExp)[]; answer: string }[] = [
   },
   {
     keywords: ["orcamento", "organizar", "planejar", "planejamento", "controlar gasto", "controle financeiro", "planilha", "organizar financas", "como me organizar"],
-    answer: "📋 **Organizando seu orçamento**\n\n**Regra 50-30-20:**\n- 50% → Necessidades (moradia, alimentação, transporte)\n- 30% → Desejos (lazer, streaming, restaurantes)\n- 20% → Poupança e investimentos\n\n**Passos práticos:**\n1. Registre todos os gastos por 30 dias\n2. Categorize cada despesa\n3. Identifique cortes possíveis\n4. Defina limites por categoria\n5. Revise semanalmente\n\n💡 Use o **Lumyf** para registrar tudo automaticamente e acompanhar seu progresso!",
+    answer: "📋 **Organizando seu orçamento**\n\n**Regra 50-30-20:**\n- 50% → Necessidades (moradia, alimentação, transporte)\n- 30% → Desejos (lazer, streaming, restaurantes)\n- 20% → Poupança e investimentos\n\n**Passos práticos:**\n1. Registre todos os gastos por 30 dias\n2. Categorize cada despesa\n3. Identifique cortes possíveis\n4. Defina limites por categoria\n5. Revise semanalmente\n\n💡 Use o **Lumy** para registrar tudo automaticamente e acompanhar seu progresso!",
   },
   {
     keywords: [/como economizar/, /economizar dinheiro/, /gastar menos/, /reduzir gasto/, /cortar gasto/, /diminuir gasto/, /dicas? de economia/, /formas? de economizar/, /maneiras? de economizar/],
@@ -496,7 +496,7 @@ const KNOWLEDGE_BASE: { keywords: (string | RegExp)[]; answer: string }[] = [
   },
   {
     keywords: ["meta", "objetivo", "sonho", "plano de vida", "quero juntar", "quero comprar", "como juntar"],
-    answer: "🎯 **Definindo metas financeiras**\n\n**Método SMART:**\n- **S**pecífica: \"Juntar R$ 10.000\", não \"economizar dinheiro\"\n- **M**ensurável: Acompanhe o progresso mensalmente\n- **A**lcançável: Seja realista com sua renda\n- **R**elevante: Algo que realmente importa para você\n- **T**emporal: Defina um prazo claro\n\n**Exemplo prático:**\nMeta: R$ 12.000 em 12 meses = R$ 1.000/mês\nInvestindo a 1% ao mês, em 12 meses terá ~R$ 12.680!\n\n💡 Use a aba **Metas** do Lumyf para acompanhar seu progresso!",
+    answer: "🎯 **Definindo metas financeiras**\n\n**Método SMART:**\n- **S**pecífica: \"Juntar R$ 10.000\", não \"economizar dinheiro\"\n- **M**ensurável: Acompanhe o progresso mensalmente\n- **A**lcançável: Seja realista com sua renda\n- **R**elevante: Algo que realmente importa para você\n- **T**emporal: Defina um prazo claro\n\n**Exemplo prático:**\nMeta: R$ 12.000 em 12 meses = R$ 1.000/mês\nInvestindo a 1% ao mês, em 12 meses terá ~R$ 12.680!\n\n💡 Use a aba **Metas** do Lumy para acompanhar seu progresso!",
   },
   // ─── Investment topics ────────────────────────────
   {
@@ -521,7 +521,7 @@ const KNOWLEDGE_BASE: { keywords: (string | RegExp)[]; answer: string }[] = [
   },
   {
     keywords: ["inflacao", "ipca", "poder de compra", "preco subindo", "custo de vida", "tudo caro", "preco aumentou"],
-    answer: "📊 **Inflação**\n\nÉ o aumento geral dos preços, que corrói o poder de compra do seu dinheiro.\n\n**IPCA:** Principal índice de inflação no Brasil, medido pelo IBGE.\n\n**Como se proteger:**\n- Investimentos atrelados ao IPCA (Tesouro IPCA+)\n- Renda variável tende a superar a inflação no longo prazo\n- Evite deixar muito dinheiro na poupança (rende menos que a inflação)\n- Negocie reajustes salariais acima da inflação\n\n💡 Se a inflação é 5% ao ano e sua poupança rende 7%, seu ganho real é só 2%.\n\n**Inflação pessoal:** Seus gastos podem subir mais que o IPCA oficial. Acompanhe no Lumyf!",
+    answer: "📊 **Inflação**\n\nÉ o aumento geral dos preços, que corrói o poder de compra do seu dinheiro.\n\n**IPCA:** Principal índice de inflação no Brasil, medido pelo IBGE.\n\n**Como se proteger:**\n- Investimentos atrelados ao IPCA (Tesouro IPCA+)\n- Renda variável tende a superar a inflação no longo prazo\n- Evite deixar muito dinheiro na poupança (rende menos que a inflação)\n- Negocie reajustes salariais acima da inflação\n\n💡 Se a inflação é 5% ao ano e sua poupança rende 7%, seu ganho real é só 2%.\n\n**Inflação pessoal:** Seus gastos podem subir mais que o IPCA oficial. Acompanhe no Lumy!",
   },
   {
     keywords: ["juros compostos", "juros", "rendimento", "rentabilidade", "quanto rende", "como funciona juros", "calcular juros"],
@@ -565,7 +565,7 @@ const KNOWLEDGE_BASE: { keywords: (string | RegExp)[]; answer: string }[] = [
   },
   {
     keywords: ["viagem", "viajar", "ferias", "passagem", "milha", "turismo", "mochilao"],
-    answer: "✈️ **Planejando viagens com inteligência**\n\n1. **Defina orçamento total** antes de escolher o destino\n2. **Compre passagens com antecedência** (3-6 meses)\n3. **Use milhas:** Concentre gastos em um cartão com bom programa\n4. **Hospedagem:** Compare Booking, Airbnb e hostels\n5. **Moeda local:** Leve cartão de débito internacional (Wise, C6)\n6. **Seguro viagem:** Obrigatório na Europa, recomendado sempre\n\n💡 Viaje na baixa temporada — economia de 30-50%.\n\nCrie uma **meta no Lumyf** com valor e prazo!",
+    answer: "✈️ **Planejando viagens com inteligência**\n\n1. **Defina orçamento total** antes de escolher o destino\n2. **Compre passagens com antecedência** (3-6 meses)\n3. **Use milhas:** Concentre gastos em um cartão com bom programa\n4. **Hospedagem:** Compare Booking, Airbnb e hostels\n5. **Moeda local:** Leve cartão de débito internacional (Wise, C6)\n6. **Seguro viagem:** Obrigatório na Europa, recomendado sempre\n\n💡 Viaje na baixa temporada — economia de 30-50%.\n\nCrie uma **meta no Lumy** com valor e prazo!",
   },
   {
     keywords: ["carro", "automovel", "comprar carro", "financiar carro", "veiculo", "moto", "motocicleta"],

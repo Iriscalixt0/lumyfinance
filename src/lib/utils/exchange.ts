@@ -9,7 +9,7 @@ interface RateCache {
 const cache = new Map<string, RateCache>();
 
 export const SUPPORTED_CURRENCIES = [
-  // Moedas dos idiomas suportados pelo Lumyf
+  // Moedas dos idiomas suportados pelo Lumy
   { code: "BRL", symbol: "R$", name: "Real Brasileiro", flag: "🇧🇷" },
   { code: "USD", symbol: "$", name: "Dólar Americano", flag: "🇺🇸" },
   { code: "EUR", symbol: "€", name: "Euro", flag: "🇪🇺" },
