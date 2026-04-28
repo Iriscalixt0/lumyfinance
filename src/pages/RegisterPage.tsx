@@ -85,7 +85,7 @@ export function RegisterPage() {
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <Logo size="sm" />
-            <span className="text-xl font-bold text-gradient-hero">Lumyf</span>
+            <span className="text-xl font-bold text-gradient-hero">Lumy</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t("title")}</h2>

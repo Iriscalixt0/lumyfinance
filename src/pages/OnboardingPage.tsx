@@ -104,7 +104,7 @@ export function OnboardingPage() {
         role: "owner",
       });
 
-      toast(t("welcome") || "Bem-vindo ao Lumyf! 🎉");
+      toast(t("welcome") || "Bem-vindo ao Lumy! 🎉");
     } catch {
       toast(t("errorSetup") || "Erro ao configurar workspace. Acesse Configurações para tentar novamente.");
     }
@@ -118,7 +118,7 @@ export function OnboardingPage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <Logo size="sm" />
-          <span className="text-xl font-bold text-gradient-hero">Lumyf</span>
+          <span className="text-xl font-bold text-gradient-hero">Lumy</span>
         </div>
 
         {/* Progress */}
@@ -228,7 +228,7 @@ export function OnboardingPage() {
         {step === 2 && (
           <div className="animate-fade space-y-6">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-foreground">{t("howToUse") || "Como você quer usar o Lumyf?"}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t("howToUse") || "Como você quer usar o Lumy?"}</h1>
               <p className="text-muted-foreground mt-2">{t("howToUseDesc") || "Isso nos ajuda a personalizar sua experiência"}</p>
             </div>
 
