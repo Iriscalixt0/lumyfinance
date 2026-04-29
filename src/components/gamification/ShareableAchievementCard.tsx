@@ -18,7 +18,7 @@ export function ShareableAchievementCard({ type, value, label, onClose }: Sharea
   const [sharing, setSharing] = useState(false);
 
   const generateCard = useCallback((): Promise<Blob> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const canvas = canvasRef.current!;
       const ctx = canvas.getContext("2d")!;
       const w = 600;
@@ -41,41 +41,82 @@ export function ShareableAchievementCard({ type, value, label, onClose }: Sharea
       ctx.fillStyle = accent;
       ctx.fillRect(0, 0, w, 4);
 
-      // Emoji
-      ctx.font = "48px serif";
-      ctx.textAlign = "center";
-      ctx.fillText(type === "streak" ? "🔥" : "🎯", w / 2, 80);
+      const drawText = () => {
+        // Main value
+        ctx.fillStyle = "#10b981";
+        ctx.font = "bold 52px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        if (type === "goal") {
+          ctx.fillText(fmt.money(value), w / 2, 165);
+        } else {
+          ctx.fillText(`${value} ${t("streakDays")}`, w / 2, 165);
+        }
 
-      // Main value
-      ctx.fillStyle = "#10b981";
-      ctx.font = "bold 52px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      if (type === "goal") {
-        ctx.fillText(fmt.money(value), w / 2, 150);
-      } else {
-        ctx.fillText(`${value} ${t("streakDays")}`, w / 2, 150);
+        // Label
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "18px system-ui, sans-serif";
+        ctx.fillText(
+          label || (type === "goal" ? t("savedThisMonth") : t("streakAchieved")),
+          w / 2,
+          200
+        );
+
+        // Tagline
+        ctx.fillStyle = "#64748b";
+        ctx.font = "14px system-ui, sans-serif";
+        ctx.fillText(t("shareTagline"), w / 2, 250);
+
+        // Brand
+        ctx.fillStyle = "#10b981";
+        ctx.font = "bold 16px system-ui, sans-serif";
+        ctx.fillText("lumyf.app", w / 2, 305);
+
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))), "image/png");
+      };
+
+      // Streak → flame emoji (universal). Goal → Finny mascot image.
+      if (type === "streak") {
+        ctx.font = "56px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🔥", w / 2, 80);
+        ctx.textBaseline = "alphabetic";
+        drawText();
+        return;
       }
 
-      // Label
-      ctx.fillStyle = "#94a3b8";
-      ctx.font = "18px system-ui, sans-serif";
-      ctx.fillText(
-        label || (type === "goal" ? t("savedThisMonth") : t("streakAchieved")),
-        w / 2,
-        190
-      );
+      // Load Finny mascot. Same-origin /finny.png — no CORS issues taint canvas.
+      const finny = new Image();
+      finny.crossOrigin = "anonymous";
+      finny.onload = () => {
+        // Soft teal halo behind the bear (matches in-app glow)
+        const cx = w / 2;
+        const cy = 75;
+        const radius = 48;
+        const halo = ctx.createRadialGradient(cx, cy, 4, cx, cy, radius);
+        halo.addColorStop(0, "rgba(16, 185, 129, 0.55)");
+        halo.addColorStop(0.6, "rgba(16, 185, 129, 0.18)");
+        halo.addColorStop(1, "rgba(16, 185, 129, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
 
-      // Tagline
-      ctx.fillStyle = "#64748b";
-      ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(t("shareTagline"), w / 2, 240);
-
-      // Brand
-      ctx.fillStyle = "#10b981";
-      ctx.font = "bold 16px system-ui, sans-serif";
-      ctx.fillText("lumyf.app", w / 2, 300);
-
-      canvas.toBlob((blob) => resolve(blob!), "image/png");
+        // Draw bear (72×72) centered
+        const size = 72;
+        ctx.drawImage(finny, cx - size / 2, cy - size / 2, size, size);
+        drawText();
+      };
+      finny.onerror = () => {
+        // Fallback: emoji if image fails (offline + uncached)
+        ctx.font = "48px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🎯", w / 2, 80);
+        ctx.textBaseline = "alphabetic";
+        drawText();
+      };
+      finny.src = "/finny.png";
     });
   }, [type, value, label, fmt, t]);
 
