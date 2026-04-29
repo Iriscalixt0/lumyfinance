@@ -10,6 +10,7 @@ import { useTranslations } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/components/theme-provider";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { PwaStatusPill } from "@/components/layout/PwaStatusPill";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -433,6 +434,12 @@ export function AppLayout() {
         <main className="p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 max-w-7xl mx-auto">
           <Outlet />
         </main>
+
+        {/* Global footer with PWA health indicator */}
+        <footer className="border-t border-border/60 px-4 py-2.5 flex items-center justify-between gap-3 text-[10px] text-muted-foreground pb-20 md:pb-2.5">
+          <span>© {new Date().getFullYear()} Lumy</span>
+          <PwaStatusPill />
+        </footer>
       </div>
 
       {/* Bottom navigation — mobile only */}
