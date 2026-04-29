@@ -1,3 +1,5 @@
+import finnyLogo from "@/assets/finny-happy.png";
+
 type LogoSize = "sm" | "md" | "lg";
 
 const sizeMap = {
@@ -9,8 +11,8 @@ const sizeMap = {
 export function Logo({ size = "md", className = "" }: { size?: LogoSize; className?: string }) {
   return (
     <img
-      src="/pig.png"
-      alt="Lumy"
+      src={finnyLogo}
+      alt="Lumy — Finny mascote"
       className={`object-contain ${sizeMap[size]} ${className}`}
       loading="eager"
     />
