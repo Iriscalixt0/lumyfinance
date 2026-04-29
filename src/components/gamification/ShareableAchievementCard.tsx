@@ -124,7 +124,7 @@ export function ShareableAchievementCard({ type, value, label, onClose }: Sharea
 
       {/* Preview */}
       <div className="bg-gradient-to-br from-[#0f172a] to-[#1e3a3a] rounded-xl p-6 text-center mb-4">
-        {type === "streak" ? <span className="text-4xl">🔥</span> : <img src="/pig.png" alt="Lumy" className="h-12 w-12 mx-auto object-contain" />}
+        {type === "streak" ? <span className="text-4xl">🔥</span> : <img src="/finny.png" alt="Lumy" className="h-14 w-14 mx-auto object-contain" />}
         <p className="text-2xl font-extrabold text-emerald-400 mt-2 tabular-nums">
           {type === "goal" ? fmt.money(value) : `${value} ${t("streakDays")}`}
         </p>
