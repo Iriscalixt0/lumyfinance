@@ -908,6 +908,85 @@ export function GroceryPage() {
           </button>
         </div>
       </Modal>
+
+      <Modal open={!!importPreview} onClose={() => setImportPreview(null)} title="Importar lista">
+        {importPreview && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-mono text-xs text-foreground">{importPreview.fileName}</span> — {importPreview.rows.length} linha{importPreview.rows.length === 1 ? "" : "s"}.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                onClick={() => setImportPreview({ ...importPreview, mode: "merge" })}
+                className={`px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                  importPreview.mode === "merge"
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border hover:bg-secondary text-muted-foreground"
+                }`}
+              >
+                <div className="font-bold uppercase tracking-wider text-[10px] mb-0.5">Mesclar</div>
+                <div className="text-[11px]">Mantém os itens atuais. Fixos com mesmo nome são reaproveitados.</div>
+              </button>
+              <button
+                onClick={() => setImportPreview({ ...importPreview, mode: "replace" })}
+                className={`px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                  importPreview.mode === "replace"
+                    ? "border-destructive bg-destructive/10 text-foreground"
+                    : "border-border hover:bg-secondary text-muted-foreground"
+                }`}
+              >
+                <div className="font-bold uppercase tracking-wider text-[10px] mb-0.5">Substituir tudo</div>
+                <div className="text-[11px]">Apaga toda a lista atual antes de importar.</div>
+              </button>
+            </div>
+            <div className="max-h-56 overflow-y-auto border border-border rounded-lg">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/40 sticky top-0">
+                  <tr className="text-left">
+                    <th className="px-2 py-1.5 font-semibold">Nome</th>
+                    <th className="px-2 py-1.5 font-semibold">Qtd</th>
+                    <th className="px-2 py-1.5 font-semibold">Tipo</th>
+                    <th className="px-2 py-1.5 font-semibold">Mês</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importPreview.rows.slice(0, 50).map((r, i) => (
+                    <tr key={i} className="border-t border-border">
+                      <td className="px-2 py-1 truncate">{r.name}</td>
+                      <td className="px-2 py-1 text-muted-foreground">{r.qty || "—"}</td>
+                      <td className="px-2 py-1">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          r.kind === "fixed" ? "bg-primary/15 text-primary" : "bg-sky-500/15 text-sky-600 dark:text-sky-300"
+                        }`}>{r.kind}</span>
+                      </td>
+                      <td className="px-2 py-1 font-mono text-muted-foreground">{r.month_key || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {importPreview.rows.length > 50 && (
+                <p className="text-[10px] text-muted-foreground px-2 py-1 border-t border-border">
+                  + {importPreview.rows.length - 50} linhas adicionais...
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setImportPreview(null)}
+                className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-secondary transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmImport}
+                className="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all"
+              >
+                {importPreview.mode === "replace" ? "Substituir e importar" : "Mesclar e importar"}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
