@@ -101,10 +101,11 @@ export function OnboardingPage() {
         workspace_id: wsRes.data.id,
         user_id: user.id,
         role: "owner",
+        accepted_at: new Date().toISOString(),
       });
       if (memberRes.error) throw memberRes.error;
 
-      // 3) Atualiza o profile (upsert para o caso de o registro ainda não existir)
+      // 3) Atualiza apenas campos que existem em profiles
       const profileRes = await supabase
         .from("profiles")
         .upsert(
@@ -112,8 +113,6 @@ export function OnboardingPage() {
             id: user.id,
             onboarding_intent: intent,
             onboarding_completed_at: new Date().toISOString(),
-            preferred_locale: locale,
-            preferred_currency: baseCurrency,
           },
           { onConflict: "id" }
         );
