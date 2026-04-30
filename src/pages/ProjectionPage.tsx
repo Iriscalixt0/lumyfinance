@@ -37,7 +37,7 @@ export function ProjectionPage() {
       if (!wsId) { setLoading(false); return; }
       const [txRes, recRes] = await Promise.all([
         supabase.from("transactions").select("amount, type, date").eq("workspace_id", wsId).order("date"),
-        supabase.from("recurring_transactions").select("amount, type").eq("workspace_id", wsId).eq("active", true),
+        supabase.from("recurring_transactions").select("amount, type").eq("workspace_id", wsId),
       ]);
       setTransactions(txRes.data ?? []);
       setRecurring(recRes.data ?? []);
