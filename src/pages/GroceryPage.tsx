@@ -662,6 +662,27 @@ export function GroceryPage() {
           >
             <Radio className="h-3.5 w-3.5" /> Verificar sync
           </Link>
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-foreground transition-colors"
+            title="Exportar lista em CSV"
+          >
+            <Download className="h-3.5 w-3.5" /> Exportar
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-foreground transition-colors"
+            title="Importar lista de um arquivo CSV"
+          >
+            <Upload className="h-3.5 w-3.5" /> Importar
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            onChange={handleFileSelected}
+            className="hidden"
+          />
           <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1">
             <button
               onClick={() => shiftMonth(-1)}
