@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { Modal } from "@/components/ui/Modal";
 import { supabase } from "@/lib/supabase";
-import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2, Radio } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2, Radio, Download, Upload } from "lucide-react";
+import { downloadCSV } from "@/lib/utils/csv";
 
 /**
  * SuperMercado — lista de compras com itens fixos (todo mês) e itens do mês.
