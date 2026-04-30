@@ -42,6 +42,7 @@ import { useToast } from "@/components/ui/Toast";
 import { triggerAlertCheck } from "@/lib/triggerAlertCheck";
 import { useGamification, type AchievementDef } from "@/hooks/useGamification";
 import { AchievementToast } from "@/components/gamification/AchievementToast";
+import { materializeRecurring } from "@/lib/utils/recurring";
 
 interface Transaction {
   id: string;
@@ -138,6 +139,14 @@ export function TransactionsPage() {
   useEffect(() => {
     async function load() {
       if (!wsId) { setLoading(false); return; }
+      // Materialize recurring transactions for past/current periods before listing
+      if (user?.id) {
+        try {
+          await materializeRecurring(wsId, user.id);
+        } catch (err) {
+          console.warn("[Transactions] materialize failed", err);
+        }
+      }
       const [txRes, catRes, budgetRes] = await Promise.all([
         supabase.from("transactions").select("*").eq("workspace_id", wsId).order("date", { ascending: false }),
         supabase.from("categories").select("id, name, icon, type").eq("workspace_id", wsId),
@@ -149,7 +158,7 @@ export function TransactionsPage() {
       setLoading(false);
     }
     load();
-  }, [wsId]);
+  }, [wsId, user?.id]);
 
   // Filter by month/year
   const monthFiltered = useMemo(() => {
