@@ -24,6 +24,7 @@ import { ProjectionPage } from "@/pages/ProjectionPage";
 import { LumyPage } from "@/pages/LumyPage";
 import { CryptoPage } from "@/pages/CryptoPage";
 import { TravelModePage } from "@/pages/TravelModePage";
+import { GroceryPage } from "@/pages/GroceryPage";
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/goals" element={<GoalsPage />} />
         <Route path="/investments" element={<InvestmentsPage />} />
+        <Route path="/grocery" element={<GroceryPage />} />
         <Route path="/billings" element={<BillingsPage />} />
         <Route path="/budgets" element={<BudgetsPage />} />
         <Route path="/recurring" element={<RecurringPage />} />

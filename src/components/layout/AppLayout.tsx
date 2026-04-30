@@ -43,6 +43,7 @@ import {
   Bot,
   Bitcoin,
   Plane,
+  ShoppingCart,
 } from "lucide-react";
 
 interface NavItem {
@@ -58,6 +59,7 @@ const MAIN_ITEMS: NavItem[] = [
   { labelKey: "budgets", href: "/budgets", icon: Wallet2 },
   { labelKey: "goals", href: "/goals", icon: Target },
   { labelKey: "investments", href: "/investments", icon: TrendingUp },
+  { labelKey: "grocery", href: "/grocery", icon: ShoppingCart },
 ];
 
 // 🧰 Mais (collapsed)
