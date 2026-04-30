@@ -100,7 +100,7 @@ export function GroceryFixedPage() {
         .eq("kind", "fixed")
         .order("created_at", { ascending: false });
 
-      let { data, error } = await q;
+      let { data, error } = await q as { data: any[] | null; error: any };
 
       if (error && isMissingColumnError(error)) {
         setHasPriorityCol(false);
