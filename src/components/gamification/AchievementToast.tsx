@@ -28,9 +28,11 @@ export function AchievementToast({ achievement, onDone }: AchievementToastProps)
   if (!achievement) return null;
 
   // Map achievement → ShareableAchievementCard props.
-  // Streak achievements use type="streak" (flame), all others use type="goal" (Finny).
-  const isStreak = achievement.key?.toLowerCase().includes("streak");
-  const numericValue = Number(achievement.value ?? 0) || 1;
+  // Use category="streak" → flame card; everything else → Finny goal card.
+  const isStreak = achievement.category === "streak";
+  // Extract numeric milestone from the key (e.g. "streak_7" → 7, "tx_50" → 50)
+  const keyMatch = achievement.key.match(/(\d+)/);
+  const numericValue = keyMatch ? Number(keyMatch[1]) : 1;
 
   return (
     <>
