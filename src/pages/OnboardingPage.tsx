@@ -68,45 +68,66 @@ export function OnboardingPage() {
   async function handleFinish() {
     if (!user || !intent || !workspaceName.trim()) return;
     setSaving(true);
-    navigate("/dashboard");
 
     try {
-      const slug = workspaceName.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      const baseSlug =
+        workspaceName
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") || "meu-workspace";
+      // Sufixo curto para evitar colisão com a constraint UNIQUE de slug
+      const uniqueSlug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
 
       localStorage.setItem("lmyf_base_currency", baseCurrency);
 
-      const [, wsRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .update({
-            onboarding_intent: intent,
-            onboarding_completed_at: new Date().toISOString(),
-            preferred_locale: locale,
-            preferred_currency: baseCurrency,
-          })
-          .eq("id", user.id),
-        supabase
-          .from("workspaces")
-          .insert({
-            name: workspaceName.trim(),
-            slug: slug || "meu-workspace",
-            owner_id: user.id,
-          })
-          .select()
-          .single(),
-      ]);
+      // 1) Cria o workspace primeiro (operação que mais costuma falhar)
+      const wsRes = await supabase
+        .from("workspaces")
+        .insert({
+          name: workspaceName.trim(),
+          slug: uniqueSlug,
+          owner_id: user.id,
+        })
+        .select()
+        .single();
 
       if (wsRes.error) throw wsRes.error;
 
-      await supabase.from("workspace_members").insert({
+      // 2) Adiciona o usuário como owner do workspace
+      const memberRes = await supabase.from("workspace_members").insert({
         workspace_id: wsRes.data.id,
         user_id: user.id,
         role: "owner",
       });
+      if (memberRes.error) throw memberRes.error;
+
+      // 3) Atualiza o profile (upsert para o caso de o registro ainda não existir)
+      const profileRes = await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: user.id,
+            onboarding_intent: intent,
+            onboarding_completed_at: new Date().toISOString(),
+            preferred_locale: locale,
+            preferred_currency: baseCurrency,
+          },
+          { onConflict: "id" }
+        );
+      if (profileRes.error) throw profileRes.error;
+
+      localStorage.setItem("lmyf_active_ws", wsRes.data.id);
 
       toast(t("welcome") || "Bem-vindo ao Lumy! 🎉");
-    } catch {
-      toast(t("errorSetup") || "Erro ao configurar workspace. Acesse Configurações para tentar novamente.");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("[onboarding] handleFinish failed:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      toast(`${t("errorSetup") || "Erro ao configurar workspace"}: ${msg}`);
+      setSaving(false);
     }
   }
 
