@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { Modal } from "@/components/ui/Modal";
 import { supabase } from "@/lib/supabase";
-import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2 } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2, Radio } from "lucide-react";
 
 /**
  * SuperMercado — lista de compras com itens fixos (todo mês) e itens do mês.
@@ -444,6 +444,13 @@ export function GroceryPage() {
             title="Gerenciar itens fixos"
           >
             <Settings2 className="h-3.5 w-3.5" /> Gerenciar fixos
+          </Link>
+          <Link
+            to="/grocery/sync-check"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-foreground transition-colors"
+            title="Verificar sincronização em tempo real"
+          >
+            <Radio className="h-3.5 w-3.5" /> Verificar sync
           </Link>
           <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1">
             <button

@@ -26,6 +26,7 @@ import { CryptoPage } from "@/pages/CryptoPage";
 import { TravelModePage } from "@/pages/TravelModePage";
 import { GroceryPage } from "@/pages/GroceryPage";
 import { GroceryFixedPage } from "@/pages/GroceryFixedPage";
+import { GrocerySyncCheckPage } from "@/pages/GrocerySyncCheckPage";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
         <Route path="/investments" element={<InvestmentsPage />} />
         <Route path="/grocery" element={<GroceryPage />} />
         <Route path="/grocery/fixed" element={<GroceryFixedPage />} />
+        <Route path="/grocery/sync-check" element={<GrocerySyncCheckPage />} />
         <Route path="/billings" element={<BillingsPage />} />
         <Route path="/budgets" element={<BudgetsPage />} />
         <Route path="/recurring" element={<RecurringPage />} />
