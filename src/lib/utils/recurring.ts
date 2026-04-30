@@ -39,13 +39,14 @@ function toISODate(d: Date): string {
 }
 
 /**
- * Materialize due occurrences of recurring transactions as real `transactions` rows.
+ * Materialize occurrences of recurring transactions as real `transactions` rows.
  * Idempotent: checks existing transactions by (recurring_id, date) before inserting.
  *
+ * Pass `until` to materialize beyond today (e.g. end of a future month the user is viewing).
  * Returns the number of new transactions created.
  */
-export async function materializeRecurring(workspaceId: string, userId: string): Promise<number> {
-  const today = new Date();
+export async function materializeRecurring(workspaceId: string, userId: string, until?: Date): Promise<number> {
+  const today = until ? new Date(until) : new Date();
   today.setHours(23, 59, 59, 999);
 
   const { data: recurrings, error } = await supabase

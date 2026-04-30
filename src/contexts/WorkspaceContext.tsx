@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
-const DEV_BYPASS = import.meta.env.DEV;
+const DEV_BYPASS = import.meta.env.DEV && import.meta.env.MODE === "development";
 
 const MOCK_WORKSPACE = {
   id: "00000000-0000-0000-0000-000000000001",

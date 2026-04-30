@@ -4,7 +4,7 @@
  * can swap seamlessly when Supabase is unreachable.
  */
 
-const DEV_BYPASS = import.meta.env.DEV;
+const DEV_BYPASS = import.meta.env.DEV && import.meta.env.MODE === "development";
 
 function getStore<T>(key: string): T[] {
   try {

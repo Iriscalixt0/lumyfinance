@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
-// ⚠️ TEMPORÁRIO: bypass de auth para preview sem Supabase
-const DEV_BYPASS = import.meta.env.DEV;
+// Bypass apenas em servidor de desenvolvimento local (nunca em builds deployados)
+const DEV_BYPASS = import.meta.env.DEV && import.meta.env.MODE === "development";
 
 const MOCK_USER: User = {
   id: "00000000-0000-0000-0000-000000000000",

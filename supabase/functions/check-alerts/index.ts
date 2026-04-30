@@ -24,11 +24,8 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user from token
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
-    const {
-      data: { user },
-    } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
+    const { data: { user } } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (!user) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
@@ -53,24 +50,51 @@ Deno.serve(async (req) => {
       data: Record<string, unknown>;
     }[] = [];
 
-    // ── Budget alerts (80% and 100%) ──
+    // ── Budget alerts ──
+    // spent_amount is calculated from transactions (no stored column)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
     const { data: budgets } = await supabase
       .from("budgets")
-      .select("id, category, limit_amount, spent_amount")
-      .eq("workspace_id", workspace_id);
+      .select("id, category_id, limit_amount, year, month, categories(name, icon)")
+      .eq("workspace_id", workspace_id)
+      .eq("year", currentYear)
+      .eq("month", currentMonth);
+
+    const { data: expenseTxns } = await supabase
+      .from("transactions")
+      .select("category_id, amount, date, type")
+      .eq("workspace_id", workspace_id)
+      .eq("type", "expense");
 
     if (budgets) {
       for (const b of budgets) {
         if (b.limit_amount <= 0) continue;
-        const pct = b.spent_amount / b.limit_amount;
+
+        const spent = (expenseTxns || [])
+          .filter((t) => {
+            const d = new Date(t.date);
+            return (
+              t.category_id === b.category_id &&
+              d.getFullYear() === b.year &&
+              d.getMonth() + 1 === b.month
+            );
+          })
+          .reduce((s: number, t: { amount: number }) => s + t.amount, 0);
+
+        const pct = spent / b.limit_amount;
+        const cat = b.categories as { name: string; icon: string } | null;
+        const categoryLabel = cat ? `${cat.icon} ${cat.name}` : "Sem categoria";
 
         if (pct >= 1) {
           notifications.push({
             user_id: user.id,
             workspace_id,
             type: "budget_warning",
-            title: `Orçamento estourado: ${b.category}`,
-            body: `Seu orçamento de "${b.category}" atingiu 100% do limite.`,
+            title: `Orçamento estourado: ${categoryLabel}`,
+            body: `Seu orçamento de "${categoryLabel}" atingiu 100% do limite.`,
             data: { budget_id: b.id, threshold: 100, dedup_key: `budget_100_${b.id}` },
           });
         } else if (pct >= 0.8) {
@@ -78,27 +102,29 @@ Deno.serve(async (req) => {
             user_id: user.id,
             workspace_id,
             type: "budget_warning",
-            title: `Orçamento em alerta: ${b.category}`,
-            body: `Seu orçamento de "${b.category}" atingiu 80% do limite.`,
+            title: `Orçamento em alerta: ${categoryLabel}`,
+            body: `Seu orçamento de "${categoryLabel}" atingiu 80% do limite.`,
             data: { budget_id: b.id, threshold: 80, dedup_key: `budget_80_${b.id}` },
           });
         }
       }
     }
 
-    // ── Goal milestones (75%, 90%, 100%) ──
+    // ── Goal alerts ──
+    // contributions_total is calculated from goal_contributions table
     const { data: goals } = await supabase
       .from("goals")
-      .select("id, title, target_amount, contributions_total, deadline, status")
+      .select("id, title, target_amount, deadline, status, goal_contributions(amount)")
       .eq("workspace_id", workspace_id)
       .eq("status", "active");
 
     if (goals) {
       for (const g of goals) {
         if (g.target_amount <= 0) continue;
-        const pct = (g.contributions_total ?? 0) / g.target_amount;
+        const contributions = g.goal_contributions as { amount: number }[] | null;
+        const contributionsTotal = (contributions || []).reduce((s, c) => s + c.amount, 0);
+        const pct = contributionsTotal / g.target_amount;
 
-        // Milestone notifications
         const thresholds = [
           { value: 1, label: 100 },
           { value: 0.9, label: 90 },
@@ -111,27 +137,22 @@ Deno.serve(async (req) => {
               user_id: user.id,
               workspace_id,
               type: t.label === 100 ? "goal_completed" : "goal_milestone",
-              title:
-                t.label === 100
-                  ? `Meta concluída: ${g.title}! 🎉`
-                  : `Meta ${t.label}%: ${g.title}`,
+              title: t.label === 100 ? `Meta concluída: ${g.title}! 🎉` : `Meta ${t.label}%: ${g.title}`,
               body:
                 t.label === 100
                   ? `Parabéns! Você atingiu 100% da meta "${g.title}".`
                   : `Você já alcançou ${t.label}% da meta "${g.title}". Continue assim!`,
               data: { goal_id: g.id, threshold: t.label, dedup_key: `goal_${t.label}_${g.id}` },
             });
-            break; // only highest threshold
+            break;
           }
         }
 
-        // ── Deadline approaching: 1 day before ──
         if (g.deadline && pct < 1) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const deadlineDate = new Date(g.deadline + "T00:00:00");
-          const diffMs = deadlineDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          const diffDays = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
           if (diffDays === 1) {
             notifications.push({
@@ -156,12 +177,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── Deduplicate: skip if notification with same dedup_key exists recently ──
+    // ── Deduplicate and insert ──
     let created = 0;
     for (const notif of notifications) {
       const dedupKey = (notif.data as Record<string, unknown>).dedup_key as string;
-
-      // Check if already exists in last 30 days
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const { data: existing } = await supabase
         .from("notifications")
@@ -173,7 +192,6 @@ Deno.serve(async (req) => {
         .limit(1);
 
       if (existing && existing.length > 0) continue;
-
       await supabase.from("notifications").insert(notif);
       created++;
     }

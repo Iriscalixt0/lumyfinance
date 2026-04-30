@@ -139,10 +139,11 @@ export function TransactionsPage() {
   useEffect(() => {
     async function load() {
       if (!wsId) { setLoading(false); return; }
-      // Materialize recurring transactions for past/current periods before listing
+      // Materialize recurring transactions up to the end of the selected month
       if (user?.id) {
         try {
-          await materializeRecurring(wsId, user.id);
+          const untilDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
+          await materializeRecurring(wsId, user.id, untilDate);
         } catch (err) {
           console.warn("[Transactions] materialize failed", err);
         }
@@ -153,12 +154,12 @@ export function TransactionsPage() {
         supabase.from("budgets").select("id, category, limit_amount, spent_amount").eq("workspace_id", wsId),
       ]);
       setTransactions(txRes.data ?? []);
-      setCategories(catRes.data ?? []);
-      setBudgets(budgetRes.data ?? []);
+      setCategories((prev) => catRes.data ?? prev);
+      setBudgets((prev) => budgetRes.data ?? prev);
       setLoading(false);
     }
     load();
-  }, [wsId, user?.id]);
+  }, [wsId, user?.id, selectedMonth, selectedYear]);
 
   // Filter by month/year
   const monthFiltered = useMemo(() => {

@@ -3,8 +3,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
-// ⚠️ TEMPORÁRIO: bypass de auth para preview sem Supabase — remover antes de produção
-const DEV_BYPASS = import.meta.env.DEV;
+// Bypass apenas em servidor de desenvolvimento local (nunca em builds deployados)
+const DEV_BYPASS = import.meta.env.DEV && import.meta.env.MODE === "development";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

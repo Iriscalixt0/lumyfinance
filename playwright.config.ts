@@ -27,9 +27,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run dev -- --port ${port}`,
+    // --mode test keeps DEV=true (hot reload) but sets MODE="test",
+    // which disables DEV_BYPASS in AuthContext and ProtectedRoute.
+    command: `npm run dev -- --port ${port} --mode test`,
     url: baseURL,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
 });
