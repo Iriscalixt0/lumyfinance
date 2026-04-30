@@ -429,7 +429,7 @@ export function GroceryFixedPage() {
 
       {/* History modal */}
       {historyFor && (
-        <Modal isOpen={true} onClose={() => setHistoryFor(null)} title={`Histórico: ${historyFor.name}`}>
+        <Modal open={true} onClose={() => setHistoryFor(null)} title={`Histórico: ${historyFor.name}`}>
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
               Meses em que este item foi removido apenas daquele mês (sem afetar os demais).
@@ -456,7 +456,7 @@ export function GroceryFixedPage() {
 
       {/* Delete confirmation */}
       {confirmDel && (
-        <Modal isOpen={true} onClose={() => setConfirmDel(null)} title="Remover item fixo?">
+        <Modal open={true} onClose={() => setConfirmDel(null)} title="Remover item fixo?">
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">{confirmDel.name}</span> será removido de todos os meses.
@@ -497,7 +497,7 @@ function EditItemModal({
   const [priority, setPriority] = useState<number>(item.priority);
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Editar item fixo">
+    <Modal open={true} onClose={onClose} title="Editar item fixo">
       <form
         onSubmit={(e) => {
           e.preventDefault();
