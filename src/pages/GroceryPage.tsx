@@ -1,47 +1,43 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { Modal } from "@/components/ui/Modal";
-import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive } from "lucide-react";
 
 /**
- * SuperMercado — lista de compras com itens fixos (recorrentes todo mês)
- * e itens do mês (avulsos, não se repetem).
+ * SuperMercado — lista de compras com itens fixos (todo mês) e itens do mês.
  *
- * Persistência: localStorage por workspace para não exigir migração de schema.
- *  - lumy.grocery.fixed.{workspaceId}        => GroceryFixedItem[]
- *  - lumy.grocery.month.{workspaceId}.{YYYY-MM} => MonthState
- *      MonthState = {
- *        oneOff: GroceryOneOffItem[],
- *        checked: Record<fixedItemId, boolean>, // marcados como comprados/desmarcados no mês
- *        skipped: Record<fixedItemId, boolean>, // removidos da lista deste mês (não afeta outros)
- *      }
+ * Persistência: Supabase quando a tabela `grocery_items` existir; senão,
+ * fallback automático para localStorage por workspace.
+ *
+ *  Tabelas (SQL: supabase/migrations-manual/20260430_grocery_items.sql):
+ *   - grocery_items(id, workspace_id, created_by, name, qty, kind, month_key, ...)
+ *       kind: 'fixed' | 'month' ; month_key: 'YYYY-MM' (apenas p/ kind='month')
+ *   - grocery_item_marks(item_id, month_key, checked, skipped)
  */
 
-interface GroceryFixedItem {
-  id: string;
-  name: string;
-  qty: string; // free text e.g. "2 L", "1 kg"
-  createdAt: string;
-}
-
-interface GroceryOneOffItem {
+interface GroceryItem {
   id: string;
   name: string;
   qty: string;
+  kind: "fixed" | "month";
+  month_key: string | null;
+  created_at: string;
+}
+
+interface GroceryMark {
+  item_id: string;
+  month_key: string;
   checked: boolean;
-  createdAt: string;
+  skipped: boolean;
 }
 
-interface MonthState {
-  oneOff: GroceryOneOffItem[];
-  checked: Record<string, boolean>;
-  skipped: Record<string, boolean>;
-}
+const LS_ITEMS = (ws: string) => `lumy.grocery.items.${ws}`;
+const LS_MARKS = (ws: string) => `lumy.grocery.marks.${ws}`;
 
-const emptyMonth: MonthState = { oneOff: [], checked: {}, skipped: {} };
-
-function monthKey(d: Date) {
+function ymKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
@@ -49,35 +45,88 @@ function monthLabel(d: Date, locale = "pt-BR") {
   return d.toLocaleDateString(locale, { month: "long", year: "numeric" });
 }
 
-function loadFixed(workspaceId: string): GroceryFixedItem[] {
+// ---------- Local fallback helpers ----------
+function lsLoadItems(ws: string): GroceryItem[] {
+  try { return JSON.parse(localStorage.getItem(LS_ITEMS(ws)) ?? "[]"); } catch { return []; }
+}
+function lsSaveItems(ws: string, items: GroceryItem[]) {
+  localStorage.setItem(LS_ITEMS(ws), JSON.stringify(items));
+}
+function lsLoadMarks(ws: string): GroceryMark[] {
+  try { return JSON.parse(localStorage.getItem(LS_MARKS(ws)) ?? "[]"); } catch { return []; }
+}
+function lsSaveMarks(ws: string, marks: GroceryMark[]) {
+  localStorage.setItem(LS_MARKS(ws), JSON.stringify(marks));
+}
+
+// ---------- Migrate legacy localStorage shape (one-time) ----------
+function migrateLegacy(workspaceId: string) {
+  const flag = `lumy.grocery.migrated.${workspaceId}`;
+  if (localStorage.getItem(flag)) return;
+
+  const items: GroceryItem[] = [];
+  const marks: GroceryMark[] = [];
+
+  // legacy fixed
   try {
     const raw = localStorage.getItem(`lumy.grocery.fixed.${workspaceId}`);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
+    if (raw) {
+      const arr = JSON.parse(raw);
+      for (const it of arr) {
+        items.push({
+          id: it.id,
+          name: it.name,
+          qty: it.qty || "",
+          kind: "fixed",
+          month_key: null,
+          created_at: it.createdAt || new Date().toISOString(),
+        });
+      }
+    }
+  } catch { /* ignore */ }
+
+  // legacy month buckets
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    const prefix = `lumy.grocery.month.${workspaceId}.`;
+    if (!k.startsWith(prefix)) continue;
+    const monthKey = k.slice(prefix.length);
+    try {
+      const data = JSON.parse(localStorage.getItem(k) ?? "{}");
+      for (const o of data.oneOff ?? []) {
+        items.push({
+          id: o.id,
+          name: o.name,
+          qty: o.qty || "",
+          kind: "month",
+          month_key: monthKey,
+          created_at: o.createdAt || new Date().toISOString(),
+        });
+        if (o.checked) marks.push({ item_id: o.id, month_key: monthKey, checked: true, skipped: false });
+      }
+      for (const [fid, v] of Object.entries(data.checked ?? {})) {
+        if (v) marks.push({ item_id: fid, month_key: monthKey, checked: true, skipped: false });
+      }
+      for (const [fid, v] of Object.entries(data.skipped ?? {})) {
+        if (v) {
+          const existing = marks.find((m) => m.item_id === fid && m.month_key === monthKey);
+          if (existing) existing.skipped = true;
+          else marks.push({ item_id: fid, month_key: monthKey, checked: false, skipped: true });
+        }
+      }
+    } catch { /* ignore */ }
   }
-}
 
-function saveFixed(workspaceId: string, items: GroceryFixedItem[]) {
-  localStorage.setItem(`lumy.grocery.fixed.${workspaceId}`, JSON.stringify(items));
-}
-
-function loadMonth(workspaceId: string, key: string): MonthState {
-  try {
-    const raw = localStorage.getItem(`lumy.grocery.month.${workspaceId}.${key}`);
-    return raw ? { ...emptyMonth, ...JSON.parse(raw) } : { ...emptyMonth };
-  } catch {
-    return { ...emptyMonth };
-  }
-}
-
-function saveMonth(workspaceId: string, key: string, state: MonthState) {
-  localStorage.setItem(`lumy.grocery.month.${workspaceId}.${key}`, JSON.stringify(state));
+  if (items.length) lsSaveItems(workspaceId, items);
+  if (marks.length) lsSaveMarks(workspaceId, marks);
+  localStorage.setItem(flag, "1");
 }
 
 export function GroceryPage() {
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [cursor, setCursor] = useState<Date>(() => {
@@ -85,11 +134,13 @@ export function GroceryPage() {
     d.setDate(1);
     return d;
   });
-  const mKey = useMemo(() => monthKey(cursor), [cursor]);
+  const mKey = useMemo(() => ymKey(cursor), [cursor]);
 
-  const [fixed, setFixed] = useState<GroceryFixedItem[]>([]);
-  const [month, setMonth] = useState<MonthState>(emptyMonth);
+  const [items, setItems] = useState<GroceryItem[]>([]);
+  const [marks, setMarks] = useState<GroceryMark[]>([]);
   const [tab, setTab] = useState<"all" | "fixed" | "month">("all");
+  const [useCloud, setUseCloud] = useState(true); // toggled to false on missing-table errors
+  const [loading, setLoading] = useState(true);
 
   const [newName, setNewName] = useState("");
   const [newQty, setNewQty] = useState("");
@@ -97,78 +148,243 @@ export function GroceryPage() {
 
   const [confirmDel, setConfirmDel] = useState<{ id: string; kind: "fixed" | "month"; name: string } | null>(null);
 
-  useEffect(() => {
-    if (!workspaceId) return;
-    setFixed(loadFixed(workspaceId));
-  }, [workspaceId]);
+  // Mark lookups
+  const markFor = (itemId: string, monthKey: string) =>
+    marks.find((m) => m.item_id === itemId && m.month_key === monthKey);
 
-  useEffect(() => {
-    if (!workspaceId) return;
-    setMonth(loadMonth(workspaceId, mKey));
-  }, [workspaceId, mKey]);
+  const isMissingTableError = (err: any): boolean => {
+    const msg = (err?.message || "").toLowerCase();
+    const code = err?.code;
+    return code === "42P01" || msg.includes("does not exist") || msg.includes("relation") || msg.includes("could not find");
+  };
 
-  function persistFixed(next: GroceryFixedItem[]) {
-    setFixed(next);
-    if (workspaceId) saveFixed(workspaceId, next);
+  // ---------- Load ----------
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!workspaceId) { setLoading(false); return; }
+      migrateLegacy(workspaceId);
+      setLoading(true);
+
+      // Try cloud first
+      const { data: itemsData, error: itemsErr } = await supabase
+        .from("grocery_items")
+        .select("id, name, qty, kind, month_key, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
+
+      if (itemsErr) {
+        if (isMissingTableError(itemsErr)) {
+          console.warn("[Grocery] table missing, falling back to localStorage");
+          setUseCloud(false);
+          setItems(lsLoadItems(workspaceId));
+          setMarks(lsLoadMarks(workspaceId));
+        } else {
+          console.error("[Grocery] load items error", itemsErr);
+          toast(itemsErr.message || "Erro ao carregar lista");
+        }
+        setLoading(false);
+        return;
+      }
+
+      const ids = (itemsData ?? []).map((i) => i.id);
+      let marksData: GroceryMark[] = [];
+      if (ids.length) {
+        const { data, error } = await supabase
+          .from("grocery_item_marks")
+          .select("item_id, month_key, checked, skipped")
+          .in("item_id", ids);
+        if (error && !isMissingTableError(error)) {
+          console.error("[Grocery] load marks error", error);
+        }
+        marksData = (data ?? []) as GroceryMark[];
+      }
+
+      // One-time push of legacy local data to cloud (best-effort)
+      const localItems = lsLoadItems(workspaceId);
+      if (localItems.length && (itemsData?.length ?? 0) === 0 && user) {
+        const payload = localItems.map((it) => ({
+          id: it.id,
+          workspace_id: workspaceId,
+          created_by: user.id,
+          name: it.name,
+          qty: it.qty || null,
+          kind: it.kind,
+          month_key: it.kind === "month" ? it.month_key : null,
+        }));
+        const { error: upErr } = await supabase.from("grocery_items").insert(payload);
+        if (!upErr) {
+          const localMarks = lsLoadMarks(workspaceId);
+          if (localMarks.length) {
+            await supabase.from("grocery_item_marks").insert(
+              localMarks.map((m) => ({
+                item_id: m.item_id,
+                month_key: m.month_key,
+                checked: m.checked,
+                skipped: m.skipped,
+              }))
+            );
+          }
+          // Reload after migration
+          const reload = await supabase
+            .from("grocery_items")
+            .select("id, name, qty, kind, month_key, created_at")
+            .eq("workspace_id", workspaceId)
+            .order("created_at", { ascending: false });
+          if (!cancelled && reload.data) {
+            setItems(reload.data as GroceryItem[]);
+            const reloadIds = reload.data.map((i: any) => i.id);
+            const m2 = await supabase
+              .from("grocery_item_marks")
+              .select("item_id, month_key, checked, skipped")
+              .in("item_id", reloadIds);
+            setMarks((m2.data ?? []) as GroceryMark[]);
+            // Clear legacy local storage to avoid re-uploading
+            localStorage.removeItem(LS_ITEMS(workspaceId));
+            localStorage.removeItem(LS_MARKS(workspaceId));
+            toast("Lista sincronizada na nuvem");
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      setItems((itemsData ?? []) as GroceryItem[]);
+      setMarks(marksData);
+      setLoading(false);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [workspaceId, user]);
+
+  // ---------- Persistence helpers ----------
+  function persistLocal(nextItems = items, nextMarks = marks) {
+    if (!workspaceId) return;
+    lsSaveItems(workspaceId, nextItems);
+    lsSaveMarks(workspaceId, nextMarks);
   }
 
-  function persistMonth(next: MonthState) {
-    setMonth(next);
-    if (workspaceId) saveMonth(workspaceId, mKey, next);
+  async function upsertMark(itemId: string, patch: Partial<GroceryMark>) {
+    const existing = markFor(itemId, mKey);
+    const next: GroceryMark = {
+      item_id: itemId,
+      month_key: mKey,
+      checked: existing?.checked ?? false,
+      skipped: existing?.skipped ?? false,
+      ...patch,
+    };
+    const nextMarks = [
+      ...marks.filter((m) => !(m.item_id === itemId && m.month_key === mKey)),
+      next,
+    ];
+    setMarks(nextMarks);
+
+    if (useCloud) {
+      const { error } = await supabase
+        .from("grocery_item_marks")
+        .upsert(
+          { item_id: itemId, month_key: mKey, checked: next.checked, skipped: next.skipped },
+          { onConflict: "item_id,month_key" }
+        );
+      if (error) {
+        console.warn("[Grocery] mark upsert failed", error.message);
+        if (isMissingTableError(error)) {
+          setUseCloud(false);
+          persistLocal(items, nextMarks);
+        }
+      }
+    } else {
+      persistLocal(items, nextMarks);
+    }
   }
 
-  function addItem(e: React.FormEvent) {
+  // ---------- Actions ----------
+  async function addItem(e: React.FormEvent) {
     e.preventDefault();
     const name = newName.trim();
-    if (!name) return;
+    if (!name || !workspaceId || !user) return;
     const qty = newQty.trim();
     const id = crypto.randomUUID();
-    if (newKind === "fixed") {
-      const item: GroceryFixedItem = { id, name, qty, createdAt: new Date().toISOString() };
-      persistFixed([item, ...fixed]);
-      toast("Item fixo adicionado — vai aparecer todo mês");
+
+    const newItem: GroceryItem = {
+      id,
+      name,
+      qty,
+      kind: newKind,
+      month_key: newKind === "month" ? mKey : null,
+      created_at: new Date().toISOString(),
+    };
+
+    if (useCloud) {
+      const { error } = await supabase.from("grocery_items").insert({
+        id,
+        workspace_id: workspaceId,
+        created_by: user.id,
+        name,
+        qty: qty || null,
+        kind: newKind,
+        month_key: newKind === "month" ? mKey : null,
+      });
+      if (error) {
+        console.error("[Grocery] insert error", error);
+        if (isMissingTableError(error)) {
+          setUseCloud(false);
+          const nextItems = [newItem, ...items];
+          setItems(nextItems);
+          persistLocal(nextItems, marks);
+        } else {
+          toast(error.message || "Erro ao adicionar");
+          return;
+        }
+      } else {
+        setItems((prev) => [newItem, ...prev]);
+      }
     } else {
-      const item: GroceryOneOffItem = { id, name, qty, checked: false, createdAt: new Date().toISOString() };
-      persistMonth({ ...month, oneOff: [item, ...month.oneOff] });
-      toast("Item adicionado a este mês");
+      const nextItems = [newItem, ...items];
+      setItems(nextItems);
+      persistLocal(nextItems, marks);
     }
+
+    toast(newKind === "fixed" ? "Item fixo adicionado — vai aparecer todo mês" : "Item adicionado a este mês");
     setNewName("");
     setNewQty("");
   }
 
-  // Toggle "comprado" mark for a fixed item in the current month only
   function toggleFixedChecked(id: string) {
-    const checked = { ...month.checked, [id]: !month.checked[id] };
-    persistMonth({ ...month, checked });
+    const cur = markFor(id, mKey);
+    upsertMark(id, { checked: !cur?.checked });
   }
 
-  // Skip a fixed item from the current month's list (doesn't affect other months)
+  function toggleOneOff(id: string) {
+    const cur = markFor(id, mKey);
+    upsertMark(id, { checked: !cur?.checked });
+  }
+
   function skipFixedThisMonth(id: string) {
-    const skipped = { ...month.skipped, [id]: true };
-    const checked = { ...month.checked };
-    delete checked[id];
-    persistMonth({ ...month, skipped, checked });
+    upsertMark(id, { skipped: true, checked: false });
     toast("Removido apenas deste mês");
   }
 
   function restoreFixedThisMonth(id: string) {
-    const skipped = { ...month.skipped };
-    delete skipped[id];
-    persistMonth({ ...month, skipped });
+    upsertMark(id, { skipped: false });
   }
 
-  function deleteFixedForever(id: string) {
-    persistFixed(fixed.filter((i) => i.id !== id));
-    toast("Item fixo removido de todos os meses");
-  }
-
-  function toggleOneOff(id: string) {
-    const oneOff = month.oneOff.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i));
-    persistMonth({ ...month, oneOff });
-  }
-
-  function deleteOneOff(id: string) {
-    persistMonth({ ...month, oneOff: month.oneOff.filter((i) => i.id !== id) });
+  async function deleteItem(id: string, kind: "fixed" | "month") {
+    if (useCloud) {
+      const { error } = await supabase.from("grocery_items").delete().eq("id", id);
+      if (error && !isMissingTableError(error)) {
+        toast(error.message || "Erro ao excluir");
+        return;
+      }
+    }
+    const nextItems = items.filter((i) => i.id !== id);
+    const nextMarks = marks.filter((m) => m.item_id !== id);
+    setItems(nextItems);
+    setMarks(nextMarks);
+    if (!useCloud) persistLocal(nextItems, nextMarks);
+    toast(kind === "fixed" ? "Item fixo removido de todos os meses" : "Item removido");
   }
 
   function shiftMonth(delta: number) {
@@ -177,13 +393,25 @@ export function GroceryPage() {
     setCursor(d);
   }
 
-  // Visible fixed items in the current month (filter out skipped)
-  const visibleFixed = fixed.filter((f) => !month.skipped[f.id]);
-  const skippedFixed = fixed.filter((f) => month.skipped[f.id]);
+  // ---------- Derived ----------
+  const fixedItems = items.filter((i) => i.kind === "fixed");
+  const monthItems = items.filter((i) => i.kind === "month" && i.month_key === mKey);
 
-  const totalItems = visibleFixed.length + month.oneOff.length;
+  const visibleFixed = fixedItems.filter((f) => !markFor(f.id, mKey)?.skipped);
+  const skippedFixed = fixedItems.filter((f) => markFor(f.id, mKey)?.skipped);
+
+  const totalItems = visibleFixed.length + monthItems.length;
   const checkedCount =
-    visibleFixed.filter((f) => month.checked[f.id]).length + month.oneOff.filter((i) => i.checked).length;
+    visibleFixed.filter((f) => markFor(f.id, mKey)?.checked).length +
+    monthItems.filter((i) => markFor(i.id, mKey)?.checked).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade space-y-6">
@@ -192,12 +420,22 @@ export function GroceryPage() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <ShoppingCart className="h-6 w-6 text-primary" /> Supermercado
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
             Lista de compras com itens fixos (todo mês) e itens avulsos do mês.
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-md ${
+                useCloud
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                  : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+              }`}
+              title={useCloud ? "Sincronizado entre dispositivos" : "Apenas neste navegador — rode o SQL para sincronizar"}
+            >
+              {useCloud ? <Cloud className="h-3 w-3" /> : <HardDrive className="h-3 w-3" />}
+              {useCloud ? "Nuvem" : "Local"}
+            </span>
           </p>
         </div>
 
-        {/* Month switcher */}
         <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1">
           <button
             onClick={() => shiftMonth(-1)}
@@ -219,13 +457,17 @@ export function GroceryPage() {
         </div>
       </div>
 
-      {/* Add form */}
+      {!useCloud && (
+        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 rounded-xl px-4 py-3 text-sm">
+          Para sincronizar entre dispositivos, rode no Supabase:{" "}
+          <code className="font-mono text-xs">supabase/migrations-manual/20260430_grocery_items.sql</code>
+        </div>
+      )}
+
       <div className="bg-card border border-border rounded-2xl p-5">
         <form onSubmit={addItem} className="grid grid-cols-1 md:grid-cols-12 gap-3">
           <div className="md:col-span-5">
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-              Item
-            </label>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Item</label>
             <input
               type="text"
               value={newName}
@@ -236,9 +478,7 @@ export function GroceryPage() {
             />
           </div>
           <div className="md:col-span-3">
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-              Qtd. (opcional)
-            </label>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Qtd. (opcional)</label>
             <input
               type="text"
               value={newQty}
@@ -249,9 +489,7 @@ export function GroceryPage() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-              Tipo
-            </label>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Tipo</label>
             <select
               value={newKind}
               onChange={(e) => setNewKind(e.target.value as "fixed" | "month")}
@@ -272,33 +510,27 @@ export function GroceryPage() {
         </form>
       </div>
 
-      {/* Tabs + summary */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="inline-flex bg-card border border-border rounded-xl p-1 text-sm">
           {([
             { key: "all", label: "Todos" },
             { key: "fixed", label: "Fixos" },
             { key: "month", label: "Deste mês" },
-          ] as const).map((t) => (
+          ] as const).map((tt) => (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
+              key={tt.key}
+              onClick={() => setTab(tt.key)}
               className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                tab === t.key
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                tab === tt.key ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.label}
+              {tt.label}
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">
-          {checkedCount} de {totalItems} marcados
-        </p>
+        <p className="text-xs text-muted-foreground">{checkedCount} de {totalItems} marcados</p>
       </div>
 
-      {/* List */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         {totalItems === 0 ? (
           <div className="px-6 py-16 text-center">
@@ -307,32 +539,22 @@ export function GroceryPage() {
           </div>
         ) : (
           <ul className="divide-y divide-border">
-            {/* Fixed items */}
             {(tab === "all" || tab === "fixed") &&
               visibleFixed.map((item) => {
-                const isChecked = !!month.checked[item.id];
+                const isChecked = !!markFor(item.id, mKey)?.checked;
                 return (
-                  <li
-                    key={`f-${item.id}`}
-                    className="px-5 py-3 flex items-center gap-3 group hover:bg-muted/30 transition-colors"
-                  >
+                  <li key={`f-${item.id}`} className="px-5 py-3 flex items-center gap-3 group hover:bg-muted/30 transition-colors">
                     <button
                       onClick={() => toggleFixedChecked(item.id)}
                       className={`h-6 w-6 rounded-md border flex items-center justify-center transition-colors flex-shrink-0 ${
-                        isChecked
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-border hover:border-primary"
+                        isChecked ? "bg-primary border-primary text-primary-foreground" : "border-border hover:border-primary"
                       }`}
                       aria-label={isChecked ? "Desmarcar" : "Marcar como comprado"}
                     >
                       {isChecked && <Check className="h-4 w-4" />}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium truncate ${
-                          isChecked ? "line-through text-muted-foreground" : "text-foreground"
-                        }`}
-                      >
+                      <p className={`text-sm font-medium truncate ${isChecked ? "line-through text-muted-foreground" : "text-foreground"}`}>
                         {item.name}
                         {item.qty && <span className="text-muted-foreground font-normal"> · {item.qty}</span>}
                       </p>
@@ -360,65 +582,49 @@ export function GroceryPage() {
                 );
               })}
 
-            {/* One-off items */}
             {(tab === "all" || tab === "month") &&
-              month.oneOff.map((item) => (
-                <li
-                  key={`m-${item.id}`}
-                  className="px-5 py-3 flex items-center gap-3 group hover:bg-muted/30 transition-colors"
-                >
-                  <button
-                    onClick={() => toggleOneOff(item.id)}
-                    className={`h-6 w-6 rounded-md border flex items-center justify-center transition-colors flex-shrink-0 ${
-                      item.checked
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "border-border hover:border-primary"
-                    }`}
-                    aria-label={item.checked ? "Desmarcar" : "Marcar como comprado"}
-                  >
-                    {item.checked && <Check className="h-4 w-4" />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-sm font-medium truncate ${
-                        item.checked ? "line-through text-muted-foreground" : "text-foreground"
+              monthItems.map((item) => {
+                const isChecked = !!markFor(item.id, mKey)?.checked;
+                return (
+                  <li key={`m-${item.id}`} className="px-5 py-3 flex items-center gap-3 group hover:bg-muted/30 transition-colors">
+                    <button
+                      onClick={() => toggleOneOff(item.id)}
+                      className={`h-6 w-6 rounded-md border flex items-center justify-center transition-colors flex-shrink-0 ${
+                        isChecked ? "bg-primary border-primary text-primary-foreground" : "border-border hover:border-primary"
                       }`}
+                      aria-label={isChecked ? "Desmarcar" : "Marcar como comprado"}
                     >
-                      {item.name}
-                      {item.qty && <span className="text-muted-foreground font-normal"> · {item.qty}</span>}
-                    </p>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">
-                      Deste mês
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => deleteOneOff(item.id)}
-                    className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                    aria-label="Excluir"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ))}
+                      {isChecked && <Check className="h-4 w-4" />}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${isChecked ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                        {item.name}
+                        {item.qty && <span className="text-muted-foreground font-normal"> · {item.qty}</span>}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">Deste mês</p>
+                    </div>
+                    <button
+                      onClick={() => deleteItem(item.id, "month")}
+                      className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      aria-label="Excluir"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                );
+              })}
           </ul>
         )}
       </div>
 
-      {/* Skipped fixed items (this month) — restore option */}
       {(tab === "all" || tab === "fixed") && skippedFixed.length > 0 && (
         <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-3">
-            Fixos pulados neste mês ({skippedFixed.length})
-          </h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Fixos pulados neste mês ({skippedFixed.length})</h3>
           <ul className="space-y-2">
             {skippedFixed.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between gap-3 text-sm"
-              >
+              <li key={item.id} className="flex items-center justify-between gap-3 text-sm">
                 <span className="text-muted-foreground line-through truncate">
-                  {item.name}
-                  {item.qty && ` · ${item.qty}`}
+                  {item.name}{item.qty && ` · ${item.qty}`}
                 </span>
                 <button
                   onClick={() => restoreFixedThisMonth(item.id)}
@@ -432,14 +638,9 @@ export function GroceryPage() {
         </div>
       )}
 
-      <Modal
-        open={!!confirmDel}
-        onClose={() => setConfirmDel(null)}
-        title="Excluir item fixo?"
-      >
+      <Modal open={!!confirmDel} onClose={() => setConfirmDel(null)} title="Excluir item fixo?">
         <p className="text-muted-foreground mb-6">
-          “{confirmDel?.name}” será removido de <strong>todos</strong> os meses. Para remover apenas
-          deste mês, use “Pular este mês”.
+          “{confirmDel?.name}” será removido de <strong>todos</strong> os meses. Para remover apenas deste mês, use “Pular este mês”.
         </p>
         <div className="flex justify-end gap-3">
           <button
@@ -450,7 +651,7 @@ export function GroceryPage() {
           </button>
           <button
             onClick={() => {
-              if (confirmDel) deleteFixedForever(confirmDel.id);
+              if (confirmDel) deleteItem(confirmDel.id, confirmDel.kind);
               setConfirmDel(null);
             }}
             className="px-5 py-2.5 rounded-lg bg-destructive text-destructive-foreground font-semibold hover:opacity-90 transition-opacity"
