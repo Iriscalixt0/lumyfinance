@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Zap, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { useTranslations } from "@/lib/i18n";
@@ -18,6 +19,7 @@ interface QuickTransactionModalProps {
 export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransactionModalProps) {
   const t = useTranslations("quickTransaction");
   const fmt = useIntlFormat();
+  const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const { recordActivity } = useGamification(activeWorkspace?.id ?? null);
   const { toast: showToast } = useToast();
@@ -68,6 +70,7 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
 
               const { error } = await supabase.from("transactions").insert({
                 workspace_id: activeWorkspace.id,
+                created_by: user!.id,
                 description: data.description,
                 amount: data.amount,
                 type: data.type,
@@ -79,7 +82,8 @@ export function QuickTransactionModal({ open, onClose, onSaved }: QuickTransacti
               });
 
               if (error) {
-                showToast(t("error"), "error");
+                console.error("[QuickTransaction] insert error:", error);
+                showToast(error.message || t("error"), "error");
                 return;
               }
 
