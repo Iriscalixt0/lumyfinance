@@ -83,27 +83,26 @@ export function OnboardingPage() {
 
       localStorage.setItem("lmyf_base_currency", baseCurrency);
 
-      // 1) Cria o workspace primeiro (operação que mais costuma falhar)
+      // 1) Garante um workspace inicial via função do banco (evita falhas de RLS no create member)
+      const ensuredWorkspace = await supabase.rpc("ensure_user_workspace");
+      if (ensuredWorkspace.error) throw ensuredWorkspace.error;
+      if (!ensuredWorkspace.data) {
+        throw new Error("Workspace inicial não pôde ser carregado");
+      }
+
+      // 2) Renomeia o workspace inicial com o nome escolhido no onboarding
       const wsRes = await supabase
         .from("workspaces")
-        .insert({
+        .update({
           name: workspaceName.trim(),
           slug: uniqueSlug,
-          owner_id: user.id,
         })
-        .select()
+        .eq("id", ensuredWorkspace.data)
+        .eq("owner_id", user.id)
+        .select("id")
         .single();
 
       if (wsRes.error) throw wsRes.error;
-
-      // 2) Adiciona o usuário como owner do workspace
-      const memberRes = await supabase.from("workspace_members").insert({
-        workspace_id: wsRes.data.id,
-        user_id: user.id,
-        role: "owner",
-        accepted_at: new Date().toISOString(),
-      });
-      if (memberRes.error) throw memberRes.error;
 
       // 3) Atualiza apenas campos que existem em profiles
       const profileRes = await supabase
@@ -117,6 +116,18 @@ export function OnboardingPage() {
           { onConflict: "id" }
         );
       if (profileRes.error) throw profileRes.error;
+
+      // 4) Persiste o locale escolhido na tabela correta de preferências
+      const preferenceRes = await supabase
+        .from("profile_preferences")
+        .upsert(
+          {
+            user_id: user.id,
+            locale_hint: locale,
+          },
+          { onConflict: "user_id" }
+        );
+      if (preferenceRes.error) throw preferenceRes.error;
 
       localStorage.setItem("lmyf_active_ws", wsRes.data.id);
 
