@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useIntlFormat } from "@/hooks/useIntlFormat";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -11,15 +12,19 @@ import { useToast } from "@/components/ui/Toast";
 import { PermissionBanner } from "@/components/ui/PermissionBanner";
 import { useGamification, type AchievementDef } from "@/hooks/useGamification";
 import { AchievementToast } from "@/components/gamification/AchievementToast";
+import { materializeRecurring } from "@/lib/utils/recurring";
+
+type Frequency = "weekly" | "biweekly" | "monthly" | "yearly";
 
 interface RecurringTransaction {
   id: string;
   description: string;
-  amount: number;
+  amount: number; // cents
   type: "income" | "expense";
-  category: string | null;
-  frequency: string;
-  next_date: string;
+  category_id: string | null;
+  frequency: Frequency;
+  start_date: string;
+  next_run_date: string;
   end_date: string | null;
 }
 
@@ -34,6 +39,7 @@ export function RecurringPage() {
   const fmt = useIntlFormat();
   const formatBRL = fmt.money;
   const { toast } = useToast();
+  const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const workspaceId = activeWorkspace?.id ?? null;
   const permissions = usePermissions();
@@ -54,15 +60,15 @@ export function RecurringPage() {
     description: z.string().trim().min(1).max(200),
     amount: z.number().positive(),
     type: z.enum(["income", "expense"]),
-    frequency: z.enum(["daily", "weekly", "monthly", "yearly"]),
-    next_date: z.string().min(1),
+    frequency: z.enum(["weekly", "biweekly", "monthly", "yearly"]),
+    start_date: z.string().min(1),
     end_date: z.string().nullable(),
-    category: z.string().nullable(),
+    category_id: z.string().nullable(),
   });
 
-  const freqLabels: Record<string, string> = {
-    daily: t("daily"),
+  const freqLabels: Record<Frequency, string> = {
     weekly: t("weekly"),
+    biweekly: t("biweekly") || "Quinzenal",
     monthly: t("monthly"),
     yearly: t("yearly"),
   };
@@ -71,9 +77,9 @@ export function RecurringPage() {
     description: "",
     amount: "",
     type: "expense" as "income" | "expense",
-    category: "",
-    frequency: "monthly" as "daily" | "weekly" | "monthly" | "yearly",
-    next_date: new Date().toISOString().split("T")[0],
+    category_id: "",
+    frequency: "monthly" as Frequency,
+    start_date: new Date().toISOString().split("T")[0],
     end_date: "",
   };
   const [form, setForm] = useState(emptyForm);
@@ -83,7 +89,7 @@ export function RecurringPage() {
       if (!workspaceId) { setLoading(false); return; }
 
       const [recRes, catRes] = await Promise.all([
-        supabase.from("recurring_transactions").select("*").eq("workspace_id", workspaceId).order("next_date", { ascending: true }),
+        supabase.from("recurring_transactions").select("*").eq("workspace_id", workspaceId).order("next_run_date", { ascending: true }),
         supabase.from("categories").select("id, name, icon, type").eq("workspace_id", workspaceId),
       ]);
 
@@ -98,11 +104,11 @@ export function RecurringPage() {
     setEditingId(item.id);
     setForm({
       description: item.description,
-      amount: String(item.amount),
+      amount: String(item.amount / 100),
       type: item.type,
-      category: item.category || "",
-      frequency: item.frequency as typeof emptyForm.frequency,
-      next_date: item.next_date,
+      category_id: item.category_id || "",
+      frequency: item.frequency,
+      start_date: item.start_date,
       end_date: item.end_date || "",
     });
     setErrors({});
@@ -117,14 +123,15 @@ export function RecurringPage() {
     e.preventDefault();
     setErrors({});
 
+    const amountFloat = parseFloat(form.amount.replace(",", "."));
     const parsed = recurringSchema.safeParse({
       description: form.description,
-      amount: parseFloat(form.amount.replace(",", ".")),
+      amount: amountFloat,
       type: form.type,
       frequency: form.frequency,
-      next_date: form.next_date,
+      start_date: form.start_date,
       end_date: form.end_date || null,
-      category: form.category || null,
+      category_id: form.category_id || null,
     });
 
     if (!parsed.success) {
@@ -136,37 +143,67 @@ export function RecurringPage() {
       return;
     }
 
-    if (!workspaceId) return;
+    if (!workspaceId || !user) return;
     setSaving(true);
+
+    // amount stored as BIGINT cents
+    const amountCents = Math.round(parsed.data.amount * 100);
+
+    const payload = {
+      description: parsed.data.description,
+      amount: amountCents,
+      type: parsed.data.type,
+      frequency: parsed.data.frequency,
+      start_date: parsed.data.start_date,
+      end_date: parsed.data.end_date,
+      category_id: parsed.data.category_id,
+      next_run_date: parsed.data.start_date,
+    };
 
     if (editingId) {
       const { data, error } = await supabase
         .from("recurring_transactions")
-        .update(parsed.data)
+        .update(payload)
         .eq("id", editingId)
         .select()
         .single();
 
-      setSaving(false);
-      if (error) { setErrors({ description: t("errorSave") }); return; }
+      if (error) {
+        console.error("[Recurring] update error", error);
+        setErrors({ description: error.message || t("errorSave") });
+        setSaving(false);
+        return;
+      }
       setItems((prev) => prev.map((i) => (i.id === editingId ? data : i)));
       setEditingId(null);
       toast(t("recurringUpdated"));
     } else {
       const { data, error } = await supabase
         .from("recurring_transactions")
-        .insert({ ...parsed.data, workspace_id: workspaceId })
+        .insert({ ...payload, workspace_id: workspaceId, created_by: user.id })
         .select()
         .single();
 
-      setSaving(false);
-      if (error) { setErrors({ description: t("errorSave") }); return; }
+      if (error) {
+        console.error("[Recurring] insert error", error);
+        setErrors({ description: error.message || t("errorSave") });
+        setSaving(false);
+        return;
+      }
       setItems((prev) => [...prev, data]);
       toast(t("recurringCreated"));
     }
 
+    // Materialize past/current occurrences as real transactions
+    try {
+      await materializeRecurring(workspaceId, user.id);
+    } catch (err) {
+      console.warn("[Recurring] materialize failed", err);
+    }
+
     setForm(emptyForm);
     setErrors({});
+    setSaving(false);
     const newAchs = await checkAchievements();
     if (newAchs && newAchs.length > 0) setNewAchievement(newAchs[0]);
   }
@@ -222,8 +259,8 @@ export function RecurringPage() {
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("category")}</label>
               <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                value={form.category_id}
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="">{t("optional")}</option>
@@ -262,11 +299,11 @@ export function RecurringPage() {
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("frequency")}</label>
               <select
                 value={form.frequency}
-                onChange={(e) => setForm({ ...form, frequency: e.target.value as typeof emptyForm.frequency })}
+                onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <option value="daily">{t("daily")}</option>
                 <option value="weekly">{t("weekly")}</option>
+                <option value="biweekly">{freqLabels.biweekly}</option>
                 <option value="monthly">{t("monthly")}</option>
                 <option value="yearly">{t("yearly")}</option>
               </select>
@@ -276,11 +313,11 @@ export function RecurringPage() {
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{t("startDate")}</label>
               <input
                 type="date"
-                value={form.next_date}
-                onChange={(e) => setForm({ ...form, next_date: e.target.value })}
+                value={form.start_date}
+                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
-              {errors.next_date && <p className="text-xs text-destructive mt-1">{errors.next_date}</p>}
+              {errors.start_date && <p className="text-xs text-destructive mt-1">{errors.start_date}</p>}
             </div>
 
             <div>
@@ -334,7 +371,7 @@ export function RecurringPage() {
                     <div>
                       <p className="text-sm font-medium text-foreground">{item.description}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {freqLabels[item.frequency] || item.frequency} · {fmt.date(item.next_date)}
+                        {freqLabels[item.frequency] || item.frequency} · {fmt.date(item.next_run_date)}
                         {item.end_date && ` → ${fmt.date(item.end_date)}`}
                       </p>
                     </div>
