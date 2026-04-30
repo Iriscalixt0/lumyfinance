@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { Modal } from "@/components/ui/Modal";
 import { supabase } from "@/lib/supabase";
-import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2 } from "lucide-react";
 
 /**
  * SuperMercado — lista de compras com itens fixos (todo mês) e itens do mês.
@@ -436,24 +437,33 @@ export function GroceryPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1">
-          <button
-            onClick={() => shiftMonth(-1)}
-            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
-            aria-label="Mês anterior"
+        <div className="flex items-center gap-2">
+          <Link
+            to="/grocery/fixed"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-foreground transition-colors"
+            title="Gerenciar itens fixos"
           >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="text-sm font-semibold text-foreground capitalize px-2 min-w-[140px] text-center">
-            {monthLabel(cursor)}
-          </span>
-          <button
-            onClick={() => shiftMonth(1)}
-            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
-            aria-label="Próximo mês"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+            <Settings2 className="h-3.5 w-3.5" /> Gerenciar fixos
+          </Link>
+          <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1">
+            <button
+              onClick={() => shiftMonth(-1)}
+              className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
+              aria-label="Mês anterior"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="text-sm font-semibold text-foreground capitalize px-2 min-w-[140px] text-center">
+              {monthLabel(cursor)}
+            </span>
+            <button
+              onClick={() => shiftMonth(1)}
+              className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
+              aria-label="Próximo mês"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
