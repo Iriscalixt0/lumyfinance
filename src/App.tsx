@@ -26,6 +26,7 @@ import { CryptoPage } from "@/pages/CryptoPage";
 import { TravelModePage } from "@/pages/TravelModePage";
 import { GroceryPage } from "@/pages/GroceryPage";
 import { GroceryFixedPage } from "@/pages/GroceryFixedPage";
+import { GrocerySyncCheckPage } from "@/pages/GrocerySyncCheckPage";
 
 function App() {
   return (
