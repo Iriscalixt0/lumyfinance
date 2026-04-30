@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/utils/exchange";
 
@@ -17,29 +16,16 @@ export function useBaseCurrency() {
   useEffect(() => {
     if (!user) { setLoading(false); return; }
 
-    supabase
-      .from("profile_preferences")
-      .select("locale_hint")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        const localCurrency = localStorage.getItem("lmyf_base_currency") as CurrencyCode | null;
-        if (localCurrency) {
-          setCurrencyState(localCurrency);
-          localStorage.setItem("lmyf_base_currency", localCurrency);
-        }
-        setLoading(false);
-      });
+    const localCurrency = localStorage.getItem("lmyf_base_currency") as CurrencyCode | null;
+    if (localCurrency) {
+      setCurrencyState(localCurrency);
+    }
+    setLoading(false);
   }, [user]);
 
   const setCurrency = useCallback(async (code: CurrencyCode) => {
     setCurrencyState(code);
     localStorage.setItem("lmyf_base_currency", code);
-    if (user) {
-      await supabase
-        .from("profile_preferences")
-        .upsert({ user_id: user.id }, { onConflict: "user_id" });
-    }
   }, [user]);
 
   return { currency, setCurrency, loading };
