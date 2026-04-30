@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { Modal } from "@/components/ui/Modal";
 import { supabase } from "@/lib/supabase";
-import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2, Radio } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Pin, ChevronLeft, ChevronRight, Check, Cloud, HardDrive, Settings2, Radio, Download, Upload } from "lucide-react";
+import { downloadCSV } from "@/lib/utils/csv";
 
 /**
  * SuperMercado — lista de compras com itens fixos (todo mês) e itens do mês.
@@ -394,6 +395,215 @@ export function GroceryPage() {
     setCursor(d);
   }
 
+  // ---------- Import / Export ----------
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importPreview, setImportPreview] = useState<{
+    rows: Array<{ name: string; qty: string; kind: "fixed" | "month"; month_key: string | null; checked: boolean; skipped: boolean }>;
+    fileName: string;
+    mode: "merge" | "replace";
+  } | null>(null);
+
+  function handleExport() {
+    if (items.length === 0) {
+      toast("Nada para exportar");
+      return;
+    }
+    const headers = ["name", "qty", "kind", "month_key", "checked", "skipped"];
+    const rows: string[][] = [];
+    for (const it of items) {
+      if (it.kind === "fixed") {
+        // Uma linha base do fixo
+        rows.push([it.name, it.qty || "", "fixed", "", "", ""]);
+        // Uma linha extra por mês com marca (checked ou skipped) — preserva histórico
+        const itemMarks = marks.filter((m) => m.item_id === it.id && (m.checked || m.skipped));
+        for (const m of itemMarks) {
+          rows.push([it.name, it.qty || "", "fixed", m.month_key, m.checked ? "1" : "", m.skipped ? "1" : ""]);
+        }
+      } else {
+        const mk = it.month_key ?? "";
+        const mark = marks.find((m) => m.item_id === it.id && m.month_key === mk);
+        rows.push([it.name, it.qty || "", "month", mk, mark?.checked ? "1" : "", ""]);
+      }
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCSV(`supermercado-${stamp}.csv`, headers, rows);
+    toast(`Exportado: ${rows.length} linha${rows.length === 1 ? "" : "s"}`);
+  }
+
+  function parseCSV(text: string): string[][] {
+    // Suporta separador ; ou , ; campos com aspas; CRLF/LF; UTF-8 BOM.
+    const clean = text.replace(/^\uFEFF/, "");
+    const lines: string[][] = [];
+    let row: string[] = [];
+    let cell = "";
+    let inQuotes = false;
+    let sep: "," | ";" | null = null;
+    for (let i = 0; i < clean.length; i++) {
+      const c = clean[i];
+      if (inQuotes) {
+        if (c === '"' && clean[i + 1] === '"') { cell += '"'; i++; }
+        else if (c === '"') inQuotes = false;
+        else cell += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if ((c === "," || c === ";") && (sep === null || c === sep)) {
+          if (sep === null) sep = c;
+          row.push(cell); cell = "";
+        } else if (c === "\n" || c === "\r") {
+          if (c === "\r" && clean[i + 1] === "\n") i++;
+          row.push(cell); cell = "";
+          if (row.length > 1 || row[0] !== "") lines.push(row);
+          row = [];
+        } else cell += c;
+      }
+    }
+    if (cell !== "" || row.length) { row.push(cell); lines.push(row); }
+    return lines;
+  }
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite reimportar o mesmo arquivo
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = parseCSV(String(reader.result || ""));
+        if (parsed.length === 0) { toast("CSV vazio"); return; }
+        const header = parsed[0].map((h) => h.trim().toLowerCase());
+        const idx = (k: string) => header.indexOf(k);
+        const iName = idx("name"), iQty = idx("qty"), iKind = idx("kind"),
+              iMonth = idx("month_key"), iChecked = idx("checked"), iSkipped = idx("skipped");
+        if (iName === -1 || iKind === -1) {
+          toast("CSV inválido — esperado cabeçalho com 'name' e 'kind'");
+          return;
+        }
+        const rows = parsed.slice(1)
+          .map((r) => ({
+            name: (r[iName] || "").trim(),
+            qty: iQty >= 0 ? (r[iQty] || "").trim() : "",
+            kind: ((r[iKind] || "").trim().toLowerCase() === "fixed" ? "fixed" : "month") as "fixed" | "month",
+            month_key: iMonth >= 0 ? ((r[iMonth] || "").trim() || null) : null,
+            checked: iChecked >= 0 ? /^(1|true|yes|sim|x)$/i.test((r[iChecked] || "").trim()) : false,
+            skipped: iSkipped >= 0 ? /^(1|true|yes|sim|x)$/i.test((r[iSkipped] || "").trim()) : false,
+          }))
+          .filter((r) => r.name.length > 0);
+        // Validação de month_key para itens 'month'
+        const invalid = rows.find((r) => r.kind === "month" && (!r.month_key || !/^[0-9]{4}-[0-9]{2}$/.test(r.month_key)));
+        if (invalid) {
+          toast(`Linha inválida: '${invalid.name}' (item de mês exige month_key YYYY-MM)`);
+          return;
+        }
+        if (rows.length === 0) { toast("Nenhuma linha válida no CSV"); return; }
+        setImportPreview({ rows, fileName: file.name, mode: "merge" });
+      } catch (err: any) {
+        toast(`Erro ao ler CSV: ${err?.message || "formato inválido"}`);
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  async function confirmImport() {
+    if (!importPreview || !workspaceId || !user) return;
+    const { rows, mode } = importPreview;
+    setImportPreview(null);
+
+    // ---- Replace mode: limpa tudo do workspace primeiro ----
+    if (mode === "replace") {
+      if (useCloud) {
+        const { error } = await supabase.from("grocery_items").delete().eq("workspace_id", workspaceId);
+        if (error && !isMissingTableError(error)) {
+          toast(`Erro ao limpar: ${error.message}`);
+          return;
+        }
+      } else {
+        lsSaveItems(workspaceId, []);
+        lsSaveMarks(workspaceId, []);
+      }
+      setItems([]);
+      setMarks([]);
+    }
+
+    // ---- Reduz linhas em itens + marcas ----
+    // Fixos: uma única entrada por nome (case-insensitive). Linhas extras com month_key viram marcas.
+    const fixedByName = new Map<string, { id: string; qty: string }>();
+    const newItems: GroceryItem[] = [];
+    const newMarks: GroceryMark[] = [];
+
+    // Pré-popula com fixos já existentes (modo merge) para deduplicar
+    if (mode === "merge") {
+      for (const it of items.filter((i) => i.kind === "fixed")) {
+        fixedByName.set(it.name.toLowerCase(), { id: it.id, qty: it.qty });
+      }
+    }
+
+    for (const r of rows) {
+      if (r.kind === "fixed") {
+        const key = r.name.toLowerCase();
+        let entry = fixedByName.get(key);
+        if (!entry) {
+          const id = crypto.randomUUID();
+          entry = { id, qty: r.qty };
+          fixedByName.set(key, entry);
+          newItems.push({
+            id, name: r.name, qty: r.qty, kind: "fixed",
+            month_key: null, created_at: new Date().toISOString(),
+          });
+        }
+        if (r.month_key && (r.checked || r.skipped)) {
+          newMarks.push({ item_id: entry.id, month_key: r.month_key, checked: r.checked, skipped: r.skipped });
+        }
+      } else {
+        // item do mês — sempre cria novo (não há chave natural)
+        const id = crypto.randomUUID();
+        newItems.push({
+          id, name: r.name, qty: r.qty, kind: "month",
+          month_key: r.month_key, created_at: new Date().toISOString(),
+        });
+        if (r.checked && r.month_key) {
+          newMarks.push({ item_id: id, month_key: r.month_key, checked: true, skipped: false });
+        }
+      }
+    }
+
+    // ---- Persistência ----
+    if (useCloud) {
+      if (newItems.length) {
+        const payload = newItems.map((it) => ({
+          id: it.id, workspace_id: workspaceId, created_by: user.id,
+          name: it.name, qty: it.qty || null, kind: it.kind,
+          month_key: it.kind === "month" ? it.month_key : null,
+        }));
+        const { error } = await supabase.from("grocery_items").insert(payload);
+        if (error) {
+          toast(`Erro ao importar itens: ${error.message}`);
+          return;
+        }
+      }
+      if (newMarks.length) {
+        await supabase.from("grocery_item_marks").upsert(
+          newMarks.map((m) => ({ item_id: m.item_id, month_key: m.month_key, checked: m.checked, skipped: m.skipped })),
+          { onConflict: "item_id,month_key" },
+        );
+      }
+    }
+
+    const nextItems = [...newItems, ...items.filter((i) => mode === "merge")];
+    const nextMarks = (() => {
+      // Mescla, sobrescrevendo marcas existentes pelo (item_id, month_key)
+      const map = new Map<string, GroceryMark>();
+      const base = mode === "merge" ? marks : [];
+      for (const m of base) map.set(`${m.item_id}|${m.month_key}`, m);
+      for (const m of newMarks) map.set(`${m.item_id}|${m.month_key}`, m);
+      return Array.from(map.values());
+    })();
+    setItems(nextItems);
+    setMarks(nextMarks);
+    if (!useCloud) persistLocal(nextItems, nextMarks);
+
+    toast(`Importado: ${newItems.length} item${newItems.length === 1 ? "" : "s"}`);
+  }
+
   // ---------- Derived ----------
   const fixedItems = items.filter((i) => i.kind === "fixed");
   const monthItems = items.filter((i) => i.kind === "month" && i.month_key === mKey);
@@ -452,6 +662,27 @@ export function GroceryPage() {
           >
             <Radio className="h-3.5 w-3.5" /> Verificar sync
           </Link>
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-foreground transition-colors"
+            title="Exportar lista em CSV"
+          >
+            <Download className="h-3.5 w-3.5" /> Exportar
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-foreground transition-colors"
+            title="Importar lista de um arquivo CSV"
+          >
+            <Upload className="h-3.5 w-3.5" /> Importar
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            onChange={handleFileSelected}
+            className="hidden"
+          />
           <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1">
             <button
               onClick={() => shiftMonth(-1)}
@@ -676,6 +907,85 @@ export function GroceryPage() {
             Excluir de todos os meses
           </button>
         </div>
+      </Modal>
+
+      <Modal open={!!importPreview} onClose={() => setImportPreview(null)} title="Importar lista">
+        {importPreview && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-mono text-xs text-foreground">{importPreview.fileName}</span> — {importPreview.rows.length} linha{importPreview.rows.length === 1 ? "" : "s"}.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                onClick={() => setImportPreview({ ...importPreview, mode: "merge" })}
+                className={`px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                  importPreview.mode === "merge"
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border hover:bg-secondary text-muted-foreground"
+                }`}
+              >
+                <div className="font-bold uppercase tracking-wider text-[10px] mb-0.5">Mesclar</div>
+                <div className="text-[11px]">Mantém os itens atuais. Fixos com mesmo nome são reaproveitados.</div>
+              </button>
+              <button
+                onClick={() => setImportPreview({ ...importPreview, mode: "replace" })}
+                className={`px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                  importPreview.mode === "replace"
+                    ? "border-destructive bg-destructive/10 text-foreground"
+                    : "border-border hover:bg-secondary text-muted-foreground"
+                }`}
+              >
+                <div className="font-bold uppercase tracking-wider text-[10px] mb-0.5">Substituir tudo</div>
+                <div className="text-[11px]">Apaga toda a lista atual antes de importar.</div>
+              </button>
+            </div>
+            <div className="max-h-56 overflow-y-auto border border-border rounded-lg">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/40 sticky top-0">
+                  <tr className="text-left">
+                    <th className="px-2 py-1.5 font-semibold">Nome</th>
+                    <th className="px-2 py-1.5 font-semibold">Qtd</th>
+                    <th className="px-2 py-1.5 font-semibold">Tipo</th>
+                    <th className="px-2 py-1.5 font-semibold">Mês</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importPreview.rows.slice(0, 50).map((r, i) => (
+                    <tr key={i} className="border-t border-border">
+                      <td className="px-2 py-1 truncate">{r.name}</td>
+                      <td className="px-2 py-1 text-muted-foreground">{r.qty || "—"}</td>
+                      <td className="px-2 py-1">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          r.kind === "fixed" ? "bg-primary/15 text-primary" : "bg-sky-500/15 text-sky-600 dark:text-sky-300"
+                        }`}>{r.kind}</span>
+                      </td>
+                      <td className="px-2 py-1 font-mono text-muted-foreground">{r.month_key || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {importPreview.rows.length > 50 && (
+                <p className="text-[10px] text-muted-foreground px-2 py-1 border-t border-border">
+                  + {importPreview.rows.length - 50} linhas adicionais...
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setImportPreview(null)}
+                className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-secondary transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmImport}
+                className="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all"
+              >
+                {importPreview.mode === "replace" ? "Substituir e importar" : "Mesclar e importar"}
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
